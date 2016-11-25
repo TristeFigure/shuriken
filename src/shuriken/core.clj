@@ -1,16 +1,23 @@
 (ns shuriken.core
   (:require [potemkin :refer [import-vars]]
-            [shuriken predicates-composer
+            [shuriken associative
                       meta
-                      associative
-                      namespace]))
+                      namespace
+                      navigation
+                      predicates-composer]))
 
 (import-vars
-  [shuriken.predicates-composer
-   and? or? not?]
-  [shuriken.meta
-   without-meta]
   [shuriken.associative
    flatten-keys deflatten-keys deep-merge]
+
+  [shuriken.meta
+   without-meta]
+
   [shuriken.namespace
-   fully-qualify])
+   fully-qualify]
+
+  [shuriken.navigation
+   tree-seq-breadth]
+
+  [shuriken.predicates-composer
+   and? or? not?])

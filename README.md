@@ -5,7 +5,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.3.0"]
+[org.clojars.tristefigure/shuriken "0.4.0"]
 ```
 
 
@@ -57,8 +57,27 @@ Small yet effective Clojure weapons.
 ### `fully-qualify`
 
 ```clojure
-  (fully-qualify 'a-symbol)          ;; 'other-namespace/a-symbol
+  (fully-qualify 'a-symbol)        ;; 'other-namespace/a-symbol
   (fully-qualify *ns* 'o/a-symbol) ;; 'other-namespace/a-symbol
+```
+
+## Navigation
+
+### `tree-seq-breadth`
+
+```clojure
+  (let [tree {:a {:d {:j :_}
+                  :e {:k :_}}
+              :b {:f {:l :_}
+                  :g {:m :_}}
+              :c {:h {:n :_}
+                  :i {:o :_}}}
+        keys-only #(->> % (remove #{:_}) (mapcat keys))]
+    (keys-only (tree-seq map? vals tree))
+    ;; (:a :b :c :d :e :j :k :f :g :l :m :h :i :n :o)
+    (keys-only (tree-seq-breadth map? vals tree))
+    ;; '(:a :b :c :d :e :f :g :h :i :j :k :l :m :n :o)
+    )
 ```
 
 ## Meta

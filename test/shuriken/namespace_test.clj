@@ -1,7 +1,9 @@
 (ns shuriken.namespace-test
   (:require [clojure.test :refer :all]
             [shuriken.core :refer [fully-qualify]]
-            [shuriken.virtual-test-namespace :refer [a-var] :as virtual])
+            [shuriken.virtual-test-namespace
+             :refer [a-var AProtocol]
+             :as virtual])
   (:import [shuriken.virtual_test_namespace AType]))
 
 (deftest test-fully-qualify
@@ -13,4 +15,5 @@
            'local-var           'local-var
            'a-var               'shuriken.virtual-test-namespace/a-var
            'virtual/another-var 'shuriken.virtual-test-namespace/another-var
-           'AType               'shuriken.virtual_test_namespace.AType))))
+           'AType               'shuriken.virtual_test_namespace.AType
+           'AProtocol           'shuriken.virtual-test-namespace/AProtocol))))
