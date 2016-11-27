@@ -1,18 +1,22 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.5.0] - 2016-11-27
+## Added
+  - namespace: `fully-qualified?`, `unqualify`
+
 ## [0.4.0] - 2016-11-26
 ## Added
-  - navigation: tree-seq-breadth
+  - navigation: `tree-seq-breadth`
 
 ## [0.3.0] - 2016-11-20
 ### Added
-  - associative: flatten-keys, deflatten-keys, deep-merge
-  - meta: without-meta
+  - associative: `flatten-keys`, `deflatten-keys`, `deep-merge`
+  - meta: `without-meta`
 
 ## [0.2.0] - 2016-11-20
 ### Added
-  - namespace: fully-qualify
+  - namespace: `fully-qualify`
 
 ## [0.1.0] - 2016-11-20
 ### Added

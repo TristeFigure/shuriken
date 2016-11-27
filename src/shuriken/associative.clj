@@ -43,7 +43,7 @@
 
 (defn deep-merge
   "Deep merge two or more nested maps. Already present keys gets overwritten
-  like 'merge'"
+  like in 'merge'"
   [m1 & more]
   (deflatten-keys (apply deep-merge*
                          (flatten-keys m1)

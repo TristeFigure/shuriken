@@ -1,19 +1,51 @@
 (ns shuriken.namespace-test
+  (:use clojure.pprint)
   (:require [clojure.test :refer :all]
-            [shuriken.core :refer [fully-qualify]]
+            [shuriken.core :refer :all
+             :reload true]
             [shuriken.virtual-test-namespace
              :refer [a-var AProtocol]
              :as virtual])
   (:import [shuriken.virtual_test_namespace AType]))
 
+(def expectations
+  '{Object              java.lang.Object
+    fully-qualify       shuriken.namespace/fully-qualify
+    a-var               shuriken.virtual-test-namespace/a-var
+    not-found           not-found
+    virtual/another-var shuriken.virtual-test-namespace/another-var
+    AType               shuriken.virtual_test_namespace.AType
+    AProtocol           shuriken.virtual-test-namespace/AProtocol})
+
 (deftest test-fully-qualify
-  (let [local-var :local]
-    (binding [*ns* (find-ns 'shuriken.namespace-test)]
-      (are [sym expected] (= (fully-qualify *ns* sym) expected)
-           'Object              'java.lang.Object
-           'fully-qualify       'shuriken.namespace/fully-qualify
-           'local-var           'local-var
-           'a-var               'shuriken.virtual-test-namespace/a-var
-           'virtual/another-var 'shuriken.virtual-test-namespace/another-var
-           'AType               'shuriken.virtual_test_namespace.AType
-           'AProtocol           'shuriken.virtual-test-namespace/AProtocol))))
+  (binding [*ns* (find-ns 'shuriken.namespace-test)]
+    (doseq [[unqualified qualified] expectations]
+      (is (= (fully-qualify unqualified)
+             qualified)))))
+
+(deftest test-fully-qualified?
+  (binding [*ns* (find-ns 'shuriken.namespace-test)]
+    (doseq [[unqualified qualified] (dissoc expectations 'not-found)]
+      (is (false? (fully-qualified? unqualified)))
+      (is (true?  (fully-qualified? qualified))))))
+
+(deftest test-unqualify
+  (binding [*ns* (find-ns 'shuriken.namespace-test)]
+    (doseq [[unqualified qualified] expectations]
+      (is (= (unqualify qualified)
+             unqualified)))))
+
+(deftest fully-qualify-round-trips
+  (testing "fully-qualify --> fully-qualify"
+    (is (= 'java.lang.Object
+           (fully-qualify (fully-qualify 'Object)))))
+  (testing "unqualify --> unqualify"
+    (is (= 'Object
+           (unqualify (unqualify 'java.lang.Object)))))
+  (testing "fully-qualify --> unqualify --> fully-qualify"
+    (is (= 'java.lang.Object
+           (-> 'Object fully-qualify unqualify fully-qualify))))
+  (testing "unqualify --> fully-qualify --> unqualify"
+    (is (= 'Object
+           (-> 'java.lang.Object unqualify fully-qualify unqualify)))))
+

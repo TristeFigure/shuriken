@@ -14,7 +14,8 @@
    without-meta]
 
   [shuriken.namespace
-   fully-qualify]
+   fully-qualify fully-qualified?
+   unqualify]
 
   [shuriken.navigation
    tree-seq-breadth]

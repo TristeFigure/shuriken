@@ -1,11 +1,11 @@
-# shuriken
+ # shuriken
 
 Small yet effective Clojure weapons.
 
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.4.0"]
+[org.clojars.tristefigure/shuriken "0.5.0"]
 ```
 
 
