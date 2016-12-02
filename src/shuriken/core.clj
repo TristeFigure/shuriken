@@ -8,7 +8,7 @@
 
 (import-vars
   [shuriken.associative
-   flatten-keys deflatten-keys deep-merge]
+   flatten-keys deflatten-keys deep-merge index-by]
 
   [shuriken.meta
    without-meta]

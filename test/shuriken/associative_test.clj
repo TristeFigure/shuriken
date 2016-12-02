@@ -1,6 +1,6 @@
 (ns shuriken.associative-test
   (:require [clojure.test :refer :all]
-            [shuriken.core :refer [flatten-keys deflatten-keys deep-merge]]))
+            [shuriken.core :refer :all]))
 
 (defmacro assert-flatten-roundtrip [m]
   `(let [m# ~m]
@@ -64,3 +64,24 @@
       (is (= (deep-merge {:x {:y :z}}
                          {:x {}})
              {:x {:y :z}})))))
+
+(defmacro thrown? [exception-class & body]
+  `(try
+     (do ~@body
+         false)
+     (catch ~exception-class
+       ~@body)))
+
+(deftest test-index-by
+  (let [ms [{:a 1 :b 2} {:a 3 :b 4} {:a 5 :b 4}]]
+    (testing "default strategy"    
+      (is (= (index-by :a ms)
+             {1 {:a 1, :b 2}
+              3 {:a 3, :b 4}
+              5 {:a 5, :b 4}}))
+      (is (thrown? clojure.lang.ExceptionInfo
+                   (index-by :b ms))))
+    (testing "custom strategy"
+      (is (= (index-by :b #(last %2) ms)
+             {2 {:a 1, :b 2}
+              4 {:a 5, :b 4}})))))

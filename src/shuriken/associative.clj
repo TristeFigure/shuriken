@@ -42,9 +42,33 @@
       (apply deep-merge* m1m2f (or more [])))))
 
 (defn deep-merge
-  "Deep merge two or more nested maps. Already present keys gets overwritten
-  like in 'merge'"
+  "Deep merge two or more nested maps."
   [m1 & more]
   (deflatten-keys (apply deep-merge*
                          (flatten-keys m1)
                          more)))
+
+(defn raise-error-index-strategy [key entries]
+  "The default index strategy. Asserts there is only one entry and returns it."
+  (if (not= 1 (count entries))
+    (throw
+      (ex-info (pr-str "Can't index key " key " because of duplicate "
+                       "entries " (map :name entries))
+               {:type :index-by-duplicate-entries
+                :entries (map :name entries)
+                :key key}))
+    (first entries)))
+
+(defn index-by
+  "Like group-by excepts it applies a strategy to each grouped collection.
+  A strategy is a function with signature (key, entries) -> entry.
+  The default strategy asserts there is only one entry and returns it."
+  ([f coll]
+   (index-by f raise-error-index-strategy coll))
+  ([f strategy coll]
+   (->> (group-by f coll)
+        (map (fn [[k vs]]
+               [k (strategy k vs)]))
+        (into {}))))
+
+(def unindex vals)

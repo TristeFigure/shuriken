@@ -14,14 +14,6 @@ Small yet effective Clojure weapons.
   (:require [shuriken.core :refer :all]))
 ```
 
-## Predicates composer
-
-```clojure
-(filter (and? (or? is-old-enough?
-                   is-vip?)
-              (not? faint-hearted?)))
-```
-
 ## Associative structures
 
 ### `flatten-keys`
@@ -52,6 +44,34 @@ Small yet effective Clojure weapons.
 ;; {:x {:a :aaa  :b :bb  :c :c}}
 ```
 
+### `index-by`
+
+```clojure
+(def ms [{:a 1 :b 2} {:a 3 :b 4} {:a 5 :b 4}])
+
+(index-by :a ms)
+;; {1 {:a 1 :b 2}
+;;  3 {:a 3 :b 4}
+;;  5 {:a 5 :b 4}}
+
+(index-by :b ms)
+;; clojure.lang.ExceptionInfo (Duplicate entries for key 4)
+
+(index-by :b (fn [key entries]
+               (last entries))
+          ms)
+;; {2 {:a 1 :b 2}
+;;  4 {:a 5 :b 4}}
+```
+
+## Meta
+
+### `without-meta`
+
+```clojure
+(meta (without-meta (with-meta [1 2 3] {:metadata :abc}))) ;; nil
+```
+
 ## Namespace
 
 ### `fully-qualify`
@@ -80,12 +100,10 @@ Small yet effective Clojure weapons.
     )
 ```
 
-## Meta
-
-### `without-meta`
+## Predicates composer
 
 ```clojure
-(meta (without-meta (with-meta [1 2 3] {:metadata :abc}))) ;; nil
+(filter (and? (or? is-old-enough?
+                   is-vip?)
+              (not? faint-hearted?)))
 ```
-
-
