@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.7.0] - Unreleased
+## Added
+  - sequential: `slice`
+
 ## [0.6.0] - Unreleased
 ## Added
   - associative: `index-by`

@@ -4,7 +4,8 @@
                       meta
                       namespace
                       navigation
-                      predicates-composer]))
+                      predicates-composer
+                      sequential]))
 
 (import-vars
   [shuriken.associative
@@ -21,4 +22,7 @@
    tree-seq-breadth]
 
   [shuriken.predicates-composer
-   and? or? not?])
+   and? or? not?]
+  
+  [shuriken.sequential
+   slice])

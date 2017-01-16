@@ -64,6 +64,30 @@ Small yet effective Clojure weapons.
 ;;  4 {:a 5 :b 4}}
 ```
 
+## Sequential structures
+
+### `slice`
+
+```clojure
+(let [coll [1 1 0 1 0 0 1 1]]
+  ;; the default
+  (slice zero? coll) ;; by default, :include-delimiter false, include-empty true
+  ;; ((1 1) (1) (1 1))
+  
+  (slice zero? coll :include-empty true)
+  ;; ((1 1) (1) () (1 1))
+  
+  (slice zero? coll :include-delimiter :left)
+  ;; ((1 1) (0 1) (0 1 1))
+  
+  (slice zero? coll :include-delimiter :right)
+  ;; ((1 1 0) (1 0) (1 1))
+  
+  (slice zero? coll :include-delimiter :right :include-empty true)
+  ;; ((1 1 0) (1 0) (0) (1 1))
+  )
+```
+
 ## Meta
 
 ### `without-meta`
