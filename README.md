@@ -5,7 +5,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.7.0"]
+[org.clojars.tristefigure/shuriken "0.8.0"]
 ```
 
 
@@ -85,6 +85,17 @@ Small yet effective Clojure weapons.
   
   (slice zero? coll :include-delimiter :right :include-empty true)
   ;; ((1 1 0) (1 0) (0) (1 1))
+  )
+```
+
+### `separate`
+
+Returns a vector of `[(filter pred coll) (remove pred coll)]`
+
+```clojure
+(let [coll [1 1 0 1 0 0 1 1 0]]
+  (separate zero? coll)
+  ;; [(1 1 1 1 1) (0 0 0 0)]
   )
 ```
 

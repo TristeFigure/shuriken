@@ -1,7 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-## [0.7.0] - Unreleased
+## [0.8.0] - 2017-22-01
+## Added
+  - sequential: `separate`
+
+## [0.7.0] - 2017-16-01
 ## Added
   - sequential: `slice`
 

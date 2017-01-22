@@ -2,7 +2,11 @@
 
 (defn slice
   "Slice a seq using a delimiter predicate. There are two options:
-  - :delimiter"
+  - :include-delimiter  false | :left | :right
+                        whether to include the delimiter
+  - :include-empty      true | false
+                        whether to create empty seqs between successive
+                        delimiters"
   [delimiter? coll & {:keys [include-delimiter include-empty]
                       :or {include-delimiter false
                            include-empty false}}]
@@ -33,3 +37,8 @@
                    (concat before-first-delim (take 1 from-first-delim))
                    before-first-delim)
                  result)))))
+
+(defn separate
+  "Returns a vector of [(filter pred coll) (remove pred coll)]"
+  [pred coll]
+  [(filter pred coll) (remove pred coll)])

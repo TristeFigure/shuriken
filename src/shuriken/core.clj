@@ -25,4 +25,4 @@
    and? or? not?]
   
   [shuriken.sequential
-   slice])
+   slice separate])

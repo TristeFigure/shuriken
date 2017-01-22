@@ -1,6 +1,6 @@
 (ns shuriken.sequential-test
   (:require [clojure.test :refer :all]
-            [shuriken.core :refer [slice]]))
+            [shuriken.core :refer [slice separate]]))
 
 (deftest test-slice
   (let [coll [1 0 1 0 1 0 0 0 1]]
@@ -37,4 +37,11 @@
       (is (= '((1) (1))
              (slice zero? [1 0 1 0 0 0 ]))))))
 
-(run-tests)
+(deftest test-separate
+  (let [coll [1 1 0 1 0 0 1 1 0]]
+    (testing "typical case"
+      (is (= [[0 0 0 0] [1 1 1 1 1]]
+             (separate zero? coll))))
+    (testing "edge cases"
+      (is (= [[] [1 1 0 1 0 0 1 1 0]]
+             (separate #{2} coll))))))
