@@ -65,13 +65,6 @@
                          {:x {}})
              {:x {:y :z}})))))
 
-(defmacro thrown? [exception-class & body]
-  `(try
-     (do ~@body
-         false)
-     (catch ~exception-class
-       ~@body)))
-
 (deftest test-index-by
   (let [ms [{:a 1 :b 2} {:a 3 :b 4} {:a 5 :b 4}]]
     (testing "default strategy"    

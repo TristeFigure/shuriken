@@ -3,7 +3,7 @@
 (defn slice
   "Slice a seq using a delimiter predicate. There are two options:
   - :include-delimiter  false | :left | :right
-                        whether to include the delimiter
+                        whether to include the delimiter and where
   - :include-empty      true | false
                         whether to create empty seqs between successive
                         delimiters"
