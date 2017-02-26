@@ -95,8 +95,7 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
 ```clojure
 (let [coll [1 1 0 1 0 0 1 1 0]]
   (separate zero? coll)
-  ;; [(1 1 1 1 1) (0 0 0 0)]
-  )
+  ;; [(1 1 1 1 1) (0 0 0 0)])
 ```
 
 ## Meta
@@ -115,8 +114,9 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
 (silence ArithmeticException (/ 1 0))
 ;; => nil
 
-(silence [ArithmeticException] (do (println "watch out !")
-                                   (/ 1 0)))
+(silence [ArithmeticException]
+  (do (println "watch out !")
+      (/ 1 0)))
 ;; watch out !
 ;; => nil
 
@@ -148,8 +148,14 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
 ### `fully-qualify`
 
 ```clojure
-(fully-qualify 'a-symbol)        ;; 'other-namespace/a-symbol
-(fully-qualify *ns* 'o/a-symbol) ;; 'other-namespace/a-symbol
+(fully-qualify 'a-symbol)           ;; 'other-namespace/a-symbol
+(fully-qualify *ns* 'o/a-symbol)    ;; 'other-namespace/a-symbol
+```
+
+### `unqualify`
+
+```clojure
+(unqualify 'my-namespace/my-symbol) ;; 'my-symbol
 ```
 
 ## Navigation
@@ -172,6 +178,8 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
 ```
 
 ## Predicates composer
+
+### `and?`, `or?` & `not?`
 
 ```clojure
 (filter (and? (or? is-old-enough?

@@ -62,7 +62,7 @@
 (defn index-by
   "Like group-by excepts it applies a strategy to each grouped collection.
   A strategy is a function with signature (key, entries) -> entry.
-  The default strategy asserts there is only one entry then returns it."
+  The default strategy asserts there is only one entry and returns it."
   ([f coll]
    (index-by f raise-error-index-strategy coll))
   ([f strategy coll]
