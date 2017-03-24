@@ -2,6 +2,7 @@
   (:require [potemkin :refer [import-vars]]
             [shuriken associative
                       flow
+                      macro
                       meta
                       namespace
                       navigation
@@ -15,6 +16,9 @@
   [shuriken.flow
    silence
    thrown?]
+  
+  [shuriken.macro
+   macroexpand-do]
 
   [shuriken.meta
    without-meta]

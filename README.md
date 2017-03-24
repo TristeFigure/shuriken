@@ -98,6 +98,32 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
   ;; [(1 1 1 1 1) (0 0 0 0)])
 ```
 
+## Macro
+
+```clojure
+(defmacro abc []
+  `(println "xyz"))
+
+(macroexpand-do MODE
+  (abc))
+
+; -- Macro expansion --
+; (clojure.core/println "xyz")
+
+; -- Running macro --
+; xyz
+
+```
+
+Where `MODE` is one of:
+
+```
+|-------------------------------------|
+| 0    | macroexpand                  |
+| 1    | macroexpand-1                |
+| :all | clojure.walk/macroexpand-all |
+```
+
 ## Meta
 
 ### `without-meta`
