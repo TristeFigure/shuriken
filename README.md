@@ -105,7 +105,7 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
   `(println "xyz"))
 
 (macroexpand-do MODE
-  (abc))
+  '(abc))
 
 ; -- Macro expansion --
 ; (clojure.core/println "xyz")

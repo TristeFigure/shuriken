@@ -8,7 +8,7 @@
                      :all 'clojure.walk/macroexpand-all)]
      `(do (println "-- Macro expansion -- ")
           (clojure.pprint/pprint
-            (~macro-sym '~expr))
+            (~macro-sym ~expr))
           (newline)
           (println "-- Running macro --")
           ~expr
