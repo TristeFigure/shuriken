@@ -5,7 +5,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.9.0"]
+[org.clojars.tristefigure/shuriken "0.10.0"]
 ```
 
 
