@@ -100,12 +100,24 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
 
 ## Macro
 
+### `dequote`
+
+Returns `'(expr)` from of `'(quote (expr))`
+```clojure
+(dequote [1 2 3])
+;; => [1 2 3]
+
+(dequote (quote (1 2 3)))
+;; => '(1 2 3)
+```
+
+### `macroexpand-do`
+
 ```clojure
 (defmacro abc []
   `(println "xyz"))
 
-(macroexpand-do MODE
-  '(abc))
+(macroexpand-do '(abc))
 
 ; -- Macro expansion --
 ; (clojure.core/println "xyz")
@@ -115,13 +127,21 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
 
 ```
 
+or alternatively:
+
+```clojure
+(macroexpand-do MODE
+  expr)
+```
+
 Where `MODE` is one of:
 
 ```
 |-------------------------------------|
-| 0    | macroexpand                  |
+| nil  | macroexpand (the default)    |
 | 1    | macroexpand-1                |
 | :all | clojure.walk/macroexpand-all |
+|-------------------------------------|
 ```
 
 ## Meta
