@@ -100,17 +100,6 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
 
 ## Macro
 
-### `dequote`
-
-Returns `'(expr)` from of `'(quote (expr))`
-```clojure
-(dequote [1 2 3])
-;; => [1 2 3]
-
-(dequote (quote (1 2 3)))
-;; => '(1 2 3)
-```
-
 ### `macroexpand-do`
 
 ```clojure

@@ -18,7 +18,6 @@
    thrown?]
   
   [shuriken.macro
-   dequote
    macroexpand-do]
 
   [shuriken.meta
