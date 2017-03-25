@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.12.1] - 2017-03-25
+## Fixed:
+  - macro: fixed a string in `macroexpand-do`
+
 ## [0.12.0] - 2017-03-25
 ## Added
   - macro: `macroexpand-do`
