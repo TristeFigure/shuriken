@@ -8,7 +8,7 @@
                      nil  'macroexpand
                      1    'macroexpand-1
                      :all 'clojure.walk/macroexpand-all)]
-     `(do (println "-- Macro expansion -- " ~expr)
+     `(do (println "-- Macro expansion -- ")
           (clojure.pprint/pprint (~macro-sym (quote ~expr)))
           (newline)
           
