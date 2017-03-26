@@ -8,11 +8,11 @@
                      nil  'macroexpand
                      1    'macroexpand-1
                      :all 'clojure.walk/macroexpand-all)]
-     `(do (println "-- Macro expansion -- ")
+     `(do (println "-- Macro expansion --")
           (clojure.pprint/pprint (~macro-sym (quote ~expr)))
           (newline)
           
-          (println "-- Running macro --")
+          (println "--  Running macro  --")
           (let [result# ~expr]
             (clojure.pprint/pprint result#)
             (newline)
