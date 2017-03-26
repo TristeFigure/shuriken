@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.12.2] - 2017-03-25
+## Fixed
+- macro: beautify output
+- CHANGELOG: some dates were not in ISO yyyy-mm-dd format
+
 ## [0.12.1] - 2017-03-25
 ## Fixed:
   - macro: fixed a string in `macroexpand-do`
@@ -9,15 +14,15 @@ All notable changes to this project will be documented in this file. This change
 ## Added
   - macro: `macroexpand-do`
 
-## [0.9.0] - 2017-28-01
+## [0.9.0] - 2017-01-28
 ## Added
   - flow: `silence`, `thrown?`
 
-## [0.8.0] - 2017-22-01
+## [0.8.0] - 2017-01-22
 ## Added
   - sequential: `separate`
 
-## [0.7.0] - 2017-16-01
+## [0.7.0] - 2017-01-16
 ## Added
   - sequential: `slice`
 
