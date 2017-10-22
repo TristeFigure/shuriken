@@ -7,16 +7,17 @@
                       namespace
                       navigation
                       predicates-composer
-                      sequential]))
+                      sequential]
+            [shuriken.monkey-patches syntax-quote]))
 
 (import-vars
   [shuriken.associative
    flatten-keys deflatten-keys deep-merge index-by]
-  
+
   [shuriken.flow
    silence
    thrown?]
-  
+
   [shuriken.macro
    macroexpand-do]
 
@@ -25,13 +26,15 @@
 
   [shuriken.namespace
    fully-qualify fully-qualified?
-   unqualify]
+   unqualify
+   with-ns
+   once-ns]
 
   [shuriken.navigation
    tree-seq-breadth]
 
   [shuriken.predicates-composer
    and? or? not?]
-  
+
   [shuriken.sequential
    slice separate])

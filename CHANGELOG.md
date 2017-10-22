@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# Unrelease
+## Added
+- Execute code in another namespace with `with-ns`
+- Ensure a namespace is loaded only once with `once-ns` even using `use`
+  or `require` with `:reload` `:reload-all`
+
 ## [0.12.2] - 2017-03-25
 ## Fixed
 - macro: beautify output

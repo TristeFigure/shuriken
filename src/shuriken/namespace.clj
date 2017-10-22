@@ -1,5 +1,4 @@
-(ns shuriken.namespace
-  (:use clojure.pprint))
+(ns shuriken.namespace)
 
 (defn class-name [klass]
   (-> (str klass)
@@ -77,3 +76,29 @@
          (symbol (str shortcut \/ name))
          (symbol name)))
      sym)))
+
+;; Taken and adapted from clojure.contrib
+(defmacro with-ns
+  "Evaluates body in another namespace. ns is either a namespace
+  object or a symbol.  This makes it possible to define functions in
+  namespaces other than the current one."
+  [ns & body]
+  `(binding [*ns* (the-ns ~ns)]
+     (eval (quote (do ~@body)))))
+
+(defmacro once-ns
+  "Ensures a namespace is loaded only once, even after using 'require' or 'use'
+  with :reload or :reload-all. Especially useful for namespaces that monkeypatch
+  other namespaces.
+
+  Usage:
+  (require 'shuriken.core) # or shuriken.namespace
+
+  (shuriken.core/once-ns
+    (ns my-namespace)
+
+    (def some-code [] ...))
+  "
+  [& body]
+  (when-not (find-ns (-> body first second))
+    `(eval `(do ~@'~body))))
