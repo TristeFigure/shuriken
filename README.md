@@ -113,7 +113,6 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
 
 ; -- Running macro --
 ; xyz
-
 ```
 
 or alternatively:
@@ -191,6 +190,37 @@ Where `MODE` is one of:
 
 ```clojure
 (unqualify 'my-namespace/my-symbol) ;; 'my-symbol
+```
+
+### with-ns
+
+Like `in-ns` but with the scope of a `let` or a `binding`.
+
+```clojure
+(with-ns 'my-namespace ;; or (find-ns 'my-namespace)
+  (def number 123))
+
+(println my-namespace/number)
+;; 123
+```
+
+### `once-ns`
+
+Ensures a namespace is loaded only once, even after using `require` or `use`
+with `:reload` or `:reload-all`. Especially useful for namespaces that
+monkeypatch other namespaces. SHOULD immediately wrap `(ns ...)`.
+
+```clojure
+(require 'shuriken.core)
+
+(shuriken.core/once-ns
+  (ns my-namespace)
+
+  (def original-func func)
+  
+  (defn func [& args]
+    (swap! counter inc)
+    (apply func args))))
 ```
 
 ## Navigation

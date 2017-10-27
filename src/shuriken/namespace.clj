@@ -89,7 +89,7 @@
 (defmacro once-ns
   "Ensures a namespace is loaded only once, even after using 'require' or 'use'
   with :reload or :reload-all. Especially useful for namespaces that monkeypatch
-  other namespaces.
+  other namespaces. SHOULD immediately wrap (ns ...).
 
   Usage:
   (require 'shuriken.core) # or shuriken.namespace
@@ -97,8 +97,11 @@
   (shuriken.core/once-ns
     (ns my-namespace)
 
-    (def some-code [] ...))
-  "
+    (def original-func func)
+
+    (defn func [& args]
+      (swap! counter inc)
+      (apply func args)))"
   [& body]
   (when-not (find-ns (-> body first second))
     `(eval `(do ~@'~body))))
