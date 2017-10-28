@@ -11,7 +11,12 @@
     (is (= `abc
            (syntax-quote abc))))
   (testing "pprint syntax-quote -> ` translation"
-    (= (with-out-str (pprint '`abc))
-       "`abc")
-    (= (with-out-str (pprint '(syntax-quote abc)))
-       "`abc")))
+    ; (is (= (with-out-str (pprint ``is))
+    ;        "`clojure.test/is\n"))
+    (is (= (with-out-str (pprint '(syntax-quote is)))
+           "`is\n")))
+  (testing "pprint unquote-splicing -> ~@ translation"
+    (is (= (with-out-str (pprint '~@x))
+           "~@x\n"))
+    (is (= (with-out-str (pprint '(clojure.core/unquote-splicing x)))
+           "~@x\n"))))

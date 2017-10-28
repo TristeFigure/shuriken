@@ -39,7 +39,7 @@
 
 (defn fully-qualified?
   "Returns true if the symbol constitutes an absolute reference.
-  Handles namespace aliases (considered relative reference with respect to ns).
+  Handles namespace aliases.
   ns defaults to *ns*.
 
   (fully-qualified? 'clojure.lang.IRecord) => true
@@ -54,8 +54,9 @@
           (re-matches fully-qualified-regex (str sym))))))
 
 (defn unqualify
-  "Returns the unqualified version of sym. Handles namespace aliases (they are
-  unqualified). ns defaults to *ns*
+  "Returns the unqualified version of sym.
+  Handles namespace aliases.
+  ns defaults to *ns*.
 
   (unqualifiy 'clojure.lang.IRecord) => IRecord
   (unqualifiy 'my-ns/my-var)         => my-var

@@ -6,20 +6,20 @@
               [shuriken.namespace :refer [with-ns]]
               [clojure.tools.reader]))
 
-  ;; Step 1: enable `(x) to '(syntax-quote x)  translation, like ' and quote
+  ;; Step 1: substitute Clojure's native reader with that from
+  ;; clojure.tools.reader and setup syntax-quote macro
+  (with-ns 'clojure.core
+    (def read        clojure.tools.reader/read)
+    (def read-string clojure.tools.reader/read-string)
+    (def ^:macro syntax-quote #'clojure.tools.reader/syntax-quote))
+
+  ;; Step 2: enable `(x) to '(syntax-quote x)  translation, like ' and quote
   (with-ns 'clojure.tools.reader
     (def ^:private original-macros macros)
     (defn- macros [ch]
       (case ch
         \` (wrapping-reader 'syntax-quote)
         (original-macros ch))))
-
-  ;; Step 2: substitute Clojure's native reader with that from
-  ;; clojure.tools.reader and setup syntax-quote macro
-  (with-ns 'clojure.core
-    (def read        clojure.tools.reader/read)
-    (def read-string clojure.tools.reader/read-string)
-    (def ^:macro syntax-quote #'clojure.tools.reader/syntax-quote))
 
   ;; Step 3: exclude clojure.core/syntax-code from clojure.tools.reader
   (with-ns 'clojure.tools.reader
@@ -32,8 +32,9 @@
   (require 'clojure.pprint)
   (alter-var-root #'clojure.pprint/reader-macros
                   assoc
-                  'syntax-quote              "`"
-                  'clojure.core/syntax-quote "`")
+                  'syntax-quote                  "`"
+                  'clojure.core/syntax-quote     "`"
+                  'clojure.core/unquote-splicing "~@")
 
   ;; Step 5: reload clojure.core from dependent namespaces
   (doseq [ns-sym (concat (nsdeps/dependent-namespaces 'clojure.core)

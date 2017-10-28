@@ -1,11 +1,20 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-# Unrelease
+# [0.13.1] - 2017-10-28
+## Added
+- Monkey-patch clojure:
+  - New `pprint` translations for reader macro `~@`.
+
+# [0.13.0] - 2017-10-22
 ## Added
 - Execute code in another namespace with `with-ns`
 - Ensure a namespace is loaded only once with `once-ns` even using `use`
   or `require` with `:reload` `:reload-all`
+- Monkey-patch clojure to:
+  - Use clojure.tools.reader `read` and `read-string`.
+  - Introduce `syntax-quote`.
+  - New `pprint` translations for reader macro ```.
 
 ## [0.12.2] - 2017-03-25
 ## Fixed
