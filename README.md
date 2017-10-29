@@ -251,3 +251,33 @@ monkeypatch other namespaces. SHOULD immediately wrap `(ns ...)`.
                    is-vip?)
               (not? faint-hearted?)))
 ```
+
+
+## Dev
+
+For all features listed below:
+```clojure
+(require 'shuriken.dev)
+```
+
+### `shuriken.monkey-patches.syntax-quote`
+
+Before
+```clojure
+``abc
+;; (quote my-ns/abc)
+(pprint ``abc)
+;; 'my-ns/abc
+```
+
+After
+```clojure
+(require 'shuriken.monkey-patches.syntax-quote)
+``abc
+;; (clojure.core/syntax-quote my-ns/abc)
+(pprint ``abc)
+;; `my-ns/abc
+(def args [1 2 3])
+(pprint (syntax-quote `(abc ~@args)))
+;; `(user/abc 1 2 3)
+```

@@ -7,8 +7,7 @@
                       namespace
                       navigation
                       predicates-composer
-                      sequential]
-            [shuriken.monkey-patches syntax-quote]))
+                      sequential]))
 
 (import-vars
   [shuriken.associative

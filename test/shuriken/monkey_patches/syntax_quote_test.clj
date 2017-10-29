@@ -1,6 +1,6 @@
 (ns shuriken.monkey-patches.syntax-quote-test
   (:require [clojure.test :refer :all]
-            [shuriken.core :refer :all]
+            [shuriken.monkey-patches.syntax-quote]
             [clojure.pprint :refer [pprint]]))
 
 (deftest test-syntax-quote
@@ -11,8 +11,8 @@
     (is (= `abc
            (syntax-quote abc))))
   (testing "pprint syntax-quote -> ` translation"
-    ; (is (= (with-out-str (pprint ``is))
-    ;        "`clojure.test/is\n"))
+    (is (= (with-out-str (pprint ``is))
+           "`clojure.test/is\n"))
     (is (= (with-out-str (pprint '(syntax-quote is)))
            "`is\n")))
   (testing "pprint unquote-splicing -> ~@ translation"
