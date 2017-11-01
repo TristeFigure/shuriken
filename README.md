@@ -273,6 +273,7 @@ Before
 After
 ```clojure
 (require 'shuriken.monkey-patches.syntax-quote)
+
 ``abc
 ;; (clojure.core/syntax-quote my-ns/abc)
 (pprint ``abc)
