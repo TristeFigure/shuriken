@@ -291,7 +291,7 @@ After
 ```
 
 But above all it prevents this:
-```
+```clojure
 (pprint ``(do (fn1 arg1 arg2) (fn2 arg3 arg4)))
 
 (clojure.core/seq
@@ -313,7 +313,8 @@ But above all it prevents this:
 
 
 And prints this instead:
-```
+```clojure
 (pprint ``(do (fn1 arg1 arg2) (fn2 arg3 arg4)))
 
-`(do (my-ns/fn1 my-ns/arg1 my-ns/arg2) (my-ns/fn2 my-ns/arg3 my-ns/arg4))```
+`(do (my-ns/fn1 my-ns/arg1 my-ns/arg2) (my-ns/fn2 my-ns/arg3 my-ns/arg4))
+```
