@@ -50,7 +50,7 @@
         (RedefineClassAgent/redefineClasses
           (into-array java.lang.instrument.ClassDefinition[definition])))))
 
-  ;; Step 2: enable `(x) to '(syntax-quote x)  translation, like ' and quote
+  ;; Step 2: enable `(x) to (syntax-quote x)  translation, like ' and quote
   (with-ns 'clojure.tools.reader
     (def ^:private original-macros macros)
     (defn- macros [ch]
