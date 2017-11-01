@@ -59,6 +59,7 @@
         (original-macros ch))))
 
   ;; Step 3: Add (syntax-quote x) -> `(x) translation into clojure.pprint
+  ;;         and translate (unquote-splicing args) to ~@args as well.
   (require 'clojure.pprint)
   (alter-var-root #'clojure.pprint/reader-macros
                   assoc
