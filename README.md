@@ -266,6 +266,7 @@ Before
 ```clojure
 ``abc
 ;; (quote my-ns/abc)
+
 (pprint ``abc)
 ;; 'my-ns/abc
 ```
@@ -276,8 +277,10 @@ After
 
 ``abc
 ;; (clojure.core/syntax-quote my-ns/abc)
+
 (pprint ``abc)
 ;; `my-ns/abc
+
 (def args [1 2 3])
 (pprint (syntax-quote `(abc ~@args)))
 ;; `(user/abc 1 2 3)
