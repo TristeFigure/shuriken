@@ -5,7 +5,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.13.0"]
+[org.clojars.tristefigure/shuriken "0.13.2"]
 ```
 
 
@@ -289,3 +289,31 @@ After
 (pprint (syntax-quote `(abc ~'~@args)))
 ;; `(my-ns/abc ~@args)
 ```
+
+But above all it prevents this:
+```
+(pprint ``(do (fn1 arg1 arg2) (fn2 arg3 arg4)))
+
+(clojure.core/seq
+ (clojure.core/concat
+  (clojure.core/list 'do)
+  (clojure.core/list
+   (clojure.core/seq
+    (clojure.core/concat
+     (clojure.core/list 'user/fn1)
+     (clojure.core/list 'user/arg1)
+     (clojure.core/list 'user/arg2))))
+  (clojure.core/list
+   (clojure.core/seq
+    (clojure.core/concat
+     (clojure.core/list 'user/fn2)
+     (clojure.core/list 'user/arg3)
+     (clojure.core/list 'user/arg4))))))
+```
+
+
+And prints this instead:
+```
+(pprint ``(do (fn1 arg1 arg2) (fn2 arg3 arg4)))
+
+`(do (my-ns/fn1 my-ns/arg1 my-ns/arg2) (my-ns/fn2 my-ns/arg3 my-ns/arg4))```
