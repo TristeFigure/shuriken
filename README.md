@@ -284,8 +284,8 @@ After
 (def args [1 2 3])
 
 (pprint (syntax-quote `(abc ~@args)))
-;; `(user/abc 1 2 3)
+;; `(my-ns/abc 1 2 3)
 
 (pprint (syntax-quote `(abc ~'~@args)))
-;; `(user/abc ~@args)
+;; `(my-ns/abc ~@args)
 ```
