@@ -30,7 +30,9 @@
    once-ns]
 
   [shuriken.navigation
-   tree-seq-breadth]
+   tree-seq-breadth
+   prepostwalk
+   prepostwalk-demo]
 
   [shuriken.predicates-composer
    and? or? not?]

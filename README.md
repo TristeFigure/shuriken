@@ -242,6 +242,30 @@ monkeypatch other namespaces. SHOULD immediately wrap `(ns ...)`.
   )
 ```
 
+### `prepostwalk`
+
+A combination of clojure.walk's prewalk and postwalk. Recursively modifies
+form with pre-fn before descending further into the structure and
+then with post-fn after going up.
+
+```clojure
+(defn inc-it [x]
+  (if (number? x) (inc x) x))
+
+(defn it-times-two [x]
+  (if (number? x) (* 2 x) x))
+
+(def data
+  [1 2 {3 4 5 6}])
+
+(println (prepostwalk inc-it it-times-two data))
+;; [4 6 {8 10, 12 14}]
+(println (prepostwalk it-times-two data inc-it))
+;; [3 5 {7 9, 11 13}]
+```
+
+Comes equipped with `prepostwalk-demo`
+
 ## Predicates composer
 
 ### `and?`, `or?` & `not?`

@@ -1,6 +1,8 @@
 (ns shuriken.navigation-test
   (:require [clojure.test :refer :all]
-            [shuriken.core :refer [tree-seq-breadth]]))
+            [shuriken.core :refer [tree-seq-breadth
+                                   prepostwalk
+                                   prepostwalk-demo]]))
 
 (def tree
   {:a {:d {:j :_}
@@ -24,3 +26,52 @@
            '({:a {}} {})))
     (is (= (tree-seq-breadth map? vals {{} :a})
            '({{} :a} :a)))))
+
+(defn inc-it [x]
+  (if (number? x) (inc x) x))
+
+(defn it-times-two [x]
+  (if (number? x) (* 2 x) x))
+
+(def data
+  [1 2 {3 4 5 6}])
+
+(deftest test-prepostwalk
+  (is (= (prepostwalk inc-it it-times-two data)
+         [4 6 {8 10 12 14}]))
+  (is (= (prepostwalk it-times-two inc-it data)
+         [3 5 {7 9 11 13}])))
+
+(defn symmetric? [xs]
+  (let [cnt (Math/floor (/ (count xs) 2))]
+    (= (take cnt xs)
+       (take cnt (reverse xs)))))
+
+(deftest test-prepostwalk-demo
+  (let [visited (-> (with-out-str (prepostwalk-demo data))
+                  (clojure.string/replace #"Walked (into|out of):\s*" "")
+                  (clojure.string/split #"\n"))
+        cnt (count visited)]
+    (is (= visited
+           ["[1 2 {3 4, 5 6}]"
+            "1"
+            "1"
+            "2"
+            "2"
+            "{3 4, 5 6}"
+            "[3 4]"
+            "3"
+            "3"
+            "4"
+            "4"
+            "[3 4]"
+            "[5 6]"
+            "5"
+            "5"
+            "6"
+            "6"
+            "[5 6]"
+            "{3 4, 5 6}"
+            "[1 2 {3 4, 5 6}]"]))))
+
+(run-tests)
