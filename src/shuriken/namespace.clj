@@ -105,5 +105,4 @@
       (apply func args)))"
   [& body]
   (when-not (find-ns (-> body first second))
-    (println "ONCE-NS" (find-ns (-> body first second)))
     `(eval `(do ~@'~body))))
