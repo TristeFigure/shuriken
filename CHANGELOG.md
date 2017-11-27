@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# Unreleased
+## Fixed
+- `macroexpand-do` with a number calls `macroexpand-1` the right number of
+  times.
+
 # [0.13.4] - 2017-11-27
 ## Added
 - macro: `macroexpand-some`.

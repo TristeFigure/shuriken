@@ -57,7 +57,7 @@
            (nil? mode)    'macroexpand
            (number? mode) `(fn [expr#]
                              (->> (iterate macroexpand-1 expr#)
-                                  (take ~mode)
+                                  (take (inc ~mode))
                                   last))
            (= :all mode)  'clojure.walk/macroexpand-all
            
