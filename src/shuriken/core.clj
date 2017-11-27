@@ -4,6 +4,7 @@
                       flow
                       macro
                       meta
+                      monkey-patch
                       namespace
                       navigation
                       predicates-composer
@@ -18,16 +19,21 @@
    thrown?]
 
   [shuriken.macro
+   clean-code
    macroexpand-do]
 
   [shuriken.meta
    without-meta]
 
+  [shuriken.monkey-patch
+   monkey-patch
+   only
+   refresh-only]
+  
   [shuriken.namespace
    fully-qualify fully-qualified?
    unqualify
-   with-ns
-   once-ns]
+   with-ns]
 
   [shuriken.navigation
    tree-seq-breadth

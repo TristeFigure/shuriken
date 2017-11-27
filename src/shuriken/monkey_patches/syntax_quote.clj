@@ -1,148 +1,113 @@
-(require 'shuriken.namespace)
+(ns shuriken.monkey-patches.syntax-quote
+  (:require [com.palletops.ns-reload :as nsdeps]
+            [shuriken.namespace :refer [with-ns]]
+            [shuriken.monkey-patch :refer [monkey-patch]]
+            [clojure.tools.reader]
+            [clojure.pprint])
+  (:import RedefineClassAgent))
 
-(shuriken.namespace/once-ns
-  (ns shuriken.monkey-patches.syntax-quote
-    (:require [com.palletops.ns-reload :as nsdeps]
-              [shuriken.namespace :refer [with-ns]]
-              [clojure.tools.reader])
-    (:import RedefineClassAgent))
+;; Step 1: substitute Clojure's native reader with that from
+;; clojure.tools.reader and setup syntax-quote macro
+; (with-ns 'clojure.core
+;   (def read        clojure.tools.reader/read)
+;   (def read-string clojure.tools.reader/read-string))
 
-  ;; Step 2: Tag forms expanded with syntax-quote in clojure.tools.reader
-  (with-ns 'clojure.tools.reader
-    (def ^:private original-macros macros)
+(monkey-patch substitute-clojure-read
+  clojure.core/read
+  [original & args]
+  (apply clojure.tools.reader/read args))
 
-    (defn- read-syntax-quoted
-      [rdr backquote opts pending-forms]
-      (binding [gensym-env {}]
-        (let [ret (-> (read* rdr false nil opts pending-forms)
-                      syntax-quote*
-                      (vary-meta update-in [::syntax-quotes] (fnil inc 0))
-                      #_(list 'clojure.tools.reader/syntax-quoted)
-                      )]
-          (println "META:" (meta ret))
-          ret)))
+(monkey-patch substitute-clojure-read-string
+  clojure.core/read-string
+  [original & args]
+  (apply clojure.tools.reader/read-string args))
 
-    (defn- macros [ch]
-      (case ch
-        \` read-syntax-quoted
-        (original-macros ch)))
+;; Step 2: Tag forms expanded with syntax-quote in clojure.tools.reader
+(with-ns 'clojure.core
+  (defn syntax-quoted [x]
+    x))
+(require '[clojure.core :refer [syntax-quoted]])
 
-    (defn ^:private read*
-      ([reader eof-error? sentinel opts pending-forms]
-       (read* reader eof-error? sentinel nil opts pending-forms))
-      ([reader eof-error? sentinel return-on opts pending-forms]
-       (when (= :unknown *read-eval*)
-         (err/reader-error "Reading disallowed - *read-eval* bound to :unknown"))
-       (try
-         (loop []
-           (log-source reader
-                       (if (seq pending-forms)
-                         (.remove ^List pending-forms 0)
-                         (let [ch (read-char reader)]
-                           (cond
-                             (whitespace? ch) (recur)
-                             (nil? ch) (if eof-error? (err/throw-eof-error reader nil) sentinel)
-                             (= ch return-on) READ_FINISHED
-                             (number-literal? reader ch) (read-number reader ch)
-                             :else (let [f (macros ch)]
-                                     (if f
-                                       (let [res (f reader ch opts pending-forms)]
-                                         (if (identical? res reader)
-                                           (recur)
-                                           res))
-                                       (read-symbol reader ch))))))))
-         (catch Exception e
-           (if (ex-info? e)
-             (let [d (ex-data e)]
-               (if (= :reader-exception (:type d))
-                 (throw e)
-                 (throw (ex-info (.getMessage e)
-                                 (merge {:type :reader-exception}
-                                        d
-                                        (if (indexing-reader? reader)
-                                          {:line   (get-line-number reader)
-                                           :column (get-column-number reader)
-                                           :file   (get-file-name reader)}))
-                                 e))))
-             (throw (ex-info (.getMessage e)
-                             (merge {:type :reader-exception}
-                                    (if (indexing-reader? reader)
-                                      {:line   (get-line-number reader)
-                                       :column (get-column-number reader)
-                                       :file   (get-file-name reader)}))
-                             e)))))))
+(monkey-patch change-tools-reader-read-syntax-quote
+  clojure.tools.reader/read-syntax-quote
+  [original & args]
+  (let [result (apply original args)]
+    `(syntax-quoted ~result)))
 
-    (def original-read read)
-    (defn read [& args]
-      (let [result (apply original-read args)]
-        result)))
+; ;; Also change the reader used by Clojure's Compiler to use
+; ;; clojure.tools.reader/read
+(defn read-delegate [reader eof-is-error eof-value _is-recursive opts]
+  (clojure.tools.reader/read
+    (merge {:eofthrow eof-is-error
+            :eof eof-value}
+           opts)
+    reader))
 
-  ;; Step 1: substitute Clojure's native reader with that from
-  ;; clojure.tools.reader and setup syntax-quote macro
-  (with-ns 'clojure.core
-    (def read        clojure.tools.reader/read)
-    (def read-string clojure.tools.reader/read-string))
+(let [class-name "clojure.lang.LispReader"
+      class-pool (javassist.ClassPool/getDefault)
+      ct-class   (.get class-pool class-name)]
+  (.stopPruning ct-class true)
+  (when (.isFrozen ct-class)
+    (.defrost ct-class))
+  (let [method (->> (.getMethods ct-class)
+                    (filter #(and (= "read" (.getName %))
+                                  (= (count (.getParameterTypes %))
+                                     5)))
+                    first)]
+    (.setBody
+      method
+      (format "{
+                clojure.lang.IFn readFn = clojure.java.api.Clojure.var(
+                  \"%s\", \"read-delegate\"
+                );
+                return readFn.applyTo(clojure.lang.RT.seq($args));
+              }",
+              (str *ns*)))
+    (let [bytecode (.toBytecode ct-class)
+          definition (java.lang.instrument.ClassDefinition.
+                       (Class/forName class-name)
+                       bytecode)]
+      (RedefineClassAgent/redefineClasses
+        (into-array java.lang.instrument.ClassDefinition[definition])))))
 
-  ;; Also change the reader used by Clojure's Compiler to use
-  ;; clojure.tools.reader/read
-  (defn read-delegate [reader eof-is-error eof-value _is-recursive opts]
-    (clojure.tools.reader/read
-      (merge {:eofthrow eof-is-error
-              :eof  eof-value}
-             opts)
-      reader))
+;; Step 3: Add (syntax-quoted x) -> `(x) translation into clojure.pprint
+;;         and translate (unquote-splicing args) to ~@args as well.
+(monkey-patch pprint-syntax-quoted-as-reader-macro
+  clojure.pprint/pprint-reader-macro
+  [original alis]
+  (or (original alis)
+      (when (and (contains? '#{clojure.core/syntax-quoted syntax-quoted}
+                            (first alis))
+                 (= 2 (count alis)))
+        (.write ^java.io.Writer *out* "`")
+        (clojure.pprint/write-out (eval (second alis)))
+        true)))
 
-  (let [class-name "clojure.lang.LispReader"
-        class-pool (javassist.ClassPool/getDefault)
-        ct-class   (.get class-pool class-name)]
-    (.stopPruning ct-class true)
-    (when (.isFrozen ct-class)
-      (.defrost ct-class))
-    (let [method (->> (.getMethods ct-class)
-                      (filter #(and (= "read" (.getName %))
-                                    (= (count (.getParameterTypes %))
-                                       5)))
-                      first)]
-      (.setBody
-        method
-        (format "{
-                  clojure.lang.IFn readFn = clojure.java.api.Clojure.var(
-                    \"%s\", \"read-delegate\"
-                  );
-                  return readFn.applyTo(clojure.lang.RT.seq($args));
-                }",
-                (str *ns*)))
-      (let [bytecode (.toBytecode ct-class)
-            definition (java.lang.instrument.ClassDefinition.
-                         (Class/forName class-name)
-                         bytecode)]
-        (RedefineClassAgent/redefineClasses
-          (into-array java.lang.instrument.ClassDefinition[definition])))))
+(monkey-patch add-unquote-splicing-to-pprint-reader-macros
+  clojure.pprint/reader-macros
+  [original]
+  (assoc original
+    'clojure.core/unquote-splicing "~@"))
 
-  ;; Step 3: Add (syntax-quoted x) -> `(x) translation into clojure.pprint
-  ;;         and translate (unquote-splicing args) to ~@args as well.
-  (require 'clojure.pprint)
-  (with-ns 'clojure.pprint
-    (def ^:private original-pprint-reader-macro pprint-reader-macro)
+;; Reload functions using pprint-reader-macro.
+(with-ns 'clojure.pprint
+  (defn- pprint-list [alis]
+    (if-not (pprint-reader-macro alis)
+      (pprint-simple-list alis)))
+  
+  (defn- pprint-code-list [alis]
+    (if-not (pprint-reader-macro alis) 
+      (if-let [special-form (*code-table* (first alis))]
+        (special-form alis)
+        (pprint-simple-code-list alis))))
+  
+  (use-method simple-dispatch clojure.lang.ISeq pprint-list)
+  (use-method code-dispatch   clojure.lang.ISeq pprint-code-list))
 
-    (println "--------->" pprint-reader-macro)
-    (defn- pprint-reader-macro [alis]
-      (or (original-pprint-reader-macro alis)
-          (when (and (= (first alis) 'clojure.tools.reader/syntax-quoted)
-                     (= 2 (count alis)))
-            (.write ^java.io.Writer *out* "`")
-            (write-out (eval (second alis)))
-            true)))
-
-    (defn- pprint-list [alis]
-      (if-not (pprint-reader-macro alis)
-        (pprint-simple-list alis)))
-
-    (use-method simple-dispatch clojure.lang.ISeq pprint-list))
-
-  ;; Step 5: reload clojure.core from dependent namespaces
-  (doseq [ns-sym (concat (nsdeps/dependent-namespaces 'clojure.core)
-                         (when (find-ns 'user)
-                           '[user]))]
-    (with-ns ns-sym
-      (require '[clojure.core :reload true]))))
+; ;; Step 5: reload clojure.core from dependent namespaces
+(doseq [ns-sym '[clojure.core clojure.pprint]]
+  (doseq [dep-ns-sym (concat (nsdeps/dependent-namespaces ns-sym)
+                             (when (find-ns 'user) '[user]))]
+    (eval
+      `(with-ns '~dep-ns-sym
+         (require ['~ns-sym :reload true])))))

@@ -1,9 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-# Unreleased
+# [0.13.3] - 2017-11-27
 ## Added
-- navigation: `prepostwalk` & `prepostwalk-demo`
+- navigation: `prepostwalk` & `prepostwalk-demo`.
+- monkey-patch: `monkey-patch`, `only` & `refresh-only`.
+- macro: `clean-code`.
+
+## Removed
+- namespace: `once-ns`.
 
 # [0.13.2] - 2017-10-29
 ## Added

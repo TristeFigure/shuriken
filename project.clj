@@ -1,4 +1,4 @@
-(defproject org.clojars.tristefigure/shuriken "0.13.2"
+(defproject org.clojars.tristefigure/shuriken "0.13.3"
   :description "TristeFigure's Clojure toolbox"
   :url "https://github.com/TristeFigure/shuriken"
   :license {:name "Eclipse Public License"
@@ -6,6 +6,9 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [potemkin "0.4.3"]
                  [com.palletops/ns-reload "0.1.0"]
+                 
+                 ;; For monkey patches
+                 [robert/hooke "1.3.0"]
 
                  ;; For syntax-quote monkey-patch
                  ;; Upgrading tools.reader means updating Step 3 of

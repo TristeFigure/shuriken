@@ -64,6 +64,43 @@ Small yet effective Clojure weapons.
 ;;  4 {:a 5 :b 4}}
 ```
 
+## Control Flow
+
+### `silence`
+
+```clojure
+(silence ArithmeticException (/ 1 0))
+;; => nil
+
+(silence [ArithmeticException]
+  (do (println "watch out !")
+      (/ 1 0)))
+;; watch out !
+;; => nil
+
+(silence :substitute
+         (fn [x]
+           (isa? (class x) ArithmeticException))
+         (/ 1 0))
+;; => :substitute
+```
+
+### `thrown?`
+
+```clojure
+(thrown? ArithmeticException (/ 1 0))
+;; => true
+
+(thrown? #{ArithmeticException} (/ 1 1))
+;; => false
+
+(thrown? (fn [x]
+           (isa? (class x) ArithmeticException))
+         (throw (IllegalArgumentException. "my-error")))
+;; raises:
+;;   IllegalArgumentException my-error
+```
+
 ## Sequential structures
 
 ### `slice`
@@ -99,6 +136,15 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
 ```
 
 ## Macro
+
+### `clean-code`
+
+Recursively unqualifies qualified code in the provided form.`
+
+```clojure
+(clean-code `(a b c))
+;; (a b c)
+```
 
 ### `macroexpand-do`
 
@@ -140,41 +186,41 @@ Where `MODE` is one of:
 (meta (without-meta (with-meta [1 2 3] {:metadata :abc}))) ;; nil
 ```
 
-## Control Flow
+## Monkey-patch
 
-### `silence`
+### `monkey-patch`
 
 ```clojure
-(silence ArithmeticException (/ 1 0))
-;; => nil
+(monkey-patch perfid-incer clojure.core/+ [original & args]
+  (inc (apply original args)))
+```
+  
+Supports reload. Name and target can be vars or quoted symbols.
 
-(silence [ArithmeticException]
-  (do (println "watch out !")
-      (/ 1 0)))
-;; watch out !
-;; => nil
+### `only`
 
-(silence :substitute
-         (fn [x]
-           (isa? (class x) ArithmeticException))
-         (/ 1 0))
-;; => :substitute
+Ensures the code is executed only once with respect to the associated name.
+name must be a symbol, quoted or not.
+
+```clojure
+(only 'only-once (println "printed once"))
+(only 'only-once (println "printed once"))
+
+;; printed once
 ```
 
-### `thrown?`
+### `refresh-only`
 
 ```clojure
-(thrown? ArithmeticException (/ 1 0))
-;; => true
+(only 'a (println "a"))
+;; a
 
-(thrown? #{ArithmeticException} (/ 1 1))
-;; => false
+(only 'a (println "a"))
+;; prints nothings
 
-(thrown? (fn [x]
-           (isa? (class x) ArithmeticException))
-         (throw (IllegalArgumentException. "my-error")))
-;; raises:
-;;   IllegalArgumentException my-error
+(refresh-only 'a)
+(only 'a (println "a"))
+;; a
 ```
 
 ## Namespace
@@ -202,25 +248,6 @@ Like `in-ns` but with the scope of a `let` or a `binding`.
 
 (println my-namespace/number)
 ;; 123
-```
-
-### `once-ns`
-
-Ensures a namespace is loaded only once, even after using `require` or `use`
-with `:reload` or `:reload-all`. Especially useful for namespaces that
-monkeypatch other namespaces. SHOULD immediately wrap `(ns ...)`.
-
-```clojure
-(require 'shuriken.core)
-
-(shuriken.core/once-ns
-  (ns my-namespace)
-
-  (def original-func func)
-  
-  (defn func [& args]
-    (swap! counter inc)
-    (apply func args))))
 ```
 
 ## Navigation

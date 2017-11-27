@@ -53,20 +53,3 @@
     (is (with-ns 'shuriken.virtual-test-namespace
           (= *ns* (the-ns 'shuriken.virtual-test-namespace))))
     (is (= *ns* initial-ns))))
-
-(deftest test-once-ns
-  (when (find-ns 'shuriken.once-test-namespace)
-      (clojure.lang.Namespace/remove 'shuriken.once-test-namespace)
-      (dosync (commute @#'clojure.core/*loaded-libs*
-                       disj 'shuriken.once-test-namespace)))
-  (testing "namespace should not be loaded yet"
-    (is (nil? (find-ns 'shuriken.once-test-namespace))))
-  (testing "requiring for the first time"
-    (is (= (with-out-str (require 'shuriken.once-test-namespace))
-           "loaded\n")))
-  (testing "requiring again with :reload"
-    (is (= (with-out-str (require 'shuriken.once-test-namespace :reload))
-           "")))
-  (testing "requiring again with :reload-all"
-    (is (= (with-out-str (require 'shuriken.once-test-namespace :reload-all))
-           ""))))
