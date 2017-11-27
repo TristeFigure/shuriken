@@ -20,6 +20,7 @@
 
   [shuriken.macro
    clean-code
+   macroexpand-some
    macroexpand-do]
 
   [shuriken.meta

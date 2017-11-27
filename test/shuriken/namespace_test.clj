@@ -14,7 +14,8 @@
     not-found           not-found
     virtual/another-var shuriken.virtual-test-namespace/another-var
     AType               shuriken.virtual_test_namespace.AType
-    AProtocol           shuriken.virtual-test-namespace/AProtocol})
+    AProtocol           shuriken.virtual-test-namespace/AProtocol
+    Object/staticMeth   java.lang.Object/staticMeth})
 
 (deftest test-fully-qualify
   (binding [*ns* (find-ns 'shuriken.namespace-test)]

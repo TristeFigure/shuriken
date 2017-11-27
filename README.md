@@ -5,7 +5,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.13.2"]
+[org.clojars.tristefigure/shuriken "0.13.4"]
 ```
 
 
@@ -146,6 +146,22 @@ Recursively unqualifies qualified code in the provided form.`
 ;; (a b c)
 ```
 
+### `macroexpand-some`
+
+Recursively macroexpand forms whose first element match a filter.
+Symbols are passed to filter unqualified.
+
+```clojure
+(defmacro by [code]
+  `(inc ~code))
+
+(defmacro az [code]
+  `(by ~code))
+
+(macroexpand-some '#{az} '(az (+ 1 2)))
+; => (user/by (+ 1 2))
+```
+
 ### `macroexpand-do`
 
 ```clojure
@@ -170,13 +186,12 @@ or alternatively:
 
 Where `MODE` is one of:
 
-```
-|-------------------------------------|
-| nil  | macroexpand (the default)    |
-| 1    | macroexpand-1                |
-| :all | clojure.walk/macroexpand-all |
-|-------------------------------------|
-```
+| `MODE`                        | expansion                       |
+|-------------------------------|---------------------------------|
+| `nil` (the default)           | `macroexpand`                   |
+| `:all`                        | `clojure.walk/macroexpand-all`  |
+| a number n                    | iterate `macroexpand-1` n times |
+| a (seq of) symbol(s) or a ifn | `macroexpand-some`              |
 
 ## Meta
 
@@ -227,18 +242,34 @@ name must be a symbol, quoted or not.
 
 ### `fully-qualify`
 
+Returns the fully-qualified form of the symbol as if resolved from within a
+namespace.
+
 ```clojure
-(fully-qualify 'a-symbol)           ;; 'other-namespace/a-symbol
-(fully-qualify *ns* 'o/a-symbol)    ;; 'other-namespace/a-symbol
+(fully-qualified? 'IRecord)      ; => clojure.lang.IRecord
+(fully-qualified? 'my-var)       ; => my-ns/my-var
+(fully-qualified? 'alias/my-var) ; => actual.namespace/my-var
+```
+
+### `fully-qualified?`
+Returns true if the symbol constitutes an absolute reference.
+
+```clojure
+(fully-qualified? 'clojure.lang.IRecord) ; => true
+(fully-qualified? 'my-ns/my-var)         ; => true
+(fully-qualified? 'alias/my-var)         ; => false
 ```
 
 ### `unqualify`
 
 ```clojure
-(unqualify 'my-namespace/my-symbol) ;; 'my-symbol
+(unqualifiy 'clojure.lang.IRecord)      ; => IRecord
+(unqualifiy 'my-ns/my-var)              ; => my-var
+(unqualifiy 'alias/my-var)              ; => alias/my-var
+(unqualifiy 'some.path.Class/staticMeth ; => Class/staticMeth
 ```
 
-### with-ns
+### `with-ns`
 
 Like `in-ns` but with the scope of a `let` or a `binding`.
 

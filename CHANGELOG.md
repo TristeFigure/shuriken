@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.13.4] - 2017-11-27
+## Added
+- macro: `macroexpand-some`.
+
+## Enhanced
+- macro: `macroexpand-do` supports n iterations of `macroexpand-1` as well
+  as `macroexpand-some`.
+
+## Fixed
+- namespace: `fully-qualify`, `fully-qualified?` and `unqualify` support
+  static method symbols like `some.Class/staticMethod`.
+
 # [0.13.3] - 2017-11-27
 ## Added
 - navigation: `prepostwalk` & `prepostwalk-demo`.
