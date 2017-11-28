@@ -5,7 +5,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.13.5"]
+[org.clojars.tristefigure/shuriken "0.13.6"]
 ```
 
 
@@ -370,11 +370,9 @@ Comes equipped with `prepostwalk-demo`
 Executes the initial expression and the rest of the body, returning this
 expression's value.
 
-```clojure
-(inc (tap 123 (println "yo")))
-; yo
-; => 124
+`tap->` and `tap->>` work like `->` and `->>` respectively.
 
+```clojure
 (inc (tap-> 123 (println "yo")))
 ; 123 yo
 ; => 124
@@ -382,6 +380,18 @@ expression's value.
 (inc (tap->> 123 (println "yo")))
 ; yo 123
 ; => 124
+```
+
+`tap` is a bit special in that it will thread the initial expresion in
+any subsequent expression that is a threading form.
+
+```clojure
+(tap 123
+     (println "yo")
+     (some-> inc println))
+; yo
+; 124
+; => 123
 ```
 
 ## Dev

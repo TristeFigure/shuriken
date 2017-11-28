@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.13.6] - 2017-11-28
+## Fixed
+- macroexpand-do: dumps the expanded form at the file-eval stage.
+
+## Enhanced
+- `tap` threads the initial expr to the forms in its body that are threading
+  forms.
+
 # [0.13.5] - 2017-11-28
 ## Added
 - macro: `file-eval`, `macroexpand-n`.

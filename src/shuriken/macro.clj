@@ -112,12 +112,11 @@
            :else (throw (IllegalArgumentException.
                           (str "Invalid mode " mode))))]
      `(do (println "-- Macro expansion --")
-          (clojure.pprint/pprint
-            (clean-code (~expander (quote ~expr))))
-          (newline)
-          
-          (println "--  Running macro  --")
-          (let [result# (file-eval '~expr)]
-            (clojure.pprint/pprint result#)
+          (let [expansion# (clean-code (~expander (quote ~expr)))]
+            (pprint expansion#)
             (newline)
-            result#)))))
+            
+            (println "--  Running macro  --")
+            (tap (file-eval expansion#)
+                 (-> pprint)
+                 (newline)))))))
