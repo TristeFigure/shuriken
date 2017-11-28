@@ -32,7 +32,11 @@
   (clear-tmp-files!)
   (let [f (create-tmp-file!)]
     (with-open [w (io/writer f)]
-      (binding [*out* w]
+      (binding
+        [*out* w
+         clojure.pprint/*print-right-margin* 130
+         clojure.pprint/*print-miser-width*  80
+         clojure.pprint/*print-pprint-dispatch* clojure.pprint/code-dispatch]
         (pprint code)))
     (try
       (tap (load-file (.getCanonicalPath f))
@@ -92,36 +96,32 @@
 
   Where `MODE` has the following meaning:
 
-  | `MODE`                        | expansion                       |
-  |-------------------------------|---------------------------------|
-  | `nil` (the default)           | `macroexpand`                   |
-  | `:all`                        | `clojure.walk/macroexpand-all`  |
-  | a number n                    | iterate `macroexpand-1` n times |
-  | a (seq of) symbol(s) or a ifn | `macroexpand-some`              |"
+  | `MODE`                        | expansion                        |
+  |-------------------------------|----------------------------------|
+  | `nil` (the default)           | `macroexpand`                    |
+  | `:all`                        | `clojure.walk/macroexpand-all`   |
+  | a number n                    | iterate `macroexpand-1` n times  |
+  | anything else                 | a predicate to `macroexpand-some`|"
   ([expr]
    `(macroexpand-do nil ~expr))
   ([mode expr]
-   (let [expander
-         (cond
-           (nil? mode)    'macroexpand
-           (= :all mode)  'clojure.walk/macroexpand-all
-           (number? mode) 'macroexpand-n
-           
-           (or (symbol? mode) (coll? mode))
-           `(partial macroexpand-some
-                     ~(cond
-                        (symbol? mode) `'#{~mode}
-                        (list? mode)    mode
-                        :else          `(set '~mode)))
-           
-           :else (throw (IllegalArgumentException.
-                          (str "Invalid mode " mode))))]
-     `(do (println "-- Macro expansion --")
-          (let [expansion# (clean-code (~expander (quote ~expr)))]
-            (pprint expansion#)
-            (newline)
-            
-            (println "--  Running macro  --")
-            (tap (file-eval expansion#)
-                 (-> pprint)
-                 (newline)))))))
+   `(do
+      (println "-- Macro expansion --")
+      (let [mode# ~mode
+            expander# (cond (nil? mode#)   macroexpand
+                            (= :all mode#)  clojure.walk/macroexpand-all
+                            (number? mode#) (partial macroexpand-n    mode#)
+                            :else          (partial macroexpand-some mode#))
+            expansion# (clean-code (expander# (quote ~expr)))]
+        (pprint expansion#)
+        (newline)
+        
+        (println "--  Running macro  --")
+        (tap (file-eval expansion#)
+             (-> pprint)
+             (newline))))))
+
+(defmacro d [x] x)
+(defmacro c [x] `(d ~x))
+(defmacro b [x] `(c ~x))
+(defmacro a [x] `(b ~x))

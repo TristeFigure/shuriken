@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.13.8] - 2017-11-28
+## Enhanced
+- macro:
+  - `macroexpand-do` accepts predicates.
+  - `file-eval` has better file output.
+
 # [0.13.7] - 2017-11-28
 ## Fixed
 - macro: errors from `file-eval` display both the extended message with the
