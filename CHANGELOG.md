@@ -1,10 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-# Unreleased
+# [0.13.5] - 2017-11-28
+## Added
+- macro: `file-eval`, `macroexpand-n`.
+- threading: `tap`, `tap->` & `tap->>`.
+
+## Enhanced
+- macro: `macroexpand-do` use `file-eval` to evaluate the expression's
+  expansion. Useful to track exceptions raised by macro-generated code. 
+
 ## Fixed
-- `macroexpand-do` with a number calls `macroexpand-1` the right number of
-  times.
+- macro: `macroexpand-do` with a number calls `macroexpand-1` the right number
+  of times.
 
 # [0.13.4] - 2017-11-27
 ## Added

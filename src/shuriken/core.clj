@@ -8,7 +8,8 @@
                       namespace
                       navigation
                       predicates-composer
-                      sequential]))
+                      sequential
+                      threading]))
 
 (import-vars
   [shuriken.associative
@@ -20,7 +21,9 @@
 
   [shuriken.macro
    clean-code
+   file-eval
    macroexpand-some
+   macroexpand-n
    macroexpand-do]
 
   [shuriken.meta
@@ -45,4 +48,7 @@
    and? or? not?]
 
   [shuriken.sequential
-   slice separate])
+   slice separate]
+  
+  [shuriken.threading
+   tap tap-> tap->>])

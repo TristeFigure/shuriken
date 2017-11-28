@@ -1,12 +1,48 @@
 (ns shuriken.macro
   (:require [clojure.walk :refer [prewalk walk]]
-            [shuriken.namespace :refer [unqualify]]))
+            [clojure.java.io :as io]
+            [clojure.pprint :refer [pprint]]
+            [shuriken.namespace :refer [unqualify]]
+            [shuriken.threading :refer [tap]]))
 
 (defn clean-code
   "Recursively unqualifies qualified code in the provided form."
   [code]
   (prewalk #(if (symbol? %) (unqualify %) %)
            code))
+
+(def ^:private tmp-files
+  (atom []))
+
+(defn- create-tmp-file! []
+  (let [f (java.io.File/createTempFile "macroexpand-do-" ".clj")]
+    (.deleteOnExit f)
+    (swap! tmp-files conj f)
+    f))
+
+(defn- clear-tmp-files! []
+  (swap! tmp-files
+         (fn [fs]
+           (doseq [f fs] (.delete f))
+           [])))
+
+(defn file-eval
+  "Evaluate file in a temporary file via load-file."
+  [code]
+  (clear-tmp-files!)
+  (let [f (create-tmp-file!)]
+    (with-open [w (io/writer f)]
+      (binding [*out* w]
+        (pprint code)))
+    (try
+      (tap (load-file (.getCanonicalPath f))
+           (.delete f))
+      (catch Throwable t
+        (throw (Exception.
+                 (str "file-eval: caught an exception evaluating code in:"
+                      \newline
+                      (.getCanonicalPath f))
+                 t))))))
 
 (defn macroexpand-some
   "Recursively macroexpand forms whose first element matches filter in expr.
@@ -23,6 +59,14 @@
       process
       identity
       (process expr))))
+
+(defn macroexpand-n
+  "Iteratively call macroexpand-1 on form n times."
+  [n form]
+  (->> (iterate macroexpand-1 form)
+       ;; since the first occurence in the next lazyseq is form itself, (inc n)
+       (take (inc n))
+       last))
 
 (defmacro macroexpand-do
   "(defmacro abc []
@@ -41,7 +85,7 @@
   (macroexpand-do MODE
     expr)
 
-  Where `MODE` is one of:
+  Where `MODE` has the following meaning:
 
   | `MODE`                        | expansion                       |
   |-------------------------------|---------------------------------|
@@ -55,11 +99,8 @@
    (let [expander
          (cond
            (nil? mode)    'macroexpand
-           (number? mode) `(fn [expr#]
-                             (->> (iterate macroexpand-1 expr#)
-                                  (take (inc ~mode))
-                                  last))
            (= :all mode)  'clojure.walk/macroexpand-all
+           (number? mode) 'macroexpand-n
            
            (or (symbol? mode) (coll? mode))
            `(partial macroexpand-some
@@ -76,7 +117,7 @@
           (newline)
           
           (println "--  Running macro  --")
-          (let [result# ~expr]
+          (let [result# (file-eval '~expr)]
             (clojure.pprint/pprint result#)
             (newline)
             result#)))))
