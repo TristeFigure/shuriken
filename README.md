@@ -5,7 +5,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.13.6"]
+[org.clojars.tristefigure/shuriken "0.13.7"]
 ```
 
 
@@ -148,11 +148,13 @@ Recursively unqualifies qualified code in the provided form.`
 
 ### `file-eval`
 
-Evaluate file in a temporary file via load-file.
+Evaluate code in a temporary file via load-file.
 
 ```clojure
 (inc (file-eval '(+ 1 2)))
 ```
+
+Code evaluated this way will be source-mapped in stacktraces.
 
 ### `macroexpand-n`
 

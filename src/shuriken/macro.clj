@@ -15,7 +15,7 @@
   (atom []))
 
 (defn- create-tmp-file! []
-  (let [f (java.io.File/createTempFile "macroexpand-do-" ".clj")]
+  (let [f (java.io.File/createTempFile "file-eval-" ".clj")]
     (.deleteOnExit f)
     (swap! tmp-files conj f)
     f))
@@ -38,11 +38,16 @@
       (tap (load-file (.getCanonicalPath f))
            (.delete f))
       (catch Throwable t
-        (throw (Exception.
-                 (str "file-eval: caught an exception evaluating code in:"
-                      \newline
-                      (.getCanonicalPath f))
-                 t))))))
+        (throw
+          (let [cause (.getCause t)]
+            (doto
+              (Exception.
+                (str "file-eval: caught an exception evaluating code in:"
+                     \newline
+                     (.getCanonicalPath f)
+                     \newline \newline
+                     (-> cause class .getName) " - " (.getMessage cause)))
+              (.setStackTrace (.getStackTrace cause)))))))))
 
 (defn macroexpand-some
   "Recursively macroexpand forms whose first element matches filter in expr.

@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.13.7] - 2017-11-28
+## Fixed
+- macro: errors from `file-eval` display both the extended message with the
+  temporary file path and the actual error stacktrace.
+
 # [0.13.6] - 2017-11-28
 ## Fixed
 - macroexpand-do: dumps the expanded form at the file-eval stage.
