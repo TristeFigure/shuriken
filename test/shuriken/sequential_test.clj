@@ -1,6 +1,6 @@
 (ns shuriken.sequential-test
   (:require [clojure.test :refer :all]
-            [shuriken.core :refer [slice separate]]))
+            [shuriken.core :refer :all]))
 
 (deftest test-slice
   (let [coll [1 0 1 0 1 0 0 0 1]]
@@ -45,3 +45,11 @@
     (testing "edge cases"
       (is (= [[] [1 1 0 1 0 0 1 1 0]]
              (separate #{2} coll))))))
+
+(deftest test-max-by-min-by
+  (let [john {:name "john" :age 92}
+        eric {:name "eric" :age 37}]
+    (is (= john (apply max-by :age [john])))
+    (is (= john (apply min-by :age [john])))
+    (is (= john (apply max-by :age [john eric])))
+    (is (= eric (apply min-by :age [john eric])))))

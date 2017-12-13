@@ -1,4 +1,7 @@
-(ns shuriken.sequential)
+(ns shuriken.sequential
+  (:require [potemkin :refer [import-vars]]))
+
+(import-vars clojure.core/reduce1)
 
 (defn slice
   "Slice a seq using a delimiter predicate. There are two options:
@@ -42,3 +45,21 @@
   "Returns a vector of [(filter pred coll) (remove pred coll)]"
   [pred coll]
   [(filter pred coll) (remove pred coll)])
+
+(defn max-by
+  "Returns the greatest of the elements by pred."
+  ([f x] x)
+  ([f x y] (if (pos? (compare (f x) (f y)))
+             x
+             y))
+  ([f x y & more]
+   (reduce1 (partial max-by f) (max-by f x y) more)))
+
+(defn min-by
+  "Returns the least of the elements by pred."
+  ([f x] x)
+  ([f x y] (if (neg? (compare (f x) (f y)))
+             x
+             y))
+  ([f x y & more]
+   (reduce1 (partial min-by f) (min-by f x y) more)))

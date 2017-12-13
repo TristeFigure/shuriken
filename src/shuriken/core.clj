@@ -1,26 +1,40 @@
 (ns shuriken.core
   (:require [potemkin :refer [import-vars]]
             [shuriken associative
+                      debug
                       flow
                       macro
                       meta
                       monkey-patch
                       namespace
                       navigation
-                      predicates-composer
                       sequential
-                      threading]))
+                      string
+                      threading
+                      weaving]))
 
 (import-vars
   [shuriken.associative
    flatten-keys deflatten-keys deep-merge index-by]
+  
+  [shuriken.debug
+   debug]
 
   [shuriken.flow
    silence
    thrown?]
 
   [shuriken.macro
+   is-form?
+   wrap-form
+   unwrap-form
    clean-code
+   lexical-context
+   stored-locals
+   store-locals!
+   delete-stored-locals!
+   binding-stored-locals
+   lexical-eval
    file-eval
    macroexpand-some
    macroexpand-n
@@ -44,11 +58,20 @@
    prepostwalk
    prepostwalk-demo]
 
-  [shuriken.predicates-composer
-   and? or? not?]
-
   [shuriken.sequential
-   slice separate]
+   slice separate
+   max-by min-by]
+  
+  [shuriken.string
+   tabulate
+   truncate]
   
   [shuriken.threading
-   tap tap-> tap->>])
+   tap tap-> tap->>
+   pp->]
+  
+  [shuriken.weaving
+   | not|
+   *| <-| ->| 
+   when| if| tap|
+   and| or|])

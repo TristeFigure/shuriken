@@ -3,7 +3,10 @@
   :url "https://github.com/TristeFigure/shuriken"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [[org.clojure/clojure "1.9.0"]
+                 [org.clojure/core.specs.alpha "0.1.24"]
+                 [org.clojure/test.check "0.9.0"]
+                 [org.clojure/tools.macro "0.1.2"]
                  [potemkin "0.4.3"]
                  [com.palletops/ns-reload "0.1.0"]
                  

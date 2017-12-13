@@ -137,21 +137,69 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
 
 ## Macro
 
+### Working with forms
+
+```clojure
+(is-form? 'a 1)       ; false
+(is-form? 'a '[a :z]) ; false
+(is-form? 'a '(a :z)) ; true
+
+(wrap-form 'a :z)                      ; (a :z)
+(->> :z (wrap-form 'a) (wrap-form 'a)) ; (a :z)
+
+(unwrap-form 'a '(a :z))                        ; a
+(->> '(a :z) (unwrap-form 'a) (unwrap-form 'a)) ; a
+```
+
+### Storing and reusing lexical-context
+
+```clojure
+(declare m)
+(let [a 1]
+  (lexical-context) ; {a 1}
+  (m))
+
+(defmacro m []
+  (lexical-context)             ; {a 1}
+  (lexical-context :local true) ; {&form ... &env ... ...}
+  nil)
+
+(let [a 1]
+  (store-locals! :key))
+
+(binding-stored-locals :key
+  (println "unstored:" a))
+; unstored: 1
+```
+
 ### `clean-code`
 
 Recursively unqualifies qualified code in the provided form.`
 
 ```clojure
-(clean-code `(a b c))
-;; (a b c)
+(clean-code `(a (b c)))
+;; (a (b c))
+```
+
+### `lexical-eval`
+
+Evaluate code in the local lexical context.
+
+```clojure
+(let [a 1]
+  (lexical-eval '(+ 1 a)))
+; => 2
 ```
 
 ### `file-eval`
 
-Evaluate code in a temporary file via load-file.
+Evaluate code in a temporary file via load-file in the local lexical
+context. Keep the temporary file aside if an error is raised, deleting it on
+the next run.
 
 ```clojure
-(inc (file-eval '(+ 1 2)))
+(let [a 1]
+  (file-eval '(+ 1 a)))
 ```
 
 Code evaluated this way will be source-mapped in stacktraces.
@@ -394,6 +442,18 @@ any subsequent expression that is a threading form.
 ; yo
 ; 124
 ; => 123
+```
+
+### `printhru`
+
+```clojure
+(printhru (+ 1 2))
+; (+ 1 2) : 3
+; => 3
+
+(printhru "result" (+ 1 2))
+; result : 3
+; => 3
 ```
 
 ## Dev

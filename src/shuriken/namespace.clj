@@ -22,11 +22,12 @@
 
 (defn- could-be-class-name? [x]
   (let [x (str x)]
-    (and (-> x
-             (str/split #"\.")
-             last
-             (.codePointAt 0)
-             Character/isUpperCase)
+    (and (some-> x
+                 (clojure.string/split #"\.")
+                 last
+                 seq
+                 first
+                 Character/isUpperCase)
          x)))
 
 (defn fully-qualify

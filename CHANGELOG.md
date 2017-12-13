@@ -1,6 +1,29 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# Unreleased
+## Added
+- macro:
+  - `is-form?`, `wrap-form` & `unwrap-form`.
+  - `lexical-context`.
+  - `stored-locals!`, `binding-stored-locals` & more.
+  - `lexical-eval`.
+- namespace `predicates-composer` renamed to `weaving`:
+  - `|` (`constantly`).
+  - `*|`, `<-|` & `->|`.
+  - `when|`, `if|` & `tap|`.
+  - `and?`, `or?`, `not?` renamed to `and|`, `or|`, `not|`.
+- debug: `debug`.
+- sequential: `max-by` & `min-by`.
+- string: `tabulate` & `truncate`.
+- threading: `if->`,`if->>` & `pp->`.
+
+## Enhanced
+- macro: `file-eval` uses the local lexical context.
+
+## Fixed
+- macro: fix `clean-code` and `macroexpand-some`.
+
 # [0.13.8] - 2017-11-28
 ## Enhanced
 - macro:
