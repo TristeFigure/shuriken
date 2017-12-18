@@ -8,10 +8,6 @@
 
 ;; Step 1: substitute Clojure's native reader with that from
 ;; clojure.tools.reader and setup syntax-quote macro
-; (with-ns 'clojure.core
-;   (def read        clojure.tools.reader/read)
-;   (def read-string clojure.tools.reader/read-string))
-
 (monkey-patch substitute-clojure-read
   clojure.core/read
   [original & args]
@@ -31,11 +27,10 @@
 (monkey-patch change-tools-reader-read-syntax-quote
   clojure.tools.reader/read-syntax-quote
   [original & args]
-  (let [result (apply original args)]
-    `(syntax-quoted ~result)))
+  (list 'syntax-quoted (apply original args)))
 
-; ;; Also change the reader used by Clojure's Compiler to use
-; ;; clojure.tools.reader/read
+;; Also change the reader used by Clojure's Compiler to use
+;; clojure.tools.reader/read
 (defn read-delegate [reader eof-is-error eof-value _is-recursive opts]
   (clojure.tools.reader/read
     (merge {:eofthrow eof-is-error
@@ -89,7 +84,7 @@
   (assoc original
     'clojure.core/unquote-splicing "~@"))
 
-;; Reload functions using pprint-reader-macro.
+; ;; Reload functions using pprint-reader-macro.
 (with-ns 'clojure.pprint
   (defn- pprint-list [alis]
     (if-not (pprint-reader-macro alis)

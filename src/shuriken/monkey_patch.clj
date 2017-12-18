@@ -22,11 +22,6 @@
              (def ~(-> target .getName symbol)
                ~@body)))))))
 
-(when-not (let [res (resolve 'onlys)]
-            (and res (bound? res)))
-  (def onlys
-    (atom #{})))
-
 (defn- prepend-ns
   ([sym]
    (prepend-ns *ns* sym))
@@ -34,6 +29,11 @@
    (if (fully-qualified? sym)
      sym
      (symbol (str ns) (str sym)))))
+
+(when-not (let [res (resolve 'onlys)]
+            (and res (bound? res)))
+  (def onlys
+    (atom #{})))
 
 (defmacro only
   "Ensures the code is executed only once with respect to the associated name.

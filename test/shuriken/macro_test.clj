@@ -2,6 +2,8 @@
   (:require [clojure.test :refer :all :as test]
             [shuriken.macro :refer :all]))
 
+;; TODO: require shuriken.core instead of shuriken.macro
+
 (defmacro bb [code]
   `(+ 2 (b ~code)))
 
@@ -32,53 +34,31 @@
 
 (deftest test-clean-code
   (testing "Asserting backtick standard behavior"
-    (is (not= '(a (b c)) ``~(a (b c))))
+    (is (not= '(x (y z)) ``~(x (y z))))
     (is (not= 'Object/staticMeth `Object/staticMeth)))
-  (is (= '(a (b c) java.lang.Object/staticMeth)
-         (clean-code ``~(a (b c) Object/staticMeth)))))
+  (is (= '(x (y z) java.lang.Object/staticMeth)
+         (clean-code '(shuriken.macro-test/x
+                       (shuriken.macro-test/y shuriken.macro-test/z)
+                       java.lang.Object/staticMeth)))))
 
-(defmacro lex-macro []
-  `[(lexical-context)
-    ~(lexical-context)
-    (quote ~(keys (lexical-context :local true)))])
+(deftest test-file-eval
+  (is (= 2 (let [x 1] (file-eval '(+ 1 x))))))
 
-(deftest test-lexical-context
-  (let [a 1 b 2
-        ctx (lexical-context)]
-    (is (= '{a 1 b 2}
-           ctx)))
-  (testing "In a macro"
-    (let [a 1 b 2
-          [in-form in-macro in-macro-as-local] (lex-macro)]
-      (is (= '{a 1 b 2}
-             in-form
-             in-macro))
-      (is (= '(&form &env)
-             in-macro-as-local)))))
+(deftest test-macroexpand-some
+  (is (= '(do (shuriken.macro-test/b (+ 1 2))
+           (shuriken.macro-test/bb (+ 1 2)))
+         (macroexpand-some '#{a} '(do (shuriken.macro-test/a (+ 1 2))))))
+  (is (= '(do (clojure.core/inc (+ 1 2))
+           (shuriken.macro-test/bb (+ 1 2)))
+         (macroexpand-some '#{a b} '(shuriken.macro-test/a (+ 1 2)))))
+  (is (= '(do (clojure.core/inc (+ 1 2))
+           (clojure.core/+ 2 (clojure.core/inc (+ 1 2))))
+         (macroexpand-some '#{a b bb} '(shuriken.macro-test/a (+ 1 2)))))
+  (is (= '(let [x (do (shuriken.macro-test/b 1) (shuriken.macro-test/bb 1))] x)
+         (macroexpand-some '#{a} '(let [x (shuriken.macro-test/a 1)] x)))))
+
+(deftest test-macroexpand-n
+  (is (= (macroexpand-1  '(a 1))
+         (macroexpand-n 1 '(a 1)))))
 
 (run-tests)
-
-; (deftest test-lexical-eval
-;   (is (= 2
-;          (let [x 1] (lexical-eval '(+ 1 x))))))
-
-; (deftest test-file-eval
-;   (is (= 2
-;          (let [x 1] (file-eval '(+ 1 x))))))
-
-; (deftest test-macroexpand-some
-;   (is (= '(do (shuriken.macro-test/b (+ 1 2))
-;            (shuriken.macro-test/bb (+ 1 2)))
-;          (macroexpand-some '#{a} '(do (shuriken.macro-test/a (+ 1 2))))))
-;   (is (= '(do (clojure.core/inc (+ 1 2))
-;            (shuriken.macro-test/bb (+ 1 2)))
-;          (macroexpand-some '#{a b} '(shuriken.macro-test/a (+ 1 2)))))
-;   (is (= '(do (clojure.core/inc (+ 1 2))
-;            (clojure.core/+ 2 (clojure.core/inc (+ 1 2))))
-;          (macroexpand-some '#{a b bb} '(shuriken.macro-test/a (+ 1 2)))))
-;   (is (= '(let [x (do (shuriken.macro-test/b 1) (shuriken.macro-test/bb 1))] x)
-;          (macroexpand-some '#{a} '(let [x (shuriken.macro-test/a 1)] x)))))
-
-; (deftest test-macroexpand-n
-;   (is (= (macroexpand-1 '(a 1))
-;          (macroexpand-n 1 '(a 1)))))

@@ -1,4 +1,5 @@
-(ns shuriken.associative)
+(ns shuriken.associative
+  "### Operations on associative structures")
 
 (defn- flatten-keys* [acc ks m]
   (if (and (map? m)
@@ -13,16 +14,31 @@
   "Transforms a nested map into a map where keys are path through the
   original map and values are leaf values these paths lead to.
 
-  (flatten-keys {:a {:b {:c :x, :d :y}}})
+  ```clojure
+  (flatten-keys {:a {:b {:c :x
+                         :d :y}}})
   => {[:a :b :c] :x
-      [:a :b :d] :y}"
+      [:a :b :d] :y}
+  ```
+  
+      (flatten-keys {:a {:b {:c :x
+                             :d :y}}})
+      => {[:a :b :c] :x
+          [:a :b :d] :y}"
   [m]
   (if (empty? m)
     m
     (flatten-keys* {} [] m)))
 
 (defn deflatten-keys
-  "Builds a nested map out of a map obtained from flatten-keys"
+  "Builds a nested map out of a map obtained from flatten-keys.
+  
+  ```clojure
+  (deflatten-keys {[:a :b :c] :x
+                   [:a :b :d] :y})
+  => {:a {:b {:c :x
+              :d :y}}}
+  ```"
   [m]
   (reduce (fn [acc [ks v]]
             (update-in acc ks
@@ -42,14 +58,21 @@
       (apply deep-merge* m1m2f (or more [])))))
 
 (defn deep-merge
-  "Deep merge two or more nested maps."
+  "Deep merge two or more nested maps.
+  
+  ```clojure
+  (deep-merge {:x {:a :a  :b :b  :c :c}}
+              {:x {:a :aa :b :bb}}
+              {:x {:a :aaa}})
+
+  => {:x {:a :aaa  :b :bb  :c :c}}
+  ```"
   [m1 & more]
   (deflatten-keys (apply deep-merge*
                          (flatten-keys m1)
                          more)))
 
-(defn raise-error-index-strategy [key entries]
-  "The default index strategy. Asserts there is only one entry and returns it."
+(defn- raise-error-index-strategy [key entries]
   (if (not= 1 (count entries))
     (throw
       (ex-info (pr-str "Can't index key " key " because of duplicate "
@@ -62,7 +85,24 @@
 (defn index-by
   "Like group-by excepts it applies a strategy to each grouped collection.
   A strategy is a function with signature (key, entries) -> entry.
-  The default strategy asserts there is only one entry and returns it."
+  The default strategy asserts there is only one entry and returns it.
+  
+  ```clojure
+  (def ms [{:a 1 :b 2} {:a 3 :b 4} {:a 5 :b 4}])
+
+  (index-by :a ms)
+  => {1 {:a 1 :b 2}
+      3 {:a 3 :b 4}
+      5 {:a 5 :b 4}}
+
+  (index-by :b ms)
+  => ; clojure.lang.ExceptionInfo (Duplicate entries for key 4)
+
+  (index-by :b (fn [key entries]
+               (last entries))
+          ms)
+  => {2 {:a 1 :b 2}
+      4 {:a 5 :b 4}}"
   ([f coll]
    (index-by f raise-error-index-strategy coll))
   ([f strategy coll]
@@ -71,4 +111,6 @@
                [k (strategy k vs)]))
         (into {}))))
 
-(def unindex vals)
+(def unindex
+  "Alias of vals."
+  vals)

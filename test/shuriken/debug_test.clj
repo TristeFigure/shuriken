@@ -1,30 +1,28 @@
 (ns shuriken.debug-test
   (:require [clojure.test :refer :all]
-            [shuriken.debug :refer [debug]])
+            [shuriken.debug :refer [debug debug-print]])
   (:use shuriken.test-utils))
 
 ;; TODO: require shuriken.core instead of shuriken.debug
 
+
 (defn-call do-something [x] x)
 (defn-call do-nothing [x] x)
+
+(deftest test-debug-print
+  (testing "Asserting newlines are printed correctly"
+    (is (= "lab: :a\nlab: :b\nlab: :c\n"
+           (-> (with-out-str
+                 (debug-print "lab" :a)
+                 (debug-print "lab" :b)
+                 (debug-print "lab" :c))
+               (clojure.string/replace #" +\n" "\n"))))))
 
 (deftest test-debug
   (with-fresh-calls
     (is (with-out-str
-          (= 2 (debug (do-something 1)
-                      (do-nothing 2)))))
-    (assert-calls [:do-something :do-nothing])))
-
-(debug
-  '(let [a 1 b 2]
-    (+ a b)
-    (+ a b)
-    (+ a b)
-    (+ a b)
-    (+ a b)
-    (+ a b)
-    (+ a b)
-    (+ a b)
-    (+ a b)
-    (+ a b)))
-(run-tests)
+          (= 4 (debug (do-something 1)
+                      (do-something 2)
+                      (do-something 3)
+                      (do-nothing 4)))))
+    (assert-calls [:do-something :do-something :do-something :do-nothing])))

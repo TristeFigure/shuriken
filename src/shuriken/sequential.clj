@@ -5,11 +5,33 @@
 
 (defn slice
   "Slice a seq using a delimiter predicate. There are two options:
+  ```
   - :include-delimiter  false | :left | :right
-                        whether to include the delimiter and where
+                          whether to include the delimiter and where
   - :include-empty      true | false
-                        whether to create empty seqs between successive
-                        delimiters"
+                          whether to create empty seqs between successive
+                          delimiters
+  ```
+  
+  ```clojure
+  (let [coll [1 1 0 1 0 0 1 1]]
+    ;; the default
+    (slice zero? coll) ;; by default, :include-delimiter false, include-empty true
+    => ((1 1) (1) (1 1))
+    
+    (slice zero? coll :include-empty true)
+    => ((1 1) (1) () (1 1))
+    
+    (slice zero? coll :include-delimiter :left)
+    => ((1 1) (0 1) (0 1 1))
+    
+    (slice zero? coll :include-delimiter :right)
+    => ((1 1 0) (1 0) (1 1))
+    
+    (slice zero? coll :include-delimiter :right :include-empty true)
+    => ((1 1 0) (1 0) (0) (1 1))
+    )
+  ```"
   [delimiter? coll & {:keys [include-delimiter include-empty]
                       :or {include-delimiter false
                            include-empty false}}]
@@ -42,7 +64,13 @@
                  result)))))
 
 (defn separate
-  "Returns a vector of [(filter pred coll) (remove pred coll)]"
+  "Returns a vector of `[(filter pred coll) (remove pred coll)]`.
+
+  ```clojure
+  (let [coll [1 1 0 1 0 0 1 1 0]]
+    (separate zero? coll)
+    => [(1 1 1 1 1) (0 0 0 0)])
+  ```"
   [pred coll]
   [(filter pred coll) (remove pred coll)])
 

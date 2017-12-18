@@ -1,26 +1,106 @@
 (ns shuriken.context-test
+  (:use clojure.pprint)
   (:require [clojure.test :refer :all]
-            [shuriken.context :refer :all]))
+            [shuriken.context :refer [context! context delete-context! contexts
+                                      binding-context
+                                      lexical-map lexical-context lexical-eval
+                                      letmap]]))
 
-(deftest test-store-then-bind-contextx
-  (let [x 1 y 2] (context! :key)
-    (is (= [1 2]
-           (binding-stored-locals :key [x y]))))
-  (let [expect-no-symbol
-        (fn [sym code]
-          (is (= (format "Unable to resolve symbol: %s in this context" sym)
-                 (try
-                   (eval code)
-                   (catch Throwable t
-                     (-> t .getCause .getMessage))))))]
-    (testing "Filtering the locals"
-      (expect-no-symbol
-        'z `(do (let [~'x 1 ~'y 2 ~'z 100]
-                  (store-locals! :key (complement '#{~'z})))
-             (binding-stored-locals :key ~'z))))
-    (testing "Deleting stored locals"
-      (expect-no-symbol
-        'x `(do (let [~'x 1]
-                  (store-locals! :key)
-                  (delete-stored-locals! :key))
-             (binding-stored-locals :key ~'x))))))
+;; TODO: require shuriken.core instead of shuriken.context
+
+(deftest test-context!-context-and-delete-context!
+  (delete-context! :k)
+  (context! :k {:a 1 :b 2})
+  (context! :k :c 3)
+  (is (= {:a 1 :b 2 :c 3} (context :k)))
+  (delete-context! :k)
+  (is (nil? (context :k))))
+
+(deftest test-binding-context
+  (delete-context! :key)
+  (context! :key '{x 1 y 2})
+  (is (= [1 2] (eval '(binding-context :key [x y]))))
+  (testing "with keywords"
+    (delete-context! :key)
+    (context! :key {:x 1 :y 2})
+    (is (= [1 2] (eval '(binding-context :key [x y]))))))
+
+(defmacro expand-to-litteral-map []
+  '{c 3})
+
+(defmacro expand-to-litteral-vector []
+  '[a b c])
+
+(defn f []
+  (lexical-context))
+
+(defmacro m []
+  (lexical-context))
+
+(defmacro mm []
+  `(lexical-context))
+
+(defmacro mmm []
+  (f))
+
+(defmacro mmmm []
+  `(f))
+
+(def ^:private lc-results
+  (let [a 1 b 2 c 3]
+    [(lexical-context)
+     (f)
+     (m)
+     (mm)
+     (mmm)
+     (mmmm)
+     (macroexpand '(lexical-context))]))
+
+(deftest test-lexical-context
+  (testing "litteral"          (is (= '{a 1 b 2 c 3} (get lc-results 0))))
+  (testing "fn"                (is (= {}             (get lc-results 1))))
+  (testing "macro litteral"    (is (= '{a 1 b 2 c 3} (get lc-results 2))))
+  (testing "macro backtick"    (is (= '{a 1 b 2 c 3} (get lc-results 3))))
+  (testing "macro fn"          (is (= {}             (get lc-results 4))))
+  (testing "macro backtick fn" (is (= {}             (get lc-results 5))))
+  (testing "macroexpand"       (is (= {}             (get lc-results 6)))))
+
+(deftest test-lexical-map
+  (let [a 1 b 2 c 3]
+    (is (= '{a 1 b 2 c 3}   (lexical-map '[a b c])))
+    (is (= '{a 1 b 2 c 3}   (lexical-map [a b c])))
+    (is (= '{a 1 b 2 c 3}   (lexical-map a b c)))
+    (is (= '{a 1 b 2 c 3}   (lexical-map ['a 'b 'c])))
+    (is (= '{a 1 b 2 c 3}   (lexical-map 'a 'b 'c)))
+    (is (= {:a 1 :b 2 :c 3} (lexical-map [a b c] :keywords true)))
+    (is (= '{a 1 b 2 c 3}   (lexical-map (expand-to-litteral-vector))))
+    (is (= '{a 1 b 2 c 3}   (let [kws '[a b c]] (lexical-map kws))))
+    (is (= {}               (lexical-map '[])))
+    (is (= {}               (lexical-map)))))
+
+(deftest test-lexical-eval
+  (reset! contexts {})
+  
+  (is (= 2 (lexical-eval '{x 1} '(+ 1 x))))
+  (is (= 2 (lexical-eval {:x 1} '(+ 1 x))))
+  (is (= 2 (let [x 1] (lexical-eval (lexical-context) '(+ 1 x)))))
+  (is (= 2 (let [ctx '{x 1}] (lexical-eval ctx '(+ 1 x)))))
+  (is (= 2 (let [ctx {:x 1}] (lexical-eval ctx '(+ 1 x)))))
+  (is (= 2 (let [x 1] (lexical-eval '(+ 1 x)))))
+  
+  (is (= {} @contexts)))
+
+(deftest test-letmap
+  (reset! contexts {})
+
+  (is (= [1 2 3] (letmap '{a 1 b 2 c 3} [a b c])))
+  (is (= [1 2 3] (letmap  {a 1 b 2 c 3} [a b c])))
+  (is (= [1 2 3] (letmap  {'a 1 'b 2 'c 3} [a b c])))
+  (is (= [1 2 3] (letmap {:a 1 :b 2 :c 3} [a b c])))
+  (is (= [1 2 3] (let [m '{a 1 b 2 c 3}] (letmap m [a b c]))))
+  (is (= [1 2 3] (let [m {:a 1 :b 2 :c 3}] (letmap m [a b c]))))
+  (is (= [1 2 3] (let [a 1 b 2] (letmap (expand-to-litteral) [a b c]))))
+  
+  (is (= {} @contexts)))
+
+(run-tests)

@@ -1,4 +1,4 @@
-(ns shuriken.flow-test
+(ns shuriken.exception-test
   (:require [clojure.test :refer :all]
             [shuriken.core :refer :all]))
 

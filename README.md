@@ -64,7 +64,7 @@ Small yet effective Clojure weapons.
 ;;  4 {:a 5 :b 4}}
 ```
 
-## Control Flow
+## Exceptions
 
 ### `silence`
 

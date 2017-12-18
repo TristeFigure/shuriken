@@ -1,8 +1,10 @@
 (ns shuriken.core
   (:require [potemkin :refer [import-vars]]
             [shuriken associative
+                      context
                       debug
-                      flow
+                      exception
+                      fn
                       macro
                       meta
                       monkey-patch
@@ -17,24 +19,32 @@
   [shuriken.associative
    flatten-keys deflatten-keys deep-merge index-by]
   
+  [shuriken.context
+   contexts
+   context!
+   context
+   delete-context!
+   binding-context
+   lexical-map
+   lexical-context
+   lexical-eval
+   letmap]
+  
   [shuriken.debug
    debug]
 
-  [shuriken.flow
+  [shuriken.exception
    silence
    thrown?]
+  
+  [shuriken.fn
+   arity]
 
   [shuriken.macro
    is-form?
    wrap-form
    unwrap-form
    clean-code
-   lexical-context
-   stored-locals
-   store-locals!
-   delete-stored-locals!
-   binding-stored-locals
-   lexical-eval
    file-eval
    macroexpand-some
    macroexpand-n
@@ -68,7 +78,8 @@
   
   [shuriken.threading
    tap tap-> tap->>
-   pp->]
+   if-> if->>
+   pp-> pp->>]
   
   [shuriken.weaving
    | not|

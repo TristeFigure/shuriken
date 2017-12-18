@@ -1,6 +1,29 @@
 (ns shuriken.namespace
   (:require [clojure.string :as str]))
 
+;; TODO
+; (defn ns-clear
+;   "Clears a namespace of its vars, keeping those from clojure.core."
+;   ([]
+;    (ns-clear *ns*))
+;   ([ns]
+;    (let [clj-ns (the-ns 'clojure.core)]
+;      (->> (ns-map ns)
+;           (filter (fn [[_sym v]]
+;                     (and (var? v) (-> v .ns (= clj-ns)))))
+;           (map (partial ns-unmap ns))
+;                                                           ))))
+
+; (defn clear-all-ns []
+;   "Strips the current namespace of its vars and deletes all other namespaces
+;   except clojure.core."
+;   (let [clj-ns (the-ns 'clojure.core)]
+;     (doseq [ns (all-ns)
+;             :when (not= ns clj-ns)]
+;       (if (= *ns* ns)
+;         (ns-clear ns)
+;         (remove-ns (.getName ns))))))
+
 (defn- class-name [klass]
   (-> (str klass)
       (str/replace #"(?:class|interface) " "")

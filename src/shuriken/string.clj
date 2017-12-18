@@ -48,3 +48,11 @@
 ;; TODO
 (defn regex-quote [s]
   (java.util.regex.Pattern/quote s))
+
+;; TODO: expose. Keep in this namespace ?
+(defmacro no-print
+  "Binds *out* to an anonymous writer used as /dev/null and returns the value
+  of the last expr in body."
+  [& body]
+  `(binding [*out* (new java.io.StringWriter)]
+     ~@body))
