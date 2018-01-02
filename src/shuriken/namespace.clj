@@ -1,5 +1,7 @@
 (ns shuriken.namespace
-  (:require [clojure.string :as str]))
+  (:use clojure.pprint)
+  (:require [clojure.string :as str]
+            [shuriken.context :refer [lexical-eval]]))
 
 ;; TODO
 ; (defn ns-clear
@@ -129,4 +131,4 @@
   namespaces other than the current one."
   [ns & body]
   `(binding [*ns* (the-ns ~ns)]
-     (eval (quote (do ~@body)))))
+     (lexical-eval (quote (do ~@body)))))

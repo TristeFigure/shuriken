@@ -114,3 +114,22 @@
 (def unindex
   "Alias of vals."
   vals)
+
+(defn merge-with-plan
+  "Like `merge-with` except that the combination fn of a specific pair of
+  entries is determined by looking up their key in `plan`. If not found,
+  falls back to the function found under key `:else` or if not provided
+  to a function that returns the value in the second map, hence providing the
+  behavior of `merge`."
+  [plan & maps]
+    (when (some identity maps)
+      (let [merge-entry (fn [m e]
+                          (let [k (key e) v (val e)]
+                            (if (contains? m k)
+                              (let [else-f (get plan :else #(identity %2))
+                                    f (get plan k else-f)]
+                                (assoc m k (f (get m k) v)))
+                              (assoc m k v))))
+            merge2 (fn [m1 m2]
+                     (reduce merge-entry (or m1 {}) (seq m2)))]
+        (reduce merge2 maps))))

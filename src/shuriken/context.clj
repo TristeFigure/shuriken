@@ -5,6 +5,11 @@
             [clojure.spec.alpha :as s]
             [shuriken.spec :refer [conf either conform!]]))
 
+;; TODO: Globally, make sure that any macro that dequotes/requotes its arguments
+;; macroexpands them early so that we can tell if it is quoted or not.
+;; Use macroexpand-quote for this.
+;; macroexpand-quote needs to macroexpand any form except 'quote' forms.
+
 (def contexts
   "The global store for contexts. An atom containing a map of maps:
     {key -> {symbol -> value}}"
@@ -112,6 +117,17 @@
         (finally
           (delete-context! k#))))))
 
+(def ^:dynamic *warn-on-late-eval* true)
+
+(defmacro print-late-eval-warning [line x]
+  `(do (println "*** Warning ***")
+       (println "@" (format "%s:%s" *file* ~line))
+       (println (str \' ~x \')
+                "is a not a litteral map nor macro-expands to one. This will"
+                "incur a call to eval at runtime.")
+       (println "Set" `*warn-on-late-eval* "to false to silence this warning.")
+       (newline)))
+
 (s/def ::lexical-map-args
        (s/cat
          :params (either
@@ -130,7 +146,9 @@
   "Turns a collection of symbols into a map of symbols to their value
   in the current lexical context.
   If params is not a litteral nor expands to one via
-  clojure.walk/macroexpand-all, lexical-eval will be used at runtime.
+  clojure.walk/macroexpand-all, `lexical-eval` will be used at runtime.
+  However this will print a warning. Set `*warn-on-late-eval*` to false to
+  silence it.
   
   ```clojure
   (let [a 1 b 2 c 3]
@@ -141,18 +159,24 @@
   (let [args (->> args dequote (map dequote))
         {:keys [params keywords] :or {keywords false}}
         (conform! ::lexical-map-args args) 
-        params (dequote (macroexpand-all params))
+        params (let [expanded (macroexpand-all params)]
+                 (dequote (if (sequential? expanded)
+                            (mapv dequote expanded)
+                            expanded)))
         ctx-sym (gensym "ctx-")]
     (if-not (and (sequential? params) (every? symbol? params))
       ;; then params needs evaluation
-      `(lexical-eval (lexical-context)
-                     (->> ~params
-                          (map (fn [sym#]
-                                 [(if ~keywords
-                                    (keyword sym#)
-                                    `'~sym#)
-                                  sym#]))
-                          (into {})))
+      `(let [p# ~params]
+         (when *warn-on-late-eval*
+           (print-late-eval-warning ~(-> &form :line) p#))
+         (lexical-eval (lexical-context)
+                       (->> p#
+                            (map (fn [sym#]
+                                   [(if ~keywords
+                                      (keyword sym#)
+                                      `'~sym#)
+                                    sym#]))
+                            (into {}))))
       ;; else it is or has been expanded to a litteral
       `(let [~ctx-sym (lexical-context)]
          ~(->> params
@@ -164,9 +188,11 @@
                (into {}))))))
 
 (defmacro letmap
-  "Binds each k of m to the corresponding value. Keys in m must be symbols.
-  If m is not a litteral nor expands to one via clojure.walk/macroexpand-all,
-  lexical-eval will be used at runtime.
+  "Binds each key of `m` to the corresponding value. Keys in `m` must be
+  litteral symbols. If `m` is not a litteral map nor a macro that expands into
+  one, `lexical-eval` will be used at runtime.
+  However this will print a warning. Set `*warn-on-late-eval*` to false to
+  silence it. `m` can be quoted or not.
   
   ```clojure
   (letmap '{a 1 b 2}
@@ -178,8 +204,11 @@
     (if-not (map? m)
       ;; then m needs evaluation
       (let [k-sym (keyword (gensym "letmap-"))]
-        `(lexical-eval (merge (lexical-context) ~m)
-                       '(do ~@body)))
+        `(let [m# ~m]
+           (when *warn-on-late-eval*
+             (print-late-eval-warning ~(-> &form meta :line) m#))
+           (lexical-eval (merge (lexical-context) m#)
+                         '(do ~@body))))
       ;; else it is or has been expanded to a litteral
       (let [m (->> m
                    (map (fn [[k v]]

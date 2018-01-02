@@ -9,12 +9,6 @@
                  
                  ;; For monkey patches
                  [robert/hooke "1.3.0"]
-
-                 ;; For syntax-quote monkey-patch
-                 ;; Upgrading tools.reader means updating Step 3 of
-                 ;; src/shuriken/monkey_patches/syntax_quote.clj
-                 ;; (the :exclude statement).
-                 [org.clojure/tools.reader "1.0.5"]
                  [org.javassist/javassist "3.20.0-GA"]
                  
                  ;; Documentation
@@ -24,7 +18,7 @@
   :plugins [;; Documentation
             [lein-codox "0.10.3"]
             
-            ;; Fox syntax-quote
+            ;; Fox monkey patches
             [lein-jdk-tools "0.1.1"]]
   :codox {:source-uri "https://github.com/TristeFigure/shuriken/blob/" \
                       "{version}/{filepath}#L{line}"

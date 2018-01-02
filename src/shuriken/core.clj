@@ -17,7 +17,9 @@
 
 (import-vars
   [shuriken.associative
-   flatten-keys deflatten-keys deep-merge index-by]
+   flatten-keys deflatten-keys deep-merge
+   index-by unindex
+   merge-with-plan]
   
   [shuriken.context
    contexts
@@ -54,9 +56,10 @@
    without-meta]
 
   [shuriken.monkey-patch
-   monkey-patch
    only
-   refresh-only]
+   refresh-only
+   monkey-patch
+   java-patch]
   
   [shuriken.namespace
    fully-qualify fully-qualified?
@@ -83,6 +86,7 @@
   
   [shuriken.weaving
    | not|
-   *| <-| ->| 
+   *| <-| ->| apply| arity-comp
    when| if| tap|
-   and| or|])
+   and| or|
+   context|])

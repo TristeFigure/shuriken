@@ -6,7 +6,7 @@
             [shuriken.namespace :refer [fully-qualify unqualify]]
             [shuriken.context :refer [context! binding-context delete-context!
                                       lexical-context]]
-            [shuriken.waltz :refer [waltz]]))
+            [shuriken.dance :refer [dance merge-dances]]))
 
 (defn is-form?
   "Determines whether `code` is a form starting with `sym`.
@@ -20,7 +20,8 @@
   (boolean (and (seq? code) (-> code first #{sym}))))
 
 (defn wrap-form
-  "Wraps `code` in a form begining with `sym` unless it is already the case.
+  "Wraps `code` in a form begining with `sym` unless it is already
+  the case.
   
   ```clojure
   (wrap-form 'a :z)                      ; => (a :z)
@@ -32,7 +33,8 @@
     `(~sym ~code)))
 
 (defn unwrap-form
-  "Unwraps `code` if it is a form starting with `sym`. Returns `code` otherwise.
+  "Unwraps `code` if it is a form starting with `sym`. Returns `code`
+  otherwise.
   
   ```clojure
   (unwrap-form 'a '(a :z))                        ; a
@@ -110,17 +112,18 @@
       (throw t)
       (throw
           (doto
-            (Exception. (str "file-eval: caught an exception evaluating code in:"
-                             \newline
-                             (.getAbsolutePath f)
-                             \newline \newline
-                             (-> cause class .getName) " - " (.getMessage cause)))
+            (Exception. 
+              (str "file-eval: caught an exception evaluating code in:"
+                   \newline
+                   (.getAbsolutePath f)
+                   \newline \newline
+                   (-> cause class .getName) " - " (.getMessage cause)))
             (.setStackTrace (.getStackTrace cause)))))))
 
 (defmacro file-eval
-  "Evaluate code in a temporary file via load-file in the local lexical
-  context. Keep the temporary file aside if an error is raised, deleting it on
-  the next run.
+  "Evaluate code in a temporary file via load-file in the local
+  lexical context. Keep the temporary file aside if an error is
+  raised, deleting it on the next run.
   
   ```clojure
   (let [a 1]
@@ -145,11 +148,6 @@
              (catch Throwable t#
                (file-eval-error f# t#)))))))
 
-(defn apply-map [f & more]
-  (let [m (last more)
-        args (butlast more)]
-    (apply f (concat args (apply concat m)))))
-
 (defn macroexpand-all-eager
   "Like clojure.walk/macroexpand-all but does not expand quoted forms.
   
@@ -163,15 +161,23 @@
   => (:abc (quote (m)))
   ```"
   [form & {:as opts}]
-  (apply-map waltz form (merge {:walk?    #(not (is-form? 'quote %))
-                                :process? seq?
-                                :post     macroexpand}
-                               opts)))
+  (pprint (merge {:walk? #(not (is-form? 'quote %))
+                  :pre?  #(and (not (is-form? 'quote %))
+                               (seq? %))
+                  :pre   macroexpand}
+                 opts))
+  (dance form :walk? #(not (is-form? 'quote %))
+                      :pre?  #(and (not (is-form? 'quote %))
+                                   (seq? %))
+                      :pre   macroexpand))
+
+(defmacro m [] :abc)
+(println "-->" (macroexpand-all-eager '((m) (quote (m)))))
 
 ;; -- Macroexpand and friends
 (defn macroexpand-some
-  "Recursively macroexpand forms whose first element matches filter in expr.
-  Symbols are passed to filter unqualified."
+  "Recursively macroexpand forms whose first element matches filter
+  in expr. Symbols are passed to filter unqualified."
   [filter expr]
   (macroexpand-all-eager expr
     :process #(and (seq? %) (filter (or (and (some-> % first symbol?)

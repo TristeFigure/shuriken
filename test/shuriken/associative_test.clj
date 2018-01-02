@@ -1,6 +1,8 @@
 (ns shuriken.associative-test
   (:require [clojure.test :refer :all]
-            [shuriken.core :refer :all]))
+            [shuriken.associative :refer :all]))
+
+;; TODO: require shuriken.core instead of shuriken.associative
 
 (defmacro assert-flatten-roundtrip [m]
   `(let [m# ~m]
@@ -78,3 +80,13 @@
       (is (= (index-by :b #(last %2) ms)
              {2 {:a 1, :b 2}
               4 {:a 5, :b 4}})))))
+
+(deftest test-merge-with-plan
+  (let [m {:a 1 :b 2 :c inc :d 0}
+        plan {:a + :b - :c comp}
+        {:keys [a b c d] :as merged} (merge-with-plan plan m m m)]
+    (is (map? merged))
+    (is (= 3 a))
+    (is (= -2 b))
+    (is (= 3 (c 0)))
+    (is (= 0 d))))

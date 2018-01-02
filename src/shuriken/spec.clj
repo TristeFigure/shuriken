@@ -5,7 +5,7 @@
 ;; TODO: expose this namespace ?
 
 (defn conf
-  ([form f]     (s/& form (s/conformer f)))
+  ([form f]     (conf form f identity))
   ([form f unf] (s/& form (s/conformer f unf))))
 
 (defmacro either [& args]
@@ -13,8 +13,11 @@
     `(conf
        (s/alt ~@(->> (dissoc cases :unform)
                      (apply concat)))
-       #(with-meta (val %)
-          {::source-either-case (key %)})
+       (fn [x#]
+         (if (instance? clojure.lang.IObj x#)
+           (vary-meta (val x#) (fnil assoc {}) ::source-either-case (key x#))
+           (val x#)))
+       
        (fn [x#]
          (let [original-case# (-> x# meta ::source-either-case)
                unform# ~(:unform cases)

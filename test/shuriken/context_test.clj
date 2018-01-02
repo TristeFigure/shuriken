@@ -4,9 +4,16 @@
             [shuriken.context :refer [context! context delete-context! contexts
                                       binding-context
                                       lexical-map lexical-context lexical-eval
-                                      letmap]]))
+                                      letmap *warn-on-late-eval*]]))
 
 ;; TODO: require shuriken.core instead of shuriken.context
+
+(defmacro asserting-warnings [& exprs]
+  (cons 'do
+        (map (fn [x]
+               `(let [s# (with-out-str ~x)]
+                  (is (re-find #"\*\*\* Warning \*\*\*" s#))))
+             exprs)))
 
 (deftest test-context!-context-and-delete-context!
   (delete-context! :k)
@@ -74,9 +81,10 @@
     (is (= '{a 1 b 2 c 3}   (lexical-map 'a 'b 'c)))
     (is (= {:a 1 :b 2 :c 3} (lexical-map [a b c] :keywords true)))
     (is (= '{a 1 b 2 c 3}   (lexical-map (expand-to-litteral-vector))))
-    (is (= '{a 1 b 2 c 3}   (let [kws '[a b c]] (lexical-map kws))))
     (is (= {}               (lexical-map '[])))
-    (is (= {}               (lexical-map)))))
+    (is (= {}               (lexical-map)))
+    (asserting-warnings
+      (is (= '{a 1 b 2 c 3} (let [kws '[a b c]] (lexical-map kws)))))))
 
 (deftest test-lexical-eval
   (reset! contexts {})
@@ -92,14 +100,15 @@
 
 (deftest test-letmap
   (reset! contexts {})
-
-  (is (= [1 2 3] (letmap '{a 1 b 2 c 3} [a b c])))
-  (is (= [1 2 3] (letmap  {a 1 b 2 c 3} [a b c])))
-  (is (= [1 2 3] (letmap  {'a 1 'b 2 'c 3} [a b c])))
-  (is (= [1 2 3] (letmap {:a 1 :b 2 :c 3} [a b c])))
-  (is (= [1 2 3] (let [m '{a 1 b 2 c 3}] (letmap m [a b c]))))
-  (is (= [1 2 3] (let [m {:a 1 :b 2 :c 3}] (letmap m [a b c]))))
-  (is (= [1 2 3] (let [a 1 b 2] (letmap (expand-to-litteral) [a b c]))))
+  
+  (is (= [1 2 3]   (letmap '{a 1 b 2 c 3} [a b c])))
+  (is (= [1 2 3]   (letmap  {a 1 b 2 c 3} [a b c])))
+  (is (= [1 2 3]   (letmap  {'a 1 'b 2 'c 3} [a b c])))
+  (is (= [1 2 3]   (letmap {:a 1 :b 2 :c 3} [a b c])))
+  (is (= [1 2 3]   (let [a 1 b 2] (letmap (expand-to-litteral-map) [a b c]))))
+  (asserting-warnings
+    (is (= [1 2 3] (let [m '{a 1 b 2 c 3}] (letmap m [a b c]))))
+    (is (= [1 2 3] (let [m {:a 1 :b 2 :c 3}] (letmap m [a b c])))))
   
   (is (= {} @contexts)))
 
