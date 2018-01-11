@@ -47,3 +47,25 @@
                                          (into {})
                                          pprint)))))))
     result))
+
+(s/def ::args+body
+  (s/cat :args vector?
+         :body (conf (s/* any?)
+                     #(apply list %) vec)))
+
+(s/def ::args+bodies
+  (either
+    :arity-1 (conf ::args+body vector first)
+    :arity-n (s/+ (s/and list? ::args+body))
+    :unform  (fn [x]
+               (if (= (count x) 1)
+                 :arity-1
+                 :arity-n))))
+
+(s/def ::macro-definition
+  (s/cat
+    :def-macro  symbol?
+    :name       symbol?
+    :doc-string (s/? string?)
+    :attr-map   (s/? map?)
+    :bodies     ::args+bodies))

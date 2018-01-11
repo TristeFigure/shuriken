@@ -32,37 +32,37 @@
 
 
 (deftest test-|
-  (is (= 1 ((| 1) :ignored :ditto)))
-  (is (= ##Inf (arity (| 1)))))
+  (is (= 1   ((| 1) :ignored :ditto)))
+  (is (= [1] (arities (| 1)))))
 
 (deftest test-not|
   (is (false? ((not| number?) 3)))
   (testing "preserves arity"
-    (is (= 1     (arity (not| (fn [a])))))
-    (is (= 5     (arity (not| (fn [a b c d e])))))
-    (is (= ##Inf (arity (not| (fn [& args])))))))
+    (is (= [1]     (arities (not| (fn [a])))))
+    (is (= [5]     (arities (not| (fn [a b c d e])))))
+    (is (= [##Inf] (arities (not| (fn [& args])))))))
 
 (deftest test-*|
-  (is   (= [4 2 -3] ((*| inc dec -) 3)))
+  (is   (= [4 2 -3]  ((*| inc dec -) 3)))
   (testing "preserves arity"
-    (is (= 2        (arity (*| (fn [a b]) (fn [& args])))))))
+    (is (= [2 ##Inf] (arities (*| (fn [a b]) (fn [& args])))))))
 
 (deftest test-<-|
-  (is   (= 111 ((<-| + 1 10 100))))
-  (is   (= 111 ((<-| + 1 10) 100)))
-  (is   (= 111 ((<-| + 1) 10 100)))
-  (is   (= 111 ((<-| +) 1 10 100)))
+  (is   (= 111   ((<-| + 1 10 100))))
+  (is   (= 111   ((<-| + 1 10) 100)))
+  (is   (= 111   ((<-| + 1) 10 100)))
+  (is   (= 111   ((<-| +) 1 10 100)))
   (testing "preserves arity"
-    (is (= 2   (arity (<-| (fn [a b c]) 1))))
-    (is (= 1   (arity (<-| (fn [a b c]) 1 2))))
-    (is (= 0   (arity (<-| (fn [a b c]) 1 2 3))))))
+    (is (= [2]   (arities (<-| (fn [a b c]) 1))))
+    (is (= [1]   (arities (<-| (fn [a b c]) 1 2))))
+    (is (= [0]   (arities (<-| (fn [a b c]) 1 2 3))))))
 
 (deftest test-arity-comp
   (= 4 ((arity-comp inc (fn [a b] (+ a b)))
         1 2))
   (testing "preserves arity"
-    (is (= 2     (arity (arity-comp inc (fn [a b] (+ a b))))))
-    (is (= ##Inf (arity (arity-comp inc (fn [& more] 0)))))))
+    (is (= [2]     (arities (arity-comp inc (fn [a b] (+ a b))))))
+    (is (= [##Inf] (arities (arity-comp inc (fn [& more] 0)))))))
 
 (deftest test-->|
   (is (= ((->| - inc inc) 4)
@@ -70,39 +70,39 @@
   (is (= ((->| inc inc -) 4)
          ((comp - inc inc) 4)))
   (testing "preserves arity"
-    (is (= 2     (arity (->| (fn [a b] (+ a b)) inc))))
-    (is (= ##Inf (arity (->| (fn [& args] 0) inc))))))
+    (is (= [2]     (arities (->| (fn [a b] (+ a b)) inc))))
+    (is (= [##Inf] (arities (->| (fn [& args] 0) inc))))))
 
 (deftest test-apply|
   (is (= [2 1] ((->| (fn xx [x] [x x])
                      (apply| (fn xxx [a b] [(inc a) b])))
                 1)))
   (testing "has arity 1"
-    (is (= 1 (arity (->| (fn xx [x] [x x])
+    (is (= [1] (arities (->| (fn xx [x] [x x])
                          (apply| (fn xxx [a b] [(inc a) b]))))))))
 
 (deftest test-when|
   (is (= 11 ((when| number? identity inc) 10)))
   (is (= :a ((when| number? identity inc) :a)))
   (testing "preserves arity"
-    (is (= 2     (arity (when| (fn [a b] true)    (constantly :abc)))))
-    (is (= ##Inf (arity (when| (fn [& more] true) (constantly :abc)))))))
+    (is (= [2 ##Inf] (arities (when| (fn [a b] true)    (constantly :abc)))))
+    (is (= [##Inf]   (arities (when| (fn [& more] true) (constantly :abc)))))))
 
 (deftest test-if|
   (is (= 11 ((if| number? inc str) 10)))
   (is (= ":a" ((if| number? inc str) :a)))
   (is (= :a ((if| number? inc) :a)))
   (testing "preserves arity"
-    (is (= 2     (arity (if| (fn [a b] true)    (constantly :abc)))))
-    (is (= ##Inf (arity (if| (fn [& more] true) (constantly :abc)))))))
+    (is (= [2 ##Inf] (arities (if| (fn [a b] true)    (constantly :abc)))))
+    (is (= [##Inf]   (arities (if| (fn [& more] true) (constantly :abc)))))))
 
 (deftest test-tap|
   (with-fresh-calls
     (is (= 2 ((tap| inc do-nothing do-nothing) 1)))
     (assert-calls [:do-nothing :do-nothing]))
   (testing "preserves arity"
-    (is (= 2     (arity (tap| (fn [a b])     (constantly 0)))))
-    (is (= ##Inf (arity (tap| (constantly 0) (fn [& more] more)))))))
+    (is (= [2 ##Inf] (arities (tap| (fn [a b])     (constantly 0)))))
+    (is (= [##Inf]   (arities (tap| (constantly 0) (fn [& more] more)))))))
 
 (deftest test-and|
   (testing "when each predicate is true"
@@ -118,8 +118,8 @@
         ;; stops at the predicate that fails
         (assert-calls [:is-john? :is-minor?]))))
   (testing "preserves arity"
-    (is (= 2     (arity (and| (fn [a b] true)    (constantly true)))))
-    (is (= ##Inf (arity (and| (fn [& more] true) (constantly true)))))))
+    (is (= [2 ##Inf] (arities (and| (fn [a b] true)    (constantly true)))))
+    (is (= [##Inf]   (arities (and| (fn [& more] true) (constantly true)))))))
 
 (deftest test-or|
   (testing "when each predicate is false"
@@ -135,20 +135,17 @@
         ;; stops at the predicate that fails
         (assert-calls [:is-not-john? :is-adult?]))))
   (testing "preserves arity"
-    (is (= 2     (arity (or| (fn [a b] true)    (constantly true)))))
-    (is (= ##Inf (arity (or| (fn [& more] true) (constantly true)))))))
+    (is (= [2 ##Inf] (arities (or| (fn [a b] true)    (constantly true)))))
+    (is (= [##Inf]   (arities (or| (fn [& more] true) (constantly true)))))))
 
 (deftest test-context|
   (is (= [124 {}]  ((->| (context| inc))             123 {})))
   (is (= [124 nil] ((->| (context| inc))             123)))
   (is (= [0   {}]  ((->| (context| (fn [& args] 0))) 123 {})))
   (is (= [0   nil] ((->| (context| (fn [& args] 0))) 123)))
-  (is (= [103 nil] ((->| (context| inc)
+  (is (= [103 {}]  ((->| (context| inc)
                          (apply| (context| (fn [a ctx] [(inc a) ctx])))
-                         (apply| (context| (fn [a ctx] (inc a))))
-                         )
-                    100)))
-  (testing "has variadic arity"
-    (is (= ##Inf (arity (->| (context| inc)))))))
-
-(run-tests)
+                         (apply| (context| (fn [a ctx] [(inc a) ctx]))))
+                    100 {})))
+  (testing "has 1 and 2 for arities"
+    (is (= [1 2] (arities (->| (context| inc)))))))

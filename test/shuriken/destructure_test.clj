@@ -25,11 +25,11 @@
   (testing "when params is an array"
     (is (= '[a x y m]
            (deconstruct '[a & {:keys [x] y :_y :or {x 1} :as m}])))
-    (is (= '[args])
-        (deconstruct '[& args])))
+    (is (= '[args]
+        (deconstruct '[& args]))))
   (testing "when params is a hash"
-    (is (= '[a])
-        (deconstruct '{a :a}))
+    (is (= '[a]
+           (deconstruct '{a :a})))
     (is (= '[a b m]
            (deconstruct '{:keys [a] b :b :or {a 1} :as m})))))
 

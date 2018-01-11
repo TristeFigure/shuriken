@@ -40,16 +40,10 @@
   (defn from-syntax-quote [x]
     x))
 
-;; See https://jboss-javassist.github.io/javassist/tutorial/tutorial2.html
-;; for the full madness.
 (java-patch [clojure.lang.LispReader$SyntaxQuoteReader "syntaxQuote" [Object]]
   :after
-  "{
-     $_ = clojure.lang.RT.list(
-       clojure.lang.Symbol.intern(\"clojure.core\", \"from-syntax-quote\"),
-       $_
-     );
-   }")
+  [result & args]
+  (list 'from-syntax-quote result))
 
 
 ;; Step 2: Add (from-syntax-quote x) -> `(x) translation into clojure.pprint

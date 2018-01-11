@@ -1,12 +1,12 @@
 (ns shuriken.dance
+  "### Advanced tree walking"
   (:use clojure.pprint
         shuriken.debug)
   (:require [shuriken.debug :refer [debug-print]]
-            [shuriken.fn :refer [arity]]
+            [shuriken.fn :refer [arities]]
             [shuriken.associative :refer [merge-with-plan]]
             [shuriken.weaving :refer [and| ->| apply| context|]]))
 
-;; TODO: expose?
 (defn- wrap? [k form]
   (boolean
     (and (vector? form)
@@ -26,10 +26,6 @@
 (def ^:private no-walk  (partial wrap  ::no-walk))
 (def ^:private unwalk   (partial unwrap ::no-walk))
 
-(def ^:private context?  (partial wrap? ::context))
-(def ^:private context   (partial wrap  ::context))
-(def ^:private uncontext (partial unwrap ::context))
-
 (defmacro ^:private add-debugs [debugs let-statement]
   (let [debugs (resolve (or (and (symbol? debugs) debugs)
                             debugs))]
@@ -48,7 +44,7 @@
                         vec)))
          (apply list))))
 
-(defn adapt-dance-fns [dance]
+(defn ^:no-doc adapt-dance-fns [dance]
   (->> dance
        (map (fn [[k f]]
               (if (#{:walk? :pre? :pre :post? :post :before :after} k)
@@ -56,7 +52,7 @@
                 [k f])))
        (into {})))
 
-(def dance-identity (context| identity))
+(def ^:private dance-identity (context| identity))
 
 (defn- step [form {:keys [initial-acc initial-context context wrap inner outer
                          keys]
@@ -71,7 +67,7 @@
                       (zipmap keys form))]
     (outer (wrap result) context)))
 
-(defn context-walk [inner outer context form]
+(defn- context-walk [inner outer context form]
   (let [marche (fn [& {:as opts}]
                  (step form (merge {:inner inner :outer outer
                                     :initial-context context
@@ -145,17 +141,18 @@
                                 pre-result)
                               (if unwalked [unwalked ctx] [pre-result ctx]))
           [should-post ctx] (post? out ctx)
-          [result ctx]      (if should-post (post out ctx) [out ctx])
-          [aftered ctx]     (after result ctx)]
-      [aftered ctx])))
+          [posted ctx]      (if should-post (post out ctx) [out ctx])
+          [result ctx]      (after posted ctx)]
+      [result ctx])))
 
-(def empty-dance
-  {:walk?   any?
-   :pre?    any?     :pre   identity
-   :post?   any?     :post  identity
-   :before  identity :after identity
-   :context nil      :return-context false
-   :debug   false})
+(def ^:private empty-dance
+  (adapt-dance-fns
+    {:walk?   any?
+     :pre?    any?     :pre   identity
+     :post?   any?     :post  identity
+     :before  identity :after identity
+     :context nil      :return-context false
+     :debug   false}))
 
 (defn- chain-dance-fns [f & more-fns]
   (->> (map apply| more-fns)
@@ -169,26 +166,28 @@
          (concat [f])
          (apply ->|))))
 
-(def dance-merge-plan
+(def ^:private dance-merge-plan
   {:walk? and|
    :pre?  and|                       :pre   chain-dance-fns
    :post? #(apply and| (reverse %&)) :post  reverse-chain-dance-fns
    :before chain-dance-fns           :after reverse-chain-dance-fns})
 
-(defn merge-dances [& dances]
-  (merge empty-dance
-         (apply merge-with-plan
-                dance-merge-plan
-                (map adapt-dance-fns dances))))
+(defn merge-dances
+  "Merges multiples dances together."
+  [& dances]
+  (->> (merge empty-dance
+              (apply merge-with-plan dance-merge-plan
+                     (map adapt-dance-fns dances)))
+       adapt-dance-fns))
 
-(def depth-dance
+(def ^:private depth-dance
   {:before (fn [x ctx] [x (update ctx :depth (fnil inc -1))])
    :after  (fn [x ctx] [x (if (zero? (:depth ctx))
                             (dissoc ctx :depth)
                             (update ctx :depth dec))])
    :depth 0})
 
-(def default-dance depth-dance)
+(def ^:private default-dance depth-dance)
 
 (defn dance
   "A finely tunable version of clojure.walk with enhancements.
@@ -211,16 +210,17 @@
   
   #### Dance fns
   
-  See https://en.wikipedia.org/wiki/Tree_traversal for a
+  See https://en.wikipedia.org/wiki/Tree_traversal
   
-  Namely `walk?`, `pre?`, `pre`, `post?`, `post` `before` and `after`
+  Namely `walk?`, `pre?`, `pre`, `post?`, `post` `before` and `after`.
   
-  `pre?` and `post?` condition `pre` and `post` respectively while the
-  walk of the substructure itself occur in between and is conditioned
-  by `walk?`.
+  `pre?` and `post?` respectively condition `pre` and `post` while the
+  walk of the substructure itself occurs in between and is conditioned
+  by `walk?`. `before`and `after` are respectively called before and
+  after any node is processed.
   
-  Traversal appears to occur in pre-order for `walk?` `pre?` and
-  `pre`, but in post-order for `post?` and `post`.
+  Traversal appears to occur in pre-order for `before`, `walk?` `pre?`
+  and `pre`, but in post-order for `post?`, `post` and `after`.
   
   Note that nodes that will not be walked might still be processed by
   `pre` and `post`.
@@ -232,7 +232,7 @@
   `[result context]`.
   
   This context is passed walking down the structure from node to
-  subnodes then up to the initial root in a depth-first manner.
+  subnodes then back up to the initial root in a depth-first manner.
   
   It is global to the walk and is not scoped by the depth at which it
   is accessed. In other words, the context is passed from siblings to
@@ -256,14 +256,16 @@
            :as raw-opts}
         (if (and (= 1 (count args))
                  (-> args first map?))
-          args
+          (first args)
           (->> args (partition 2) (map vec) (into {})))
         debug-context (if (contains? raw-opts :debug-context)
                         debug-context
                         (or return-context
                             (contains? raw-opts :context)
                             (some #(> % 1)
-                                  (map arity [walk? pre? pre post? post]))))
+                                  (->> [walk? pre? pre post? post]
+                                       (remove nil?)
+                                       (mapcat arities)))))
         opts (->> {:walk?   walk?
                    :pre?    pre?    :pre   pre
                    :post?   post?   :post  post
@@ -272,12 +274,7 @@
                    :debug   debug   :debug-context  debug-context}
                   (remove (fn [[k v]] (nil? v)))
                   (into {})
-                  (merge-dances default-dance)
-                  (map (fn [[k f]]
-                         (if (#{:walk? :pre? :pre :post? :post} k)
-                           [k (context| f)]
-                           [k f])))
-                  (into {}))
+                  (merge-dances default-dance))
         [result ctx] (dance* form opts)]
     (if return-context
       [result ctx]

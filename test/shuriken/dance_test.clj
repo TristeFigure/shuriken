@@ -11,11 +11,9 @@
            :pre?           #(and (seq? %) (-> % first (not= '/)))
            :pre            vec
            :post?          (fn [form ctx]
-                             (and (number? form)
-                                  (-> ctx :depth (< 4))))
+                             [(and (number? form)
+                                   (-> ctx :depth (< 4)))
+                              ctx])
            :post           (fn [x ctx] [(inc x) (update ctx :cnt inc)])
            :context        {:cnt 0}
-           :return-context true
-           ))))
-
-(run-tests)
+           :return-context true))))

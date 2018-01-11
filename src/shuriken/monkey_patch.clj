@@ -1,4 +1,5 @@
 (ns shuriken.monkey-patch
+  "### Tools to monkey-patch Clojure and Java code"
   (:require [clojure.spec.alpha :as s]
             [com.palletops.ns-reload :as nsdeps]
             [shuriken.spec :refer [conf either conform!]]
@@ -7,8 +8,6 @@
             [clojure.repl :refer [source-fn]])
   (:use robert.hooke)
   (:import RedefineClassAgent))
-
-;; TODO: document and spec
 
 (defn ^:no-doc prepend-ns
   ([k]
@@ -27,8 +26,8 @@
 
 (defmacro only
   "Ensures `body` is executed only once with respect to `name`.
-  If `name` is a symbol or a keyword without a namespace, it will be prefixed
-  with `*ns*`.
+  If `name` is a symbol or a keyword without a namespace, it will be 
+  prefixed with `*ns*`.
   
   ```clojure
   (only 'foo (println \"bar\"))
@@ -52,10 +51,10 @@
            result#)))))
 
 (defn refresh-only
-  "Reset 'only' statements by name. Next time one is called, the associated code
-  will be evaluated.
-  If `name` is a symbol or a keyword without a namespace, it will be prefixed
-  with `*ns*`.
+  "Reset `only` statements by name. Next time one is called, the
+  associated code will be evaluated.
+  If `name` is a symbol or a keyword without a namespace, it will be
+  prefixed with `*ns*`.
   
   ```clojure
   (only 'foo (println \"bar\"))
@@ -97,17 +96,19 @@
 (defn- type-to-str [type]
   (cond
     (string? type)                      type
+    (symbol? type)                       (str type)
     (or (class? type) (ct-class? type)) (.getName type)
     :else                               (name type)))
 
-(defn- types-to-str [types]
+(defn ^:no-doc types-to-str [types]
   (mapv type-to-str types))
 
 (s/def ::method-signature
        (-> (s/cat
              :class-name      (either
-                                :string string?
-                                :class (conf class? type-to-str)
+                                :string (conf string? identity str)
+                                :class  (conf class? type-to-str)
+                                :symbol (conf symbol? type-to-str)
                                 :unform :string)
              :method-name     (conf #(or (string? %) (ident? %))
                                     name)
@@ -121,11 +122,12 @@
 (defn ^:no-doc signature-to-str [method-signature]
   (let [[class-name method-name parameter-types]
         (conform! ::method-signature method-signature)
-        args (remove nil? [class-name method-name parameter-types])]
+        args (remove nil? (concat [class-name method-name]
+                                  parameter-types))]
     (-> (clojure.string/join "-" args)
         (clojure.string/replace #"\." "_"))))
 
-(defmacro ^:private change-java-method
+(defmacro ^:no-doc change-java-method
   [method-signature f & {:keys [once] :or {once false}}]
   (let [method-signature-sym (gensym "method-signature-")
         code `(let [[class-name# method-name# parameter-types#]
@@ -163,27 +165,48 @@
              ~code)
           code))))
 
-(defmulti ^:private perform-java-patch #(first %&))
+;; See https://jboss-javassist.github.io/javassist/tutorial/tutorial2.html
+;; for the full madness.
+(defmulti ^:private javassist-clojure-body #(first %&))
 
-(defmethod perform-java-patch :replace [_mode method-signature java-body]
-  (change-java-method
-    method-signature
-    (fn [method]
-      (.setBody method java-body))))
+(defmethod javassist-clojure-body :replace [_mode name]
+  (format
+    "{
+      clojure.lang.IFn fn = clojure.java.api.Clojure.var(
+        \"%s\", \"%s\"
+      );
+      
+      return fn.applyTo(clojure.lang.RT.seq($args));
+    }",
+    (str *ns*)
+    name))
 
-(defmethod perform-java-patch :before [_mode method-signature java-body]
-  (change-java-method
-    method-signature
-    (fn [method]
-      (.insertBefore method java-body))
-    :once true))
+(defmethod javassist-clojure-body :before [_mode name]
+  (format
+    "{
+      clojure.lang.IFn fn = clojure.java.api.Clojure.var(
+        \"%s\", \"%s\"
+      );
+      
+      
+      fn.applyTo(clojure.lang.RT.seq($args));
+    }",
+    (str *ns*)
+    name))
 
-(defmethod perform-java-patch :after [_mode method-signature java-body]
-  (change-java-method
-    method-signature
-    (fn [method]
-      (.insertAfter method java-body))
-    :once true))
+(defmethod javassist-clojure-body :after [_mode name]
+  (format
+    "{
+      clojure.lang.IFn fn = clojure.java.api.Clojure.var(
+        \"%s\", \"%s\"
+      );
+      
+      $_ = fn.applyTo(
+        clojure.lang.RT.cons($_, clojure.lang.RT.seq($args))
+      );
+    }",
+    (str *ns*)
+    name))
 
 (defn- body-class [body]
   (cond
@@ -191,29 +214,17 @@
          (-> body first string?)) :javassist-body
     :else                         :clojure-body))
 
-(defmulti ^:private emit-java-body #(body-class %3))
+(defmulti ^:private emit-java-body #(body-class %4))
 
-(defmethod emit-java-body :javassist-body [_method-signature params body]
+(defmethod emit-java-body :javassist-body [method-signature mode params body]
   (first body))
 
-(defn ^:no-doc javassist-delegate-body [name]
-  (format
-    "{
-       clojure.lang.IFn readFn = clojure.java.api.Clojure.var(
-         \"%s\", \"%s\"
-       );
-    
-       return readFn.applyTo(clojure.lang.RT.seq($args));
-     }",
-    (str *ns*)
-    name))
-
-(defmethod emit-java-body :clojure-body [method-signature params body]
+(defmethod emit-java-body :clojure-body [method-signature mode params body]
   (let [delegate-name (-> method-signature
                           signature-to-str
                           (str "-clojure-delegate")
                           symbol)
-        java-body `(javassist-delegate-body delegate-name)]
+        java-body (javassist-clojure-body mode delegate-name)]
     `(do (defn- ~delegate-name ~params
            ~@body)
          ~java-body)))
@@ -225,13 +236,60 @@
          :params           (s/? vector?)
          :body             (s/+ any?)))
 
-(defmacro java-patch [& args]
-   (let [{:keys [method-signature mode params body]}
-         (conform! ::java-patch-args args)
-         java-body (emit-java-body method-signature params body)]
-     `(perform-java-patch ~mode ~method-signature ~java-body)))
+(defmacro java-patch
+  "Applies a monkey-patch to a java method.
+   
+  `mode` can be either :replace, :before or :after  
+  `body` can be javassist pseudo-java or clojure code. In case of the
+  latter, `args` must be specified before `body` so as to intercept
+  the method's parameters. If `:after` is used the first argument will
+  be the method's return value.
+  
+  ```clojure
+  (java-patch [clojure.lang.LispReader \"read\"
+               [java.io.PushbackReader \"boolean\" Object \"boolean\" Object]]
+    :replace
+    [reader eof-is-error eof-value _is-recursive opts]
+    (clojure.tools.reader/read
+      (merge {:eofthrow eof-is-error
+              :eof eof-value}
+             opts)
+      reader))
+  
+  (java-patch [clojure.lang.LispReader$SyntaxQuoteReader \"syntaxQuote\"
+               [Object]]
+    :after
+    \"{
+       $_ = clojure.lang.RT.list(
+         clojure.lang.Symbol.intern(\"clojure.core\", \"from-syntax-quote\"),
+         $_
+       );
+    }\")
+  ```"
+  [& args]
+  (let [{:keys [method-signature mode params body]}
+        (conform! ::java-patch-args args)
+        java-body (emit-java-body method-signature mode params body)
+        edit (case mode
+               :replace '.setBody
+               :before '.insertBefore
+               :after '.insertAfter)]
+    `(change-java-method
+       ~method-signature
+       (fn [method#]
+         (~edit method# ~java-body))
+       ; :once (#{:before :after} mode)
+       )))
 
-(defn require-from-dependent-namespaces [requirement]
+(defn require-from-dependent-namespaces
+  "Requires a namespace from any namespace that has required it.
+  `requirement` can be anything `require` accepts.
+  
+  ```clojure
+  (require-from-dependent-namespaces
+    '[clojure.core :refer [custom-fn]])
+  ```"
+  [requirement]
   (let [ns (if (sequential? require)
              (first requirement)
              requirement)]
@@ -242,7 +300,7 @@
            (require '~requirement))))))
 
 (defn define-again
-  "Refresh a var"
+  "Refreshes a var by evaluating its source. Preserves metadata."
   [namespaced-sym]
   (let [ns-str (-> namespaced-sym .getNamespace)
         _ (assert ns-str "Symbol must be namespaced")
@@ -255,3 +313,25 @@
        (let [orig (meta v)]
          (eval source)
          (reset-meta! v orig)))))
+
+(defn static-field
+  "Returns the value of a static field by reflection."
+  [class name]
+  (-> (doto (.getDeclaredField class (str name))
+        (.setAccessible true))
+      (.get nil)))
+
+(defn method
+  "Returns a method by reflection."
+  [class name parameter-types]
+  (let [m (-> (doto (.getDeclaredMethod class (str name)
+                                        (into-array Class parameter-types))
+                (.setAccessible true)))]
+    (fn [target & args]
+      (.invoke m target (to-array args)))))
+
+(defn static-method
+  "Returns a static method by reflection."
+  [class name parameter-types]
+  (let [m (method class name parameter-types)]
+    (partial m nil)))

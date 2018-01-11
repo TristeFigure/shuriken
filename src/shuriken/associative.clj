@@ -83,7 +83,8 @@
     (first entries)))
 
 (defn index-by
-  "Like group-by excepts it applies a strategy to each grouped collection.
+  "Like group-by excepts it applies a strategy to each grouped
+  collection.
   A strategy is a function with signature (key, entries) -> entry.
   The default strategy asserts there is only one entry and returns it.
   
@@ -116,11 +117,11 @@
   vals)
 
 (defn merge-with-plan
-  "Like `merge-with` except that the combination fn of a specific pair of
-  entries is determined by looking up their key in `plan`. If not found,
-  falls back to the function found under key `:else` or if not provided
-  to a function that returns the value in the second map, hence providing the
-  behavior of `merge`."
+  "Like `merge-with` except that the combination fn of a specific pair
+  of entries is determined by looking up their key in `plan`. If not
+  found, falls back to the function found under key `:else` or if not
+  provided to a function that returns the value in the second map,
+  hence providing the behavior of `merge`."
   [plan & maps]
     (when (some identity maps)
       (let [merge-entry (fn [m e]

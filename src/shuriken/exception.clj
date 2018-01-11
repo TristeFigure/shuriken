@@ -2,9 +2,10 @@
   "### Macros to deal with exceptions")
 
 (defmacro silence
-  "Returns `:substitute` if `expr` raises an exception that matches `target`.
-  - if not provided, `substitute` is valued to `nil`.
-  - target can be either one of :
+  "Returns `substitute` if `expr` raises an exception that matches
+  `target`.
+  If not provided, `substitute` is `nil`.
+  Target can be:
     - a class
     - a sequence of classes
     - a predicate

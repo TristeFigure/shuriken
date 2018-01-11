@@ -1,10 +1,9 @@
 (ns shuriken.debug
-  "### Debug pretty printer"
+  "### Pretty debugging"
   (:require [shuriken.string
               :refer [format-code lines join-lines tabulate truncate]]
             [clojure.string :as str]))
 
-;; TODO: expose?
 (defn ^:no-doc debug-print [label result]
   (let [label-length (+ 1 (count label)) ;; accomodating ":"
         result-str (binding [*print-length* 10]
@@ -29,8 +28,8 @@
   ; (- 3 4): -1
   => -1
   ```"
-  [& body]
-  (when (seq body)
+  [& forms]
+  (when (seq forms)
     (let [v-sym (gensym "v-")
           bindings (vec (mapcat (fn [expr]
                                   `[~v-sym
@@ -40,6 +39,6 @@
                                                         \newline \space)
                                                       (truncate 32))]
                                       (debug-print label# result#))])
-                                body))]
+                                forms))]
       `(let ~bindings
          ~v-sym))))

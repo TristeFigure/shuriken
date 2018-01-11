@@ -14,6 +14,8 @@
   `(do (b ~code)
        (bb ~code)))
 
+(defmacro mm [] :abc)
+
 (deftest test-is-form?
   (is (= true  (is-form? 'a '(a :z))))
   (is (= false (is-form? 'x '(a :z))))
@@ -44,9 +46,18 @@
 (deftest test-file-eval
   (is (= 2 (let [x 1] (file-eval '(+ 1 x))))))
 
+(deftest test-macroexpand-all-eager
+  (testing "asserting clojure.walk/macroexpand-all's behavior"
+    (is (= '(:abc (quote :abc))
+           (clojure.walk/macroexpand-all '((shuriken.macro-test/mm)
+                                           (quote (shuriken.macro-test/mm)))))))
+  (is (= '(:abc (quote (shuriken.macro-test/mm)))
+           (macroexpand-all-eager '((shuriken.macro-test/mm)
+                                    (quote (shuriken.macro-test/mm)))))))
+
 (deftest test-macroexpand-some
-  (is (= '(do (shuriken.macro-test/b (+ 1 2))
-           (shuriken.macro-test/bb (+ 1 2)))
+  (is (= '(do (do (shuriken.macro-test/b (+ 1 2))
+                  (shuriken.macro-test/bb (+ 1 2))))
          (macroexpand-some '#{a} '(do (shuriken.macro-test/a (+ 1 2))))))
   (is (= '(do (clojure.core/inc (+ 1 2))
            (shuriken.macro-test/bb (+ 1 2)))
@@ -61,4 +72,6 @@
   (is (= (macroexpand-1  '(a 1))
          (macroexpand-n 1 '(a 1)))))
 
-(run-tests)
+(deftest test-macroexpand-depth
+  (is (= `(do (inc 123) (+ 2 (b 123)))
+         (macroexpand-depth 1 '(shuriken.macro-test/a 123)))))

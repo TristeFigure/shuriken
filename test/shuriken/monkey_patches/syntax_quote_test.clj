@@ -3,7 +3,7 @@
             [shuriken.monkey-patches.syntax-quote]
             [clojure.pprint :refer [pprint]]))
 
-(create-ns 'test)
+(require '[clojure.core :refer [from-syntax-quote]])
 
 (deftest test-syntax-quote
   (testing "` reader macro expansion"
@@ -11,7 +11,7 @@
            'shuriken.monkey-patches.syntax-quote-test/abc)))
   (testing "`` reader macro expansion"
     (is (= ``abc
-            '(clojure.core/syntax-quoted
+            '(clojure.core/from-syntax-quote
               'shuriken.monkey-patches.syntax-quote-test/abc))))
   (testing "pprint syntax-quote -> ` translation"
     (is (= (with-out-str (pprint ``is))

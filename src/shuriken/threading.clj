@@ -8,29 +8,6 @@
 
 ;; TODO: maybe debug-print could stay private
 
-;; TODO: move in shuriken.macro ?
-(s/def ::macro-args+body
-  (s/cat :args vector?
-         :body (conf (s/* any?)
-                     #(apply list %) vec)))
-
-(s/def ::args+bodies
-  (either
-    :arity-1 (conf ::macro-args+body vector first)
-    :arity-n (s/+ (s/and list? ::macro-args+body))
-    :unform  (fn [x]
-               (if (= (count x) 1)
-                 :arity-1
-                 :arity-n))))
-
-(s/def ::macro-definition
-  (s/cat
-    :def-macro  symbol?
-    :name       symbol?
-    :doc-string (s/? string?)
-    :attr-map   (s/? map?)
-    :bodies     ::args+bodies))
-
 (s/def ::macro-variants
   (s/and vector?
          (s/* (s/cat
@@ -43,7 +20,7 @@
     :name-prefix (s/? symbol?)
     :doc-prefix  (s/? string?)
     :variants    ::macro-variants
-    :bodies      ::args+bodies))
+    :bodies      :shuriken.spec/args+bodies))
 
 (declare &macro-variant &macro-opts)
 
@@ -63,17 +40,17 @@
                                               ~@body))))
                                       bodies)]]
                 (do (->> {:def-macro  'defmacro
-                                      :name       specific-name
-                                      :doc-string specific-doc
-                                      :attr-map   nil ; TODO
-                                      :bodies     bodies}
-                                     (remove (fn [[k v]] (nil? v)))
-                                     (into {})
-                                     (s/unform ::macro-definition)))))))
+                          :name       specific-name
+                          :doc-string specific-doc
+                          :attr-map   nil ; TODO
+                          :bodies     bodies}
+                         (remove (fn [[k v]] (nil? v)))
+                         (into {})
+                         (s/unform :shuriken.spec/macro-definition)))))))
 
 (def-macro-variants tap
-  "Threads the expr through the forms like -> and returns the value of the
-  initial expr."
+  "Threads the expr through the forms like -> and returns the value of
+  the initial expr."
   [-> 
    ->> "Like tap-> but threads with ->>."]
   [x & forms]
@@ -83,8 +60,8 @@
 
 (defmacro tap
   "Evaluates expressions in order returning the value of the first.
-  Will thread the first expr into any subsequent expr starting with a threading
-  macro symbol.
+  Will thread the first expr into any subsequent expr starting with a
+  threading macro symbol.
   
   (tap 123
        (println \"yo\")

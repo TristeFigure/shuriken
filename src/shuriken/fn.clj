@@ -1,65 +1,75 @@
 (ns shuriken.fn
-  (:use clojure.pprint)
-  (:require [clojure.spec.alpha :as s]
-            [shuriken.spec :refer [conform!]]
-            [shuriken.destructure :refer [restructure]]))
+  "### Tools around functions")
 
-(defn arity
-  "Returns the maximum arity of:
+(defn- fn-class [f]
+  (class (if (var? f) @f f)))
+
+(defn- class-methods [class]
+  (->> class .getDeclaredMethods
+       (map #(vector (.getName %)
+                     (count (.getParameterTypes %))))))
+
+(defn- var-args? [methods]
+  (some #(-> % first #{"getRequiredArity"})
+        methods))
+
+(defn- invoke-methods [methods]
+  (->> methods
+       (filter (comp #{"invoke"} first))
+       (sort-by second)))
+
+(defn fake-arity
+  "Returns a function `g` calling `f` so that `(arities g)`
+  returns `arity` instead of `f`'s'original arity.
+  `arity` can be a number or a sequence of numbers.
+  Use `##Inf` (`Double/POSITIVE_INFINITY`) to signify a variadic
+  arity.
+  
+  Note that this function is orthogonal to Clojure's native arity
+  checks and its only intended use is to force the return value of
+  [[arities]]."
+  [arity f]
+  (let [arities (if (sequential? arity)
+                  (vec arity)
+                  [arity])]
+    (with-meta
+      (fn [& args]
+        (apply f args))
+      {::arities arities})))
+
+(defn arities
+  "Returns a vector of numbers describing the arities of
+  (multi-bodied):
     - anonymous functions like `#()` and `(fn [])`.
     - defined functions like `map` or `+`.
     - macros, by passing a var like `#'->`.
   
-  Returns `##Inf` (`Double/POSITIVE_INFINITY`) if the function/macro is
-  variadic."
+  Includes `##Inf` (`Double/POSITIVE_INFINITY`) if the function/macro
+  is variadic."
   [f]
-  (let [func (if (var? f) @f f)
-        methods (->> func class .getDeclaredMethods
-                     (map #(vector (.getName %)
-                                   (count (.getParameterTypes %)))))
-        var-args? (some #(-> % first #{"getRequiredArity"})
-                        methods)]
-    (if var-args?
-      ##Inf
-      (let [max-arity (->> methods
-                           (filter (comp #{"invoke"} first))
-                           (sort-by second)
-                           last
-                           second)]
-        (if (and (var? f) (-> f meta :macro))
-          (- max-arity 2) ;; substract implicit &form and &env arguments
-          max-arity)))))
+  (or (-> f meta ::arities)
+      (let [methods (-> f fn-class class-methods)
+            arities (as-> methods $
+                      (invoke-methods $)
+                      (map second $)
+                      (if (var-args? methods)
+                        (concat $ [##Inf])
+                        $)
+                      ;; if it is a macro
+                      (if (and (var? f) (-> f meta :macro))
+                        ;; substract implicit &form and &env arguments
+                        (map #(- % 2) $) 
+                        $))]
+        (vec arities))))
 
-(s/def ::arity-fn-args
-       (s/cat
-         :arity  any?
-         :name   (s/? symbol?)
-         :params vector?
-         :body   (s/* any?)))
+(defn max-arity
+  "Returns the maximum arity of `f` with the same semantics as
+  `arities`."
+  [f]
+  (apply max (arities f)))
 
-(def ^:no-doc alphabet
-  (map gensym '(a b c d e f g h i j k l m n o p q r s t u v w x y z)))
-
-(defmacro ^:no-doc arity-case [arity name params & body]
-  (let [args-sym (gensym 'args)]
-    `(case ~arity
-       ~@(->> (concat (range 21) ;; 20 params max for fns in Clojure.
-                      [##Inf])
-              (mapcat
-                (fn [n]
-                  (let [artificial-params (if (= n ##Inf)
-                                            ['& args-sym]
-                                            (->> alphabet (take n) vec))]
-                    [n `(fn ~@(keep identity [name]) ~artificial-params
-                          (let [~params ~(if (= n ##Inf)
-                                           args-sym
-                                           artificial-params)]
-                            ~@body))])))))))
-
-(defmacro arity-fn 
-  "Creates an anonymous function of n args named `a`, `b`, `c`, etc ...,
-  binding `params` to `[a, b, c, etc ...]` before  running `body`.
-  This is used to enforce a function's arity."
-  [& args]
-  (let [{:keys [arity name params body]} (conform! ::arity-fn-args args)]
-    `(arity-case ~arity ~name ~params ~@body)))
+(defn min-arity
+  "Returns the minimum arity of `f` with the same semantics as
+  `arities`."
+  [f]
+  (apply min (arities f)))

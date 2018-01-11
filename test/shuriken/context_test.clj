@@ -26,11 +26,11 @@
 (deftest test-binding-context
   (delete-context! :key)
   (context! :key '{x 1 y 2})
-  (is (= [1 2] (eval '(binding-context :key [x y]))))
+  (is (= [1 2] (eval '(shuriken.context/binding-context :key [x y]))))
   (testing "with keywords"
     (delete-context! :key)
     (context! :key {:x 1 :y 2})
-    (is (= [1 2] (eval '(binding-context :key [x y]))))))
+    (is (= [1 2] (eval '(shuriken.context/binding-context :key [x y]))))))
 
 (defmacro expand-to-litteral-map []
   '{c 3})
@@ -111,5 +111,3 @@
     (is (= [1 2 3] (let [m {:a 1 :b 2 :c 3}] (letmap m [a b c])))))
   
   (is (= {} @contexts)))
-
-(run-tests)

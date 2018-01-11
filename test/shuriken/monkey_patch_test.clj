@@ -28,8 +28,7 @@
            (with-out-str
              (let [k 'foo]
                (only k (println "foo"))
-               (only 'shuriken.monkey-patch-test/foo (println "foo"))))))
-    (println "ONLYS:" @shuriken.monkey-patch.no-reload-store/onlys)))
+               (only (symbol (str *ns*) "foo") (println "foo"))))))))
 
 (deftest test-refresh-only
   (testing "allows 'onlys' to be replayed"

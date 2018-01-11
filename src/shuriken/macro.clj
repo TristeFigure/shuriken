@@ -1,8 +1,10 @@
 (ns shuriken.macro
-  "### Working with macros"
-  (:require [clojure.walk :refer [prewalk walk]]
+  "### Tools for building macros"
+  (:require [clojure.walk :refer [prewalk]]
             [clojure.java.io :as io]
             [clojure.pprint :refer [pprint]]
+            [clojure.spec.alpha :as s]
+            [shuriken.spec :refer [conform!]]
             [shuriken.namespace :refer [fully-qualify unqualify]]
             [shuriken.context :refer [context! binding-context delete-context!
                                       lexical-context]]
@@ -121,7 +123,7 @@
             (.setStackTrace (.getStackTrace cause)))))))
 
 (defmacro file-eval
-  "Evaluate code in a temporary file via load-file in the local
+  "Evaluate code in a temporary file via `load-file` in the local
   lexical context. Keep the temporary file aside if an error is
   raised, deleting it on the next run.
   
@@ -160,30 +162,37 @@
   (macroexpand-all-eager '((m) (quote (m))))
   => (:abc (quote (m)))
   ```"
-  [form & {:as opts}]
-  (pprint (merge {:walk? #(not (is-form? 'quote %))
-                  :pre?  #(and (not (is-form? 'quote %))
-                               (seq? %))
-                  :pre   macroexpand}
-                 opts))
-  (dance form :walk? #(not (is-form? 'quote %))
-                      :pre?  #(and (not (is-form? 'quote %))
-                                   (seq? %))
-                      :pre   macroexpand))
-
-(defmacro m [] :abc)
-(println "-->" (macroexpand-all-eager '((m) (quote (m)))))
+  [expr & {:as opts}]
+  (let [form-not-quote? #(and (not (is-form? 'quote %))
+                              (seq? %))]
+    (dance expr (merge-dances {:walk? #(not (is-form? 'quote %))
+                               :pre?  form-not-quote?
+                               :pre   macroexpand}
+                              opts))))
 
 ;; -- Macroexpand and friends
 (defn macroexpand-some
-  "Recursively macroexpand forms whose first element matches filter
-  in expr. Symbols are passed to filter unqualified."
-  [filter expr]
+  "Recursively macroexpands seqs in `expr` whose first element matches
+  `pred`. Symbols are passed to `filter` unqualified. Quoted forms
+  are not expanded.
+  
+  ```clojure
+  (macroexpand-some #{'let}
+    '(let [a (let [aa 1] aa)
+           b '(let [bb 2] bb)]
+       (dosync [a b])))
+  => (let* [a (let* [aa 1] aa)  ; expanded
+            b '(let [bb 2] bb)] ; not expanded since quoted
+       (dosync nil))            ; not expanded b/c pred does not match
+  ```"
+  [pred expr]
   (macroexpand-all-eager expr
-    :process #(and (seq? %) (filter (or (and (some-> % first symbol?)
-                                             (-> % first unqualify))
-                                        (first %))))
-    :post    macroexpand))
+    :pre? (fn truc [x]
+            (when (seq? x)
+              (let [sym (or (and (some-> x first symbol?)
+                                 (-> x first unqualify))
+                            (first x))]
+                (pred sym))))))
 
 (defn macroexpand-n
   "Iteratively call macroexpand-1 on form n times."
@@ -192,6 +201,19 @@
        ;; since the first occurence in the prev lazyseq is form itself, (inc n)
        (take (inc n))
        last))
+
+(defn macroexpand-depth
+  "Expands the first `n` levels of `expr` with
+  `macroexpand-all-eager`."
+  [n expr]
+  (macroexpand-all-eager expr
+    :walk? (fn [form ctx] [(< (:depth ctx) n) ctx])))
+
+(s/def ::macroexpand-do-args
+       (s/cat
+         :mode     (s/? any?)
+         :mode-arg (s/? any?)
+         :expr     any?))
 
 (defmacro macroexpand-do
   "(defmacro abc []
@@ -215,25 +237,29 @@
   | `MODE`                        | expansion                        |
   |-------------------------------|----------------------------------|
   | `nil` (the default)           | `macroexpand`                    |
-  | `:all`                        | `clojure.walk/macroexpand-all`   |
-  | a number n                    | iterate `macroexpand-1` n times  |
-  | anything else                 | a predicate to `macroexpand-some`|"
-  ([expr]
-   `(macroexpand-do nil ~expr))
-  ([mode expr]
-   `(do
-      (println "-- Macro expansion --")
-      (let [mode# ~mode
-            expander# (cond (nil? mode#)   macroexpand
-                            (= :all mode#)  clojure.walk/macroexpand-all
-                            (number? mode#) (partial macroexpand-n    mode#)
-                            :else          (partial macroexpand-some mode#))
-            expansion# (clean-code (expander# (quote ~expr)))]
-        (pprint expansion#)
-        (newline)
-        
-        (println "--  Running macro  --")
-        (let [result# (file-eval expansion#)]
-          (pprint result#)
-          (newline)
-          result#)))))
+  | `:all`                        | `macroexpand-all-eager`          |
+  | :n  <number>                  | `macroexpand-n`                  |
+  | :depth <number>               | `macroexpand-depth`              |
+  | :some <fn>                    | `macroexpand-some`               |"
+  [& args]
+  (let [{:keys [mode mode-arg expr]} (conform! ::macroexpand-do-args args)]
+    (println "[mode mode-arg expr]" [mode mode-arg expr])
+    `(do
+       (println "-- Macro expansion --")
+       (let [mode# ~mode
+             mode-arg# ~mode-arg
+             expander# (case mode# 
+                         nil    macroexpand
+                         :all   macroexpand-all-eager
+                         :n     (partial macroexpand-n     mode-arg#)
+                         :depth (partial macroexpand-depth mode-arg#)
+                         :some  (partial macroexpand-some  mode-arg#))
+             expansion# (clean-code (expander# (quote ~expr)))]
+         (pprint expansion#)
+         (newline)
+         
+         (println "--  Running macro  --")
+         (let [result# (file-eval expansion#)]
+           (pprint result#)
+           (newline)
+           result#)))))

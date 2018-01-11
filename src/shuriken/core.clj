@@ -3,6 +3,7 @@
             [shuriken associative
                       context
                       debug
+                      destructure
                       exception
                       fn
                       macro
@@ -32,15 +33,27 @@
    lexical-eval
    letmap]
   
+  [shuriken.dance
+   dance
+   merge-dances]
+  
   [shuriken.debug
    debug]
+  
+  [shuriken.destructure
+   disentangle
+   deconstruct
+   restructure]
 
   [shuriken.exception
    silence
    thrown?]
   
   [shuriken.fn
-   arity]
+   arities
+   max-arity
+   min-arity
+   fake-arity]
 
   [shuriken.macro
    is-form?

@@ -1,8 +1,7 @@
 (ns shuriken.context
   "### Tools to manipulate the lexical context"
   (:use clojure.pprint)
-  (:require [clojure.walk :refer [macroexpand-all]]
-            [clojure.spec.alpha :as s]
+  (:require [clojure.spec.alpha :as s]
             [shuriken.spec :refer [conf either conform!]]))
 
 ;; TODO: Globally, make sure that any macro that dequotes/requotes its arguments
@@ -16,8 +15,8 @@
   (atom {}))
 
 (defn context!
-  "Stores a map in memory under key `k`. Merges with the previous context if
-  present.
+  "Stores a map in memory under key `k`. Merges with the previous
+  context if present.
   
   ```clojure
   (context! :k {'a 123})
@@ -32,8 +31,8 @@
     (swap! contexts #(assoc % k (merge (get % k) ctx)))))
 
 (defn context
-  "Fetches a map stored in memory under key `k`. Fetches further value at key
-  `kk` in this map if it is provided."
+  "Fetches a map stored in memory under key `k`. If `kk` is provided,
+  fetches `kk` in `k`."
   ([k]
    (get @contexts k))
   ([k kk]
@@ -45,13 +44,14 @@
                     (-> kk name symbol)))))))
 
 (defn delete-context!
-  "Deletes the map stored in memory under key k."
+  "Deletes the map stored in memory under key `k`."
   [k]
   (swap! contexts dissoc k)
   nil)
 
 (defmacro binding-context
-  "Retrieves a stored lexical context from memory and binds it using let.
+  "Retrieves a stored lexical context from memory and binds it using
+  `let`.
   
   ```clojure
   (context! :k {'a 1})
@@ -77,10 +77,11 @@
     code))
 
 (defmacro lexical-context
-  "Returns the current lexical context as a map from symbols to values.
-  In macros (or anywhere '&env is a local in scope), lexical-context will
-  return the context of the expanded form rather than the context of the macro
-  itself. Use (lexical-context :local true) to override this behavior.
+  "Returns the current lexical context as a map from symbols to
+  values. In macros (or anywhere `&env` is a local in scope),
+  `lexical-context` will return the context of the expanded form
+  rather than the context of the macro itself.
+  Use `(lexical-context :local true)` to override this behavior.
   
   ```clojure
   (let [a 1 b 2 c 3]
@@ -98,12 +99,13 @@
          (into {}))))
 
 (defmacro lexical-eval
-  "Evaluates code in the given lexical context. If no context is passed,
-  `(lexical-context)` is used.
+  "Evaluates code in the given lexical context. If no context is
+  passed, `(lexical-context)` is used.
   
   ```clojure
   (let [a 1]
-    (eval '(inc a))           ; CompilerException: Unable to resolve symbol: a
+    (eval '(inc a))           ; CompilerException:
+                              ;   Unable to resolve symbol: a
     (lexical-eval (inc a))    ; => 2
     (lexical-eval {'a 22} a)) ; => 22 
   ```"
@@ -145,10 +147,10 @@
 (defmacro lexical-map
   "Turns a collection of symbols into a map of symbols to their value
   in the current lexical context.
-  If params is not a litteral nor expands to one via
-  clojure.walk/macroexpand-all, `lexical-eval` will be used at runtime.
-  However this will print a warning. Set `*warn-on-late-eval*` to false to
-  silence it.
+  If `params` is not a litteral nor expands to one, `lexical-eval`
+  will be used at runtime.
+  However this will print a warning. Set `*warn-on-late-eval*` to
+  false to silence it.
   
   ```clojure
   (let [a 1 b 2 c 3]
@@ -159,7 +161,7 @@
   (let [args (->> args dequote (map dequote))
         {:keys [params keywords] :or {keywords false}}
         (conform! ::lexical-map-args args) 
-        params (let [expanded (macroexpand-all params)]
+        params (let [expanded (macroexpand params)]
                  (dequote (if (sequential? expanded)
                             (mapv dequote expanded)
                             expanded)))
@@ -188,11 +190,11 @@
                (into {}))))))
 
 (defmacro letmap
-  "Binds each key of `m` to the corresponding value. Keys in `m` must be
-  litteral symbols. If `m` is not a litteral map nor a macro that expands into
-  one, `lexical-eval` will be used at runtime.
-  However this will print a warning. Set `*warn-on-late-eval*` to false to
-  silence it. `m` can be quoted or not.
+  "Binds each key of `m` to the corresponding value. Keys in `m` must
+  be litteral symbols. If `m` is not a litteral map nor a macro that
+  expands to one, `lexical-eval` will be used at runtime.
+  However this will print a warning. Set `*warn-on-late-eval*` to
+  false to silence it. `m` can be quoted or not.
   
   ```clojure
   (letmap '{a 1 b 2}
@@ -200,7 +202,7 @@
   => [1 2]
   ```"
   [m & body]
-  (let [m (dequote (macroexpand-all m))]
+  (let [m (dequote (macroexpand m))]
     (if-not (map? m)
       ;; then m needs evaluation
       (let [k-sym (keyword (gensym "letmap-"))]

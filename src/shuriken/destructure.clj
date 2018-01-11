@@ -107,18 +107,19 @@
     (map? binding-form)         (restructure-associative binding-form mapping)
     :else (mapping binding-form)))
 
-(defn ^:no-doc dequote [form]
+(defn- dequote [form]
   (if (and (sequential? form)
            (-> form first (= 'quote)))
     (second form)
     form))
 
-(defn ^:no-doc requote [form]
+(defn- requote [form]
   (if (and (sequential? form)
            (-> form first (= 'quote)))
     form
     (list 'quote form)))
 
+;; TODO: turn into a function. Correct specs.
 (defmacro restructure
   "Undoes what destructure does.
   
