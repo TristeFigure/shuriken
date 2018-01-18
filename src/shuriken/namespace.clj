@@ -1,4 +1,5 @@
 (ns shuriken.namespace
+  "### Namespace related stuff"
   (:use clojure.pprint)
   (:require [clojure.string :as str]
             [shuriken.context :refer [lexical-eval]]))
@@ -56,10 +57,10 @@
          x)))
 
 (defn fully-qualify
-  "Returns the fully-qualified form of the symbol as if resolved from within a
-  namespace.
+  "Returns the fully-qualified form of the symbol as if resolved from
+  within a namespace.
   Handles namespace aliases.
-  Default namespace is *ns*.
+  `ns`defaults tp `*ns*`.
   
   (fully-qualified? 'IRecord)      => clojure.lang.IRecord
   (fully-qualified? 'my-var)       => my-ns/my-var
@@ -81,10 +82,10 @@
 
 (defn fully-qualified?
   "Returns true if the symbol constitutes an absolute reference.
-  See fully-qualified.
+  See [[fully-qualified]].
   
   Handles namespace aliases.
-  Default namespace is *ns*.
+  `ns` defaults to `*ns*`.
 
   (fully-qualified? 'clojure.lang.IRecord) => true
   (fully-qualified? 'my-ns/my-var)         => true
@@ -100,7 +101,7 @@
 (defn unqualify
   "Returns the unqualified form of sym.
   Handles namespace aliases.
-  ns defaults to *ns*.
+  `ns` defaults to `*ns*`.
 
   (unqualifiy 'clojure.lang.IRecord)      => IRecord
   (unqualifiy 'my-ns/my-var)              => my-var
@@ -127,8 +128,8 @@
 ;; Taken and adapted from clojure.contrib
 (defmacro with-ns
   "Evaluates body in another namespace. ns is either a namespace
-  object or a symbol.  This makes it possible to define functions in
-  namespaces other than the current one."
+  object or a symbol.  Useful to define functions in namespaces other
+  than `*ns*`."
   [ns & body]
   `(binding [*ns* (the-ns ~ns)]
      (lexical-eval (quote (do ~@body)))))

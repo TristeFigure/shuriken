@@ -11,8 +11,8 @@
     (assoc acc ks m)))
 
 (defn flatten-keys
-  "Transforms a nested map into a map where keys are path through the
-  original map and values are leaf values these paths lead to.
+  "Transforms a nested map into a map where keys are paths through the
+  original map and values are leafs these paths lead to.
 
   ```clojure
   (flatten-keys {:a {:b {:c :x
@@ -58,7 +58,7 @@
       (apply deep-merge* m1m2f (or more [])))))
 
 (defn deep-merge
-  "Deep merge two or more nested maps.
+  "Deep merges two or more nested maps.
   
   ```clojure
   (deep-merge {:x {:a :a  :b :b  :c :c}}
@@ -83,10 +83,12 @@
     (first entries)))
 
 (defn index-by
-  "Like group-by excepts it applies a strategy to each grouped
+  "Like `group-by` except it applies a strategy to each grouped
   collection.
-  A strategy is a function with signature (key, entries) -> entry.
-  The default strategy asserts there is only one entry and returns it.
+  A strategy is a function with signature `key, entries) -> entry`
+  where `entry` is the one that will be indexed.
+  The default strategy asserts there is only one entry for the given
+  key and returns it.
   
   ```clojure
   (def ms [{:a 1 :b 2} {:a 3 :b 4} {:a 5 :b 4}])
@@ -113,15 +115,15 @@
         (into {}))))
 
 (def unindex
-  "Alias of vals."
+  "Alias of `vals`."
   vals)
 
 (defn merge-with-plan
   "Like `merge-with` except that the combination fn of a specific pair
   of entries is determined by looking up their key in `plan`. If not
   found, falls back to the function found under key `:else` or if not
-  provided to a function that returns the value in the second map,
-  hence providing the behavior of `merge`."
+  provided to a function that returns the value in the right-most map,
+  thus providing the behavior of `merge`."
   [plan & maps]
     (when (some identity maps)
       (let [merge-entry (fn [m e]

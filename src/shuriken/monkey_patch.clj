@@ -7,7 +7,8 @@
             [shuriken.macro :refer [is-form? wrap-form unwrap-form]]
             [clojure.repl :refer [source-fn]])
   (:use robert.hooke)
-  (:import RedefineClassAgent))
+  (:import RedefineClassAgent
+           java.lang.reflect.Modifier))
 
 (defn ^:no-doc prepend-ns
   ([k]
@@ -94,24 +95,38 @@
   (instance? javassist.CtClass x))
 
 (defn- type-to-str [type]
-  (cond
-    (string? type)                      type
-    (symbol? type)                       (str type)
-    (or (class? type) (ct-class? type)) (.getName type)
-    :else                               (name type)))
+  (println "type" type)
+  (->> (cond
+         (string? type)                      type
+         (symbol? type)                      (str type)
+         (or (class? type) (ct-class? type)) (.getName type)
+         :else                               (name type))
+       symbol
+       resolve
+       str
+       (re-find #"(?<=class ).*")))
 
 (defn ^:no-doc types-to-str [types]
-  (mapv type-to-str types))
+  (->> (map type-to-str types)
+       (keep identity)
+       vec))
 
 (s/def ::method-signature
        (-> (s/cat
              :class-name      (either
-                                :string (conf string? identity str)
-                                :class  (conf class? type-to-str)
-                                :symbol (conf symbol? type-to-str)
+                                :string string?
+                                :class  (conf class? type-to-str #(.getName %))
+                                :symbol (conf symbol? type-to-str str)
+                                :unform (fn [x]
+                                          (cond (string? x) :string
+                                                (class? x)  :class
+                                                (symbol? x) :symbol)))
+             :method-name     (either
+                                :string string?
+                                :ident  (conf ident? name)
+                                :quote? (conf #(is-form? 'quote %)
+                                              #(-> % first str))
                                 :unform :string)
-             :method-name     (conf #(or (string? %) (ident? %))
-                                    name)
              :parameter-types (s/?
                                 (conf (s/coll-of
                                         #(or (string? %) (ident? %) (class? %)))
@@ -127,29 +142,60 @@
     (-> (clojure.string/join "-" args)
         (clojure.string/replace #"\." "_"))))
 
+(defn ^:no-doc find-class [method-signature]
+  (let [[class-name _method-name _parameter-types]
+        (conform! ::method-signature method-signature)
+        class-pool (javassist.ClassPool/getDefault)
+        ct-class (.get class-pool class-name)]
+    (assert ct-class "Class not found")
+    (println "------> class-name" class-name)
+    (println "-->" method-signature)
+    (.stopPruning ct-class true)
+    ct-class))
+
+(defn ^:no-doc find-method [method-signature]
+  (let [[_class-name method-name parameter-types]
+        (conform! ::method-signature method-signature)
+        ct-class (find-class method-signature)
+        ct-method (->> (.getMethods ct-class)
+                       (filter
+                         #(and (= method-name (.getName %))
+                               (if (nil? parameter-types)
+                                 true
+                                 (= (->> % .getParameterTypes  types-to-str)
+                                        parameter-types))))
+                       first)]
+    (assert ct-method "Method not found")
+    ct-method))
+
+(defn ^:no-doc return-type [method-signature]
+  (let [ct-method (find-method method-signature)]
+    (-> ct-method .getReturnType .getName)))
+
+(defn ^:no-doc delegate-name [method-signature]
+  (-> method-signature
+      signature-to-str
+      (str "-clojure-delegate")
+      symbol))
+
+(defn ^:no-doc static-method? [method-signature]
+  (-> method-signature
+      find-method
+      .getModifiers
+      Modifier/isStatic))
+
 (defmacro ^:no-doc change-java-method
   [method-signature f & {:keys [once] :or {once false}}]
   (let [method-signature-sym (gensym "method-signature-")
-        code `(let [[class-name# method-name# parameter-types#]
-                    (conform! ::method-signature ~method-signature-sym)
-                    class-pool# (javassist.ClassPool/getDefault)
-                    ct-class#   (doto
-                                  (.get class-pool# class-name#)
-                                  (.stopPruning true))
+        code `(let [ct-class#   (find-class ~method-signature-sym)
                     was-frozen# (if (.isFrozen ct-class#)
                                   (do (.defrost ct-class#) true)
                                   false)
-                    method#
-                    (->> (.getMethods ct-class#)
-                         (filter
-                           #(and (= method-name# (.getName %))
-                                 (if (nil? parameter-types#)
-                                       true
-                                       (= (-> % .getParameterTypes types-to-str)
-                                          parameter-types#))))
-                         first)
-                    _# (~f method#)
-                    bytecode# (.toBytecode ct-class#)
+                    method#     (find-method ~method-signature-sym)
+                    _#          (~f method#)
+                    bytecode#   (.toBytecode ct-class#)
+                    [class-name# _method-name# _parameter-types#]
+                    (conform! ::method-signature ~method-signature-sym)
                     definition# (java.lang.instrument.ClassDefinition.
                                   (Class/forName class-name#)
                                   bytecode#)]
@@ -160,53 +206,95 @@
                 (.stopPruning ct-class# false)
                 nil)]
     `(let [~method-signature-sym ~method-signature]
-       ~(if once
-          `(only (signature-to-str ~method-signature-sym)
+       (if-let [once# ~once]
+          (only (str (signature-to-str ~method-signature-sym)
+                     "-" once#)
              ~code)
-          code))))
+          ~code))))
+
+(def primitive-types
+  {"byte"    "Byte"
+   "short"   "Short"
+   "int"     "Integer"
+   "long"    "Long"
+   "float"   "Float"
+   "double"  "Double"
+   "boolean" "Boolean"
+   "char"    "Character"})
+
+(defn ^:no-doc cast-str [method-signature expr-str]
+  (let [rt (return-type method-signature)
+        boxed-t (get primitive-types rt)]
+    (if (contains? primitive-types rt)
+      (format "(((%s) (%s)).%sValue())" boxed-t expr-str rt)
+      (format "((%s) %s)" rt expr-str))))
 
 ;; See https://jboss-javassist.github.io/javassist/tutorial/tutorial2.html
 ;; for the full madness.
 (defmulti ^:private javassist-clojure-body #(first %&))
 
-(defmethod javassist-clojure-body :replace [_mode name]
+(defmethod javassist-clojure-body :replace [_mode method-signature]
   (format
     "{
       clojure.lang.IFn fn = clojure.java.api.Clojure.var(
         \"%s\", \"%s\"
       );
       
-      return fn.applyTo(clojure.lang.RT.seq($args));
+      return %s;
     }",
     (str *ns*)
-    name))
+    (delegate-name method-signature)
+    (cast-str method-signature
+              (format "fn.applyTo(%s)"
+                      (if (static-method? method-signature)
+                        "clojure.lang.RT.seq($args)"
+                        "clojure.lang.RT.cons(
+                          $0,
+                          clojure.lang.RT.seq($args)
+                        )")))))
 
-(defmethod javassist-clojure-body :before [_mode name]
+(defmethod javassist-clojure-body :before [_mode method-signature]
   (format
     "{
       clojure.lang.IFn fn = clojure.java.api.Clojure.var(
         \"%s\", \"%s\"
       );
       
-      
-      fn.applyTo(clojure.lang.RT.seq($args));
+      fn.applyTo(%s);
     }",
     (str *ns*)
-    name))
+    (delegate-name method-signature)
+    (if (static-method? method-signature)
+      "clojure.lang.RT.seq($args)"
+      "clojure.lang.RT.cons(
+        $0,
+        clojure.lang.RT.seq($args)
+      )")))
 
-(defmethod javassist-clojure-body :after [_mode name]
-  (format
-    "{
-      clojure.lang.IFn fn = clojure.java.api.Clojure.var(
-        \"%s\", \"%s\"
-      );
-      
-      $_ = fn.applyTo(
-        clojure.lang.RT.cons($_, clojure.lang.RT.seq($args))
-      );
-    }",
-    (str *ns*)
-    name))
+(defmethod javassist-clojure-body :after [_mode method-signature]
+  (let [expr "fn.applyTo(
+                clojure.lang.RT.cons($_, clojure.lang.RT.seq($args))
+              )"]
+    (format
+      "{
+        clojure.lang.IFn fn = clojure.java.api.Clojure.var(
+          \"%s\", \"%s\"
+        );
+        
+        $_ = %s;
+      }",
+      (str *ns*)
+      (delegate-name method-signature)
+      (cast-str
+        method-signature
+        (if (static-method? method-signature)
+          "fn.applyTo(clojure.lang.RT.cons($_, clojure.lang.RT.seq($args)))"
+          "fn.applyTo(
+            clojure.lang.RT.cons(
+              $0,
+              clojure.lang.RT.cons($_, clojure.lang.RT.seq($args))
+            )
+          )")))))
 
 (defn- body-class [body]
   (cond
@@ -216,16 +304,12 @@
 
 (defmulti ^:private emit-java-body #(body-class %4))
 
-(defmethod emit-java-body :javassist-body [method-signature mode params body]
+(defmethod emit-java-body :javassist-body [_method-signature _mode_ params body]
   (first body))
 
 (defmethod emit-java-body :clojure-body [method-signature mode params body]
-  (let [delegate-name (-> method-signature
-                          signature-to-str
-                          (str "-clojure-delegate")
-                          symbol)
-        java-body (javassist-clojure-body mode delegate-name)]
-    `(do (defn- ~delegate-name ~params
+  (let [java-body (javassist-clojure-body mode method-signature)]
+    `(do (defn- ~(delegate-name method-signature) ~params
            ~@body)
          ~java-body)))
 
@@ -239,11 +323,15 @@
 (defmacro java-patch
   "Applies a monkey-patch to a java method.
    
-  `mode` can be either :replace, :before or :after  
-  `body` can be javassist pseudo-java or clojure code. In case of the
-  latter, `args` must be specified before `body` so as to intercept
-  the method's parameters. If `:after` is used the first argument will
-  be the method's return value.
+  `mode` can be either `:replace`, `:before` or `:after`.
+  `body` can be javassist pseudo-java (a string) or clojure code.
+  In the latter case, `args` must be specified before `body` so as to
+  intercept the method's parameters. If `:after` is used `args` will
+  include the method's return value. If the method is an instance
+  method, `args` will also include the instance it is called on
+  (`this`).
+  
+  `args`: `[this? return-value? & method-args]`
   
   ```clojure
   (java-patch [clojure.lang.LispReader \"read\"
@@ -255,6 +343,8 @@
               :eof eof-value}
              opts)
       reader))
+  
+  ;; or
   
   (java-patch [clojure.lang.LispReader$SyntaxQuoteReader \"syntaxQuote\"
                [Object]]
@@ -278,8 +368,7 @@
        ~method-signature
        (fn [method#]
          (~edit method# ~java-body))
-       ; :once (#{:before :after} mode)
-       )))
+       :once (#{:before :after} ~mode))))
 
 (defn require-from-dependent-namespaces
   "Requires a namespace from any namespace that has required it.

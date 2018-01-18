@@ -6,8 +6,6 @@
             [shuriken.debug :refer [debug-print]]
             [shuriken.string :refer [adjust truncate lines format-code]]))
 
-;; TODO: maybe debug-print could stay private
-
 (s/def ::macro-variants
   (s/and vector?
          (s/* (s/cat
@@ -24,6 +22,7 @@
 
 (declare &macro-variant &macro-opts)
 
+;; TODO: document
 (defmacro def-macro-variants [& args]
   (let [{:keys [name-prefix doc-prefix variants args bodies]}
         (conform! ::def-macro-variants-args args)]
@@ -79,18 +78,17 @@
               body)
        ~result-sym)))
 
-(defn pp->log* [variant max-label-length label result]
-  (let []
-    (debug-print
-      (adjust :left max-label-length label)
-      result)))
-
-;; TODO: expose ? Move to shuriken.macro ?
 (defmacro literally [expr]
   `(let [expr# '~expr
          value# ~expr]
      [(= (str expr#) (str value#))
       value#]))
+
+(defn pp->log* [variant max-label-length label result]
+  (let []
+    (debug-print
+      (adjust :left max-label-length label)
+      result)))
 
 (def-macro-variants pp
   [->  "Like ->, but prints a debug statement for f and each expr in forms."
@@ -122,8 +120,8 @@
                                forms)))))
 
 (def-macro-variants if
-  "Threads value through test then else. If else is not provided, returns the
-   initial value when test fails."
+  "Threads value through test then else. If else is not provided,
+  returns the initial value when test fails."
   [-> 
    ->> "Like if->, but with ->> semantics."]
   ([element test then]

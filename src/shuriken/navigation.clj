@@ -1,4 +1,5 @@
-(ns shuriken.navigation)
+(ns shuriken.navigation
+  "### More datastructure walking")
 
 (defn tree-seq-breadth
   "Like tree-seq, but in breadth-first order"
@@ -10,9 +11,9 @@
     (cons root (walk root))))
 
 (defn prepostwalk
-  "A combination of clojure.walk's prewalk and postwalk. Recursively
-  modifies form with pre-fn before descending and then with post-fn
-  when going up."
+  "A combination of `clojure.walk`'s `prewalk` and `postwalk`.
+  Recursively modifies `form` with `pre-fn` when walking in and
+  `post-fn` when walking out."
   [pre-fn post-fn form]
   (clojure.walk/walk
     (partial prepostwalk pre-fn post-fn)
@@ -20,8 +21,7 @@
     (pre-fn form)))
 
 (defn prepostwalk-demo
-  "Demonstrates the behavior of prepostwalk by printing each form
-  before descending into it and when going up. Returns form."
+  "Demonstrates the behavior of [[prepostwalk]]. Returns form."
   [form]
   (prepostwalk #(do (print "Walked into:   ") (prn %) %)
                #(do (print "Walked out of: ") (prn %) %)

@@ -2,6 +2,7 @@
   (:require [potemkin :refer [import-vars]]
             [shuriken associative
                       context
+                      dance
                       debug
                       destructure
                       exception

@@ -18,25 +18,6 @@
        (filter (comp #{"invoke"} first))
        (sort-by second)))
 
-(defn fake-arity
-  "Returns a function `g` calling `f` so that `(arities g)`
-  returns `arity` instead of `f`'s'original arity.
-  `arity` can be a number or a sequence of numbers.
-  Use `##Inf` (`Double/POSITIVE_INFINITY`) to signify a variadic
-  arity.
-  
-  Note that this function is orthogonal to Clojure's native arity
-  checks and its only intended use is to force the return value of
-  [[arities]]."
-  [arity f]
-  (let [arities (if (sequential? arity)
-                  (vec arity)
-                  [arity])]
-    (with-meta
-      (fn [& args]
-        (apply f args))
-      {::arities arities})))
-
 (defn arities
   "Returns a vector of numbers describing the arities of
   (multi-bodied):
@@ -73,3 +54,22 @@
   `arities`."
   [f]
   (apply min (arities f)))
+
+(defn fake-arity
+  "Returns a function `g` wrapping `f` so that `(arities g)`
+  returns `arity` instead of `f`'s'original arity.
+  `arity` can be a number or a sequence of numbers.
+  Uses `##Inf` (`Double/POSITIVE_INFINITY`) to signify a variadic
+  arity.
+  
+  Note that this function is orthogonal to Clojure's native arity
+  checks and its only intended use is to force the return value of
+  [[arities]]."
+  [arity f]
+  (let [arities (if (sequential? arity)
+                  (vec arity)
+                  [arity])]
+    (with-meta
+      (fn [& args]
+        (apply f args))
+      {::arities arities})))

@@ -1,6 +1,5 @@
 (ns shuriken.destructure
-  "### Destructuring destructuring forms"
-  (:use clojure.pprint))
+  "### Destructuring destructuring forms")
 
 (declare disentangle)
 
@@ -95,10 +94,13 @@
 
 (defn- restructure-associative [binding-form mapping]
   ;; We map values to binding symbols and binding symbols to hash keys
-  (let [{hash-mapping :mapping} (disentangle binding-form)]
+  (let [{hash-mapping :mapping orr :or} (disentangle binding-form)]
     (->> hash-mapping
          (map (fn [[item key]]
-                [key (restructure* item mapping)]))
+                [key (restructure* item (fn [expr]
+                                          (if-let [value (get orr expr)]
+                                            value
+                                            (mapping expr))))]))
          (into {}))))
 
 (defn ^:no-doc restructure* [binding-form mapping]
@@ -119,8 +121,7 @@
     form
     (list 'quote form)))
 
-;; TODO: turn into a function. Correct specs.
-(defmacro restructure
+(defn restructure
   "Undoes what destructure does.
   
   ```clojure
@@ -129,16 +130,7 @@
   => [0 :a 1 :b 2 :cc 3 :d nil]
   ```"
   [binding-form mapping]
-  (let [binding-form (clojure.walk/prewalk dequote binding-form)
-        mapping (as-> mapping $
-                  (dequote $)
-                  (if (vector? $)
-                    (->> $ (partition 2) (map vec) (into {}))
-                    $)
-                  (if (map? $)
-                    (->> $
-                         (map (fn [[k v]] [(requote k) v]))
-                         (into {}))
-                    $))]
-    `(restructure* '~binding-form
-                   ~mapping)))
+  (restructure* binding-form
+                (if (vector? mapping)
+                  (->> mapping (partition 2) (map vec) (into {}))
+                  mapping)))

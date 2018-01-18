@@ -1,4 +1,5 @@
 (ns shuriken.sequential
+  "### Useful functions on sequential datastructures"
   (:require [potemkin :refer [import-vars]]))
 
 (import-vars clojure.core/reduce1)
@@ -9,14 +10,15 @@
   - :include-delimiter  false | :left | :right
                           whether to include the delimiter and where
   - :include-empty      true | false
-                          whether to create empty seqs between successive
-                          delimiters
+                          whether to create empty seqs between
+                          successive delimiters
   ```
   
   ```clojure
   (let [coll [1 1 0 1 0 0 1 1]]
     ;; the default
-    (slice zero? coll) ;; by default, :include-delimiter false, include-empty true
+    (slice zero? coll) ;; by default, :include-delimiter false,
+                                      :include-empty     false
     => ((1 1) (1) (1 1))
     
     (slice zero? coll :include-empty true)
@@ -34,7 +36,7 @@
   ```"
   [delimiter? coll & {:keys [include-delimiter include-empty]
                       :or {include-delimiter false
-                           include-empty false}}]
+                           include-empty     false}}]
   (let [not-delimiter? (complement delimiter?)
         [before-first-delim from-first-delim] (split-with not-delimiter? coll)
         result

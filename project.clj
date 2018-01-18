@@ -14,13 +14,22 @@
                  ;; Documentation
                  [codox-theme-rdash "0.1.2"]]
   ;; For syntax-quote monkey-patch
-  :java-source-paths ["src/java" "test/java"]
+  :java-source-paths ["src/java"]
+  :profiles {:dev {:aot [shuriken.monkey-patch-test]
+                   :java-source-paths ["test/java"]}}
   :plugins [;; Documentation
             [lein-codox "0.10.3"]
             
             ;; Fox monkey patches
-            [lein-jdk-tools "0.1.1"]]
+            [lein-jdk-tools "0.1.1"]
+            
+            ;; Seeing the dependency graph
+            [ns-graph "0.1.2"]]
   :codox {:source-uri "https://github.com/TristeFigure/shuriken/blob/" \
                       "{version}/{filepath}#L{line}"
           :metadata {:doc/format :markdown}
-          :themes [:rdash]})
+          :themes [:rdash]}
+  :ns-graph {:name "shuriken"
+             :abbrev-ns true
+             :source-paths (get-env :source-paths)
+             :exclude ["java.*" "clojure.*"]})

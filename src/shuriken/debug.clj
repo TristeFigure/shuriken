@@ -19,7 +19,7 @@
 
 (defmacro debug
   "Evaluates and prints a debug statement for each form.
-  Returns the value of the last expression.
+  Returns the value of the last.
   
   ```clojure
   (debug (+ 1 2)

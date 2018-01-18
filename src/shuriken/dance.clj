@@ -1,7 +1,5 @@
 (ns shuriken.dance
   "### Advanced tree walking"
-  (:use clojure.pprint
-        shuriken.debug)
   (:require [shuriken.debug :refer [debug-print]]
             [shuriken.fn :refer [arities]]
             [shuriken.associative :refer [merge-with-plan]]
@@ -25,24 +23,6 @@
 (def ^:private no-walk? (partial wrap? ::no-walk))
 (def ^:private no-walk  (partial wrap  ::no-walk))
 (def ^:private unwalk   (partial unwrap ::no-walk))
-
-(defmacro ^:private add-debugs [debugs let-statement]
-  (let [debugs (resolve (or (and (symbol? debugs) debugs)
-                            debugs))]
-    (->> (update (vec let-statement) 1
-                 (fn [bindings]
-                   (->> bindings
-                        (partition 2)
-                        (map (fn [[k v]]
-                               (if-let [d (debugs k)]
-                                 [['prev-ctx 'ctx]
-                                  [k v]
-                                  ['_ d]]
-                                 [[k v]])))
-                        (apply concat)
-                        (apply concat)
-                        vec)))
-         (apply list))))
 
 (defn ^:no-doc adapt-dance-fns [dance]
   (->> dance
@@ -81,6 +61,24 @@
       (coll? form)      (marche :wrap #(into (empty form) %))
       :else             (outer form context))))
 
+(defmacro ^:private add-debugs [debugs let-statement]
+  (let [debugs (resolve (or (and (symbol? debugs) debugs)
+                            debugs))]
+    (->> (update (vec let-statement) 1
+                 (fn [bindings]
+                   (->> bindings
+                        (partition 2)
+                        (map (fn [[k v]]
+                               (if-let [d (debugs k)]
+                                 [['prev-ctx 'ctx]
+                                  [k v]
+                                  ['_ d]]
+                                 [[k v]])))
+                        (apply concat)
+                        (apply concat)
+                        vec)))
+         (apply list))))
+
 (def ^:private dance*-debugs
   '{[should-walk ctx]
     (when debug
@@ -112,8 +110,7 @@
       (when (and debug-context (not= ctx prev-ctx))
         (debug-print   (str tabs "New context ") ctx)))})
 
-;; Variable name in this function matter. Check out dance*-debugs and add-debugs
-;; to find out how.
+;; Variable names in this function matter for the debugging from above.
 (defn- dance*
   [form {:keys [walk?
                 pre?    pre
@@ -173,7 +170,8 @@
    :before chain-dance-fns           :after reverse-chain-dance-fns})
 
 (defn merge-dances
-  "Merges multiples dances together."
+  "Merges multiples dances together. A dance is a hash of arguments
+  to [[dance]]."
   [& dances]
   (->> (merge empty-dance
               (apply merge-with-plan dance-merge-plan
@@ -239,6 +237,9 @@
   siblings in the order of the walk and modifications done to it when
   walking a node can be seen when walking the sister nodes and their
   children.
+  
+  Variadic arguments functions count as single-argument to accomodate
+  for functions like `constantly`, and thus cannot receive a context.
   
   #### Additional options
   

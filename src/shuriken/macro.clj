@@ -55,7 +55,7 @@
     [(count selection) (-> selection last second)]))
 
 (defn fully-unwrap-form
-  "Recursively calls `unwrap-form` until the form is fully unwrapped."
+  "Recursively calls [[unwrap-form]] until the form is fully unwrapped."
   [sym code & {:keys [count] :or {count false}}]
   (let [result (find-fixed-point (partial unwrap-form sym)
                                  code)]
@@ -173,8 +173,8 @@
 ;; -- Macroexpand and friends
 (defn macroexpand-some
   "Recursively macroexpands seqs in `expr` whose first element matches
-  `pred`. Symbols are passed to `filter` unqualified. Quoted forms
-  are not expanded.
+  `pred`. Symbols are passed to `filter`, their namespace stripped.
+  Quoted forms are not expanded.
   
   ```clojure
   (macroexpand-some #{'let}
@@ -190,12 +190,12 @@
     :pre? (fn truc [x]
             (when (seq? x)
               (let [sym (or (and (some-> x first symbol?)
-                                 (-> x first unqualify))
+                                 (-> x first name symbol))
                             (first x))]
                 (pred sym))))))
 
 (defn macroexpand-n
-  "Iteratively call macroexpand-1 on form n times."
+  "Iteratively call `macroexpand-1` on `form` `n` times."
   [n form]
   (->> (iterate macroexpand-1 form)
        ;; since the first occurence in the prev lazyseq is form itself, (inc n)
@@ -204,7 +204,7 @@
 
 (defn macroexpand-depth
   "Expands the first `n` levels of `expr` with
-  `macroexpand-all-eager`."
+  [[macroexpand-all-eager]]."
   [n expr]
   (macroexpand-all-eager expr
     :walk? (fn [form ctx] [(< (:depth ctx) n) ctx])))

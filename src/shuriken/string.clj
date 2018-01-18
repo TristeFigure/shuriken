@@ -1,9 +1,11 @@
 (ns shuriken.string
+  "### Functions on strings"
   (:require [clojure.string :as str]
             [clojure.pprint :refer [pprint] :as pprint]))
 
-;; TODO: expose and document
-(defn format-code [code]
+(defn format-code
+  "Returns a string as formatted by `clojure.pprint/code-dispatch`."
+  [code]
   (str/trim
     (with-out-str
       (binding
@@ -12,8 +14,9 @@
          pprint/*print-pprint-dispatch* pprint/code-dispatch]
         (pprint code)))))
 
-;; TODO: expose and document
-(defn adjust [direction n s]
+(defn adjust
+  "Left or right-adjust a string."
+  [direction n s]
   {:pre [(contains? #{:left :right} direction)]}
   (let [orientation (if (= direction :left)
                       "-"
@@ -21,38 +24,37 @@
     (format (str "%" orientation n "s")
             s)))
 
-;; TODO: expose and document
-(defn lines [s]
+(defn lines
+  "Splits a string around newlines."
+  [s]
   (str/split s #"\r?\n"))
 
-;; TODO: expose and document
-(defn join-lines [lines]
+(defn join-lines
+  "Glues strings together with newlines."
+  [lines]
   (str/join "\n" lines))
 
-;; TODO: document
-(defn tabulate [s with]
+(defn tabulate
+  "Left-pad a string with `pad`, taking newlines into account."
+  [s pad]
   (->> (lines s)
-       (map #(->> % (str with)))
+       (map #(str pad %))
        join-lines))
 
-;; TODO: document
 (defn truncate
+  "Truncate a string with `pad` beyond a certain length. By default,
+  `pad` is `\"...\"`."
   ([s length]
    (truncate s length "..."))
-  ([s length with]
+  ([s length pad]
    (if (> (count s) length)
      (-> (->> s (take length) (apply str))
-         (str with))
+         (str pad))
      s)))
 
-;; TODO
-(defn regex-quote [s]
-  (java.util.regex.Pattern/quote s))
-
-;; TODO: expose. Keep in this namespace ?
 (defmacro no-print
-  "Binds *out* to an anonymous writer used as /dev/null and returns the value
-  of the last expr in body."
+  "Binds *out* to an anonymous writer used as /dev/null and returns
+  the value of the last expr in body."
   [& body]
   `(binding [*out* (new java.io.StringWriter)]
      ~@body))

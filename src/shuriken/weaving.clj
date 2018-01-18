@@ -56,9 +56,9 @@
     (->> (cons pred fns) (mapcat arities) distinct sort)
     #(if (apply pred %&)
        (apply (apply ->| fns) %&)
-       (if (> (count %&) 1)
-         %&
-         (first %&)))))
+       (if (= (count %&) 1)
+         (first %&)
+         %&))))
 
 (defn if|
   "Returns a function that will run `f` when `pred` succeeds or
@@ -87,7 +87,7 @@
        result)))
 
 (defn and|
-  "Returns a function `f` that runs fns in order on the arguments of
+  "Returns a function `f` that runs `fns` in order on the arguments of
   `f` in the style of `and`, i.e. breaking out of the chain upon
   `false` or `nil`.
   Preserves arity."
@@ -103,7 +103,7 @@
            result)))))
 
 (defn or|
-  "Returns a function that runs fns in order in the style of `or`,
+  "Returns a function that runs `fns` in order in the style of `or`,
   i.e. breaking out of the chain unless `false` or `nil`.
   Preserves arity."
   [& fns]
@@ -137,6 +137,7 @@
     (fake-arity (arities f)
       #(apply wrap-f %&))))
 
+;; TODO: document
 (defn context| [f]
   (let [ar (set (arities f))
         mono-ar (or (contains? ar 1)

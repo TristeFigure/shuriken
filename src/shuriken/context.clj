@@ -11,7 +11,7 @@
 
 (def contexts
   "The global store for contexts. An atom containing a map of maps:
-    {key -> {symbol -> value}}"
+    `{key -> {symbol -> value}}`"
   (atom {}))
 
 (defn context!
@@ -79,8 +79,8 @@
 (defmacro lexical-context
   "Returns the current lexical context as a map from symbols to
   values. In macros (or anywhere `&env` is a local in scope),
-  `lexical-context` will return the context of the expanded form
-  rather than the context of the macro itself.
+  `lexical-context` will expand to code that will return the context
+  of the expanded form rather than the context of the macro itself.
   Use `(lexical-context :local true)` to override this behavior.
   
   ```clojure
@@ -119,6 +119,7 @@
         (finally
           (delete-context! k#))))))
 
+;; TODO: meditate
 (def ^:dynamic *warn-on-late-eval* true)
 
 (defmacro print-late-eval-warning [line x]

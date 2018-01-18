@@ -6,8 +6,8 @@
 
 (def reader-macros
   "The java array that stores the reader macros. It's an array used
-  as a map of chars to objects responding to `.invoke` with 4
-  arguments: reader, paragraph, opts & pending-forms."
+  as a map of chars to objects. These object respond to `.invoke`
+  with 4 arguments: reader, paragraph, opts & pending-forms."
   (static-field LispReader "macros"))
 
 (defn ^:no-doc ensure-pending [forms]
