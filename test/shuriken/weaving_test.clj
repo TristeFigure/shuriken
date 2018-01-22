@@ -139,13 +139,23 @@
     (is (= [##Inf]   (arities (or| (fn [& more] true) (constantly true)))))))
 
 (deftest test-context|
-  (is (= [124 {}]  ((->| (context| inc))             123 {})))
-  (is (= [124 nil] ((->| (context| inc))             123)))
-  (is (= [0   {}]  ((->| (context| (fn [& args] 0))) 123 {})))
-  (is (= [0   nil] ((->| (context| (fn [& args] 0))) 123)))
+  (is (= [124 {}]  ((context| inc)                         123 {})))
+  (is (= [124 {}]  ((context| (context| inc))              123 {})))
+  (is (= [124 nil] ((context| inc)                         123)))
+  (is (= [124 nil] ((context| (context| inc))              123)))
+  (is (= [0   {}]  ((context| (fn [& args] 0))             123 {})))
+  (is (= [0   nil] ((context| (fn [& args] 0))             123)))
+  (is (= [0   {}]  ((context| (fn [a b] [0 b]))            123 {})))
+  (is (= [0   nil] ((context| (fn [a b] [0 b]))            123)))
+  (is (= [0   nil] ((context| (context| (fn [a b] [0 b]))) 123)))
   (is (= [103 {}]  ((->| (context| inc)
                          (apply| (context| (fn [a ctx] [(inc a) ctx])))
                          (apply| (context| (fn [a ctx] [(inc a) ctx]))))
                     100 {})))
   (testing "has 1 and 2 for arities"
-    (is (= [1 2] (arities (->| (context| inc)))))))
+    (is (= [1 2] (arities (->| (context| inc))))))
+  (testing "with 1, 2 and ##Inf arities"
+    (is (= [1 {}] ((context| (fn ([a] a) ([a b] [a 0]) ([a b & c])))
+                   1 {})))))
+
+(run-tests)

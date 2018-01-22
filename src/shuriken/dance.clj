@@ -1,5 +1,6 @@
 (ns shuriken.dance
   "### Advanced tree walking"
+  (:use clojure.pprint)
   (:require [shuriken.debug :refer [debug-print]]
             [shuriken.fn :refer [arities]]
             [shuriken.associative :refer [merge-with-plan]]
@@ -24,7 +25,7 @@
 (def ^:private no-walk  (partial wrap  ::no-walk))
 (def ^:private unwalk   (partial unwrap ::no-walk))
 
-(defn ^:no-doc adapt-dance-fns [dance]
+(defn- adapt-dance-fns [dance]
   (->> dance
        (map (fn [[k f]]
               (if (#{:walk? :pre? :pre :post? :post :before :after} k)
@@ -34,30 +35,42 @@
 
 (def ^:private dance-identity (context| identity))
 
-(defn- step [form {:keys [initial-acc initial-context context wrap inner outer
-                         keys]
-                  :or {initial-acc     []
-                       initial-context {}
-                       wrap            identity}}]
+(defn step [form {:keys [initial-acc initial-context context wrap
+                          inner outer]}]
   (let [[result context]
-        (reduce (fn [[acc prev-ctx] [k form]]
-                        (let [[result new-ctx] (inner form prev-ctx k)]
+        (reduce (fn [[acc prev-ctx] subform]
+                        (let [[result new-ctx] (inner subform prev-ctx)]
                           [(conj acc result) new-ctx]))
                       [initial-acc initial-context]
-                      (zipmap keys form))]
+                      form)]
     (outer (wrap result) context)))
 
-(defn- context-walk [inner outer context form]
+(defn step-indexed [form {:keys [initial-acc initial-context context wrap
+                                 inner outer]}]
+  (let [indexes (if (record? form)
+               (map key form)
+               (range))
+        [result context]
+        (reduce (fn [[acc prev-ctx] [i subform]]
+                  (let [ctx (assoc prev-ctx :index i)
+                        [result new-ctx] (inner subform ctx)]
+                    [(conj acc result) new-ctx]))
+                [initial-acc initial-context]
+                (zipmap indexes form))]
+    (outer (wrap result) context)))
+
+(defn- context-walk [step inner outer context form]
   (let [marche (fn [& {:as opts}]
-                 (step form (merge {:inner inner :outer outer
+                 (step form (merge {:initial-acc []
                                     :initial-context context
-                                    :keys (range)}
+                                    :wrap identity
+                                    :inner inner :outer outer}
                                    opts)))]
     (cond
       (list? form)      (marche :wrap #(apply list %))
-      (map-entry? form) (marche :wrap vec :keys [(key form)])
+      (map-entry? form) (marche :wrap vec)
       (seq? form)       (doall (marche :wrap seq))
-      (record? form)    (marche :initial-acc form :keys (map key form))
+      (record? form)    (marche :initial-acc form)
       (coll? form)      (marche :wrap #(into (empty form) %))
       :else             (outer form context))))
 
@@ -117,12 +130,13 @@
                 post?   post
                 before  after                
                 context return-context
-                debug   debug-context]
+                debug   debug-context
+                step]
          :as opts}]
   (add-debugs
     dance*-debugs
     (let [[form ctx]        (before form context)
-          depth             (:depth ctx)
+          depth             (get ctx :depth 0)
           tabs              (apply str (repeat (inc depth) "  "))
           [should-walk ctx] (walk? form ctx)
           [should-pre  ctx] (pre? form ctx)
@@ -131,25 +145,27 @@
           opts              (assoc opts :context ctx)
           [out ctx]         (if (and should-walk (not unwalked))
                               (context-walk
-                                (fn [form ctx k]
+                                step
+                                (fn [form ctx]
                                   (dance* form (assoc opts :context ctx)))
                                 dance-identity
                                 ctx
                                 pre-result)
                               (if unwalked [unwalked ctx] [pre-result ctx]))
+          _ (println "--->" [out ctx])
           [should-post ctx] (post? out ctx)
+          _ (println "--->" [out ctx])
           [posted ctx]      (if should-post (post out ctx) [out ctx])
           [result ctx]      (after posted ctx)]
       [result ctx])))
 
 (def ^:private empty-dance
-  (adapt-dance-fns
-    {:walk?   any?
-     :pre?    any?     :pre   identity
-     :post?   any?     :post  identity
-     :before  identity :after identity
-     :context nil      :return-context false
-     :debug   false}))
+  {:walk?   any?
+   :pre?    any?     :pre   identity
+   :post?   any?     :post  identity
+   :before  identity :after identity
+   :context nil      :return-context false
+   :debug   false    :step  step})
 
 (defn- chain-dance-fns [f & more-fns]
   (->> (map apply| more-fns)
@@ -157,35 +173,63 @@
        (apply ->|)))
 
 (defn- reverse-chain-dance-fns [& fns]
-  (let [fns (reverse fns)
-        [f & more-fns] fns]
-    (->> (map apply| more-fns)
-         (concat [f])
-         (apply ->|))))
+  (apply chain-dance-fns (reverse fns)))
 
 (def ^:private dance-merge-plan
   {:walk? and|
    :pre?  and|                       :pre   chain-dance-fns
-   :post? #(apply and| (reverse %&)) :post  reverse-chain-dance-fns
+   :post? (fn [& fns]
+            (apply and| (reverse fns)))
+   #_#(apply and| (reverse %&))
+   :post  reverse-chain-dance-fns
    :before chain-dance-fns           :after reverse-chain-dance-fns})
+
+(defn- prepare-dance [dance]
+  (adapt-dance-fns
+    (merge empty-dance dance)))
+
+(def ff
+  #(apply and| (reverse %&)))
+
+(println "------>"
+         ((ff any? (context| number?))
+          :a))
 
 (defn merge-dances
   "Merges multiples dances together. A dance is a hash of arguments
   to [[dance]]."
   [& dances]
-  (->> (merge empty-dance
-              (apply merge-with-plan dance-merge-plan
-                     (map adapt-dance-fns dances)))
-       adapt-dance-fns))
+  (apply merge-with-plan dance-merge-plan
+         (map prepare-dance dances)))
 
-(def ^:private depth-dance
+(def depth-dance
   {:before (fn [x ctx] [x (update ctx :depth (fnil inc -1))])
    :after  (fn [x ctx] [x (if (zero? (:depth ctx))
                             (dissoc ctx :depth)
                             (update ctx :depth dec))])
    :depth 0})
 
-(def ^:private default-dance depth-dance)
+(def indexed-dance
+  {:step  step-indexed
+   :after (fn [form ctx]
+            [form (dissoc ctx :index)])
+   ; :pre?  number?
+   ; :post? number?
+   })
+
+(let [d1 {:pre? number? :post? number?}
+      d2 (merge-dances {})
+      md (merge-dances d2 d1)]
+  (println "--> pre?"  ((:pre?  md) :a))
+  (println "--> post?" ((:post? md) :a)))
+
+(def pathed-dance
+  (merge-dances indexed-dance))
+
+(def ^:dynamic *default-dance*
+  pathed-dance)
+
+(throw (Exception. "fin"))
 
 (defn dance
   "A finely tunable version of clojure.walk with enhancements.
@@ -249,11 +293,10 @@
   - `debug`         : To print a detailed trace of the walk (`false`).
   - `depth`         : The intial depth. Determines tabulation (`0`).
   
-  Any option passed to `dance` is optional including the dance fns
-  themselves."
+  Any option passed to `dance` is optional including the dance fns."
   [form & args]
   (let [{:keys [walk? pre? pre post? post before after
-                debug context return-context debug-context]
+                debug context return-context debug-context step]
            :as raw-opts}
         (if (and (= 1 (count args))
                  (-> args first map?))
@@ -267,16 +310,22 @@
                                   (->> [walk? pre? pre post? post]
                                        (remove nil?)
                                        (mapcat arities)))))
-        opts (->> {:walk?   walk?
-                   :pre?    pre?    :pre   pre
-                   :post?   post?   :post  post
-                   :before  before  :after after                   
-                   :context context :return-context return-context
-                   :debug   debug   :debug-context  debug-context}
-                  (remove (fn [[k v]] (nil? v)))
-                  (into {})
-                  (merge-dances default-dance))
-        [result ctx] (dance* form opts)]
+        args-dance (->> {:walk?   walk?
+                         :pre?    pre?    :pre   pre
+                         :post?   post?   :post  post
+                         :before  before  :after after                   
+                         :context context :return-context return-context
+                         :debug   debug   :debug-context  debug-context
+                         :step    step}
+                        (remove (fn [[k v]] (nil? v)))
+                        (into {}))
+        opts-dance (merge-dances
+                     (if debug depth-dance {})
+                     *default-dance*
+                     args-dance)
+        _ (println "------------->"
+                   ((:post? opts-dance) :a))
+        [result ctx] (dance* form opts-dance)]
     (if return-context
       [result ctx]
       result)))

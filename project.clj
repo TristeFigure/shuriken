@@ -11,6 +11,9 @@
                  [robert/hooke "1.3.0"]
                  [org.javassist/javassist "3.20.0-GA"]
                  
+                 ;; For solver
+                 [org.clojure/data.priority-map "0.0.7"]
+                 
                  ;; Documentation
                  [codox-theme-rdash "0.1.2"]]
   ;; For syntax-quote monkey-patch
@@ -25,8 +28,8 @@
             
             ;; Seeing the dependency graph
             [ns-graph "0.1.2"]]
-  :codox {:source-uri "https://github.com/TristeFigure/shuriken/blob/" \
-                      "{version}/{filepath}#L{line}"
+  :codox {:source-uri "https://github.com/TristeFigure/shuriken/" \
+                      "blob/{version}/{filepath}#L{line}"
           :metadata {:doc/format :markdown}
           :themes [:rdash]}
   :ns-graph {:name "shuriken"

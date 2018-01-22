@@ -1,6 +1,7 @@
 (ns shuriken.weaving
   (:use clojure.pprint)
-  (:require [shuriken.fn :refer [arities fake-arity]]))
+  (:require [shuriken.fn   :refer [arities fake-arity]]
+            [shuriken.meta :refer [merge-meta]]))
 
 (defn |
   "Returns a function that behvaves like `constantly` but has 1 for
@@ -142,9 +143,10 @@
   (let [ar (set (arities f))
         mono-ar (or (contains? ar 1)
                     (contains? ar ##Inf))
-        bi-ar (contains? ar 2)
+        bi-ar (and (contains? ar 2)
+                   (not (contains? ar ##Inf)))
         new-f (case [mono-ar bi-ar]
-                [true true] f
+                [true true]   f
                 [true false]  (fn
                                 ([x]     (wrap-context [(f x) nil]))
                                 ([x ctx] (wrap-context [(f x) ctx])))
@@ -155,3 +157,7 @@
                                 ([x]     (wrap-context [(f x) nil]))
                                 ([x ctx] (wrap-context [(f x) ctx]))))]
     (context-wrapper new-f)))
+
+(defn with)
+
+(defn shift| [& fns])

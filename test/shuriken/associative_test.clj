@@ -89,4 +89,5 @@
     (is (= 3 a))
     (is (= -2 b))
     (is (= 3 (c 0)))
-    (is (= 0 d))))
+    (is (= 0 d))
+    (is (= merged (merge-with-plan plan merged)))))

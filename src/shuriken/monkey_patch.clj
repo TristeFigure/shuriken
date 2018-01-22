@@ -184,6 +184,24 @@
       .getModifiers
       Modifier/isStatic))
 
+;; TODO
+; (defn copy-class [class-name new-name]
+;   (-> (javassist.ClassPool/getDefault)
+;       (.getAndRename class-name new-name)))
+
+; (defn method-caller [class-name method]
+;   (eval `(fn [& args]
+;            (. ~class-name))))
+
+; (def original-method
+;   (memoize
+;     (fn [method-signature]
+;       (let [[class-name method-name parameter-types]
+;             (conform! ::method-signature ~method-signature-sym)
+;             copy-name (str class-name "Original")
+;             original (copy-class class-name copy-name)]
+;         (eval `(. original (-> copy-name symbol) ~@args))))))
+
 (defmacro ^:no-doc change-java-method
   [method-signature f & {:keys [once] :or {once false}}]
   (let [method-signature-sym (gensym "method-signature-")
@@ -191,6 +209,8 @@
                     was-frozen# (if (.isFrozen ct-class#)
                                   (do (.defrost ct-class#) true)
                                   false)
+                    ; copy-name   (str class-name "Original")
+                    ; copy        (copy-class class-name copy-name)
                     method#     (find-method ~method-signature-sym)
                     _#          (~f method#)
                     bytecode#   (.toBytecode ct-class#)
