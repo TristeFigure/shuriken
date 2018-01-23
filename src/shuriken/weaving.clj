@@ -36,7 +36,8 @@
                       %&)))
 
 (defn ->|
-  "Returns a function that behaves like `comp` but composes functions from left to right.
+  "Returns a function that behaves like `comp` but composes functions
+  from left to right.
   Preserves arity."
   [& fns]
   (apply arity-comp (reverse fns)))
@@ -156,8 +157,26 @@
                 [false false] (fn
                                 ([x]     (wrap-context [(f x) nil]))
                                 ([x ctx] (wrap-context [(f x) ctx]))))]
-    (context-wrapper new-f)))
+    (fn [& args]
+      (println "--x->" args)
+      (let [r (apply (context-wrapper new-f)
+                     args)]
+        (println "---x>" r)
+        r))))
 
-(defn with)
+; (def ^:dynamic *shifter*
+;   identity)
 
-(defn shift| [& fns])
+; (def ^:dynamic *unshifter*
+;   identity)
+
+; (def ^:dynamic *weaver*)
+
+; (defn ->| [& fns]
+;   (binding [*weaver* ->|]
+;     (apply arity-comp (reverse fns))))
+
+; (defmacro shift| [shift-f unshift-f & fns]
+;   `(binding [*shifter* shift-f
+;              *unshifter* unshift-f]
+;      ~@body))

@@ -69,13 +69,10 @@
   {:create-fringe (fn [node]
                     (priority-map-by
                       (fn [a b]
-                        (apply compare
-                               (map #(-> % :state cost-fn)
-                                    [a b])))
+                        (apply compare (map #(-> % :state cost-fn) [a b])))
                       (:state node)
                       node))
-   :select-node #(vector (-> % first val)
-                         (dissoc % (-> % first key)))
+   :select-node #(vector (-> % first val) (dissoc % (-> % first key)))
    :add-nodes (partial reduce #(assoc %1 (:state %2) %2))})
 
 ; |\ |    ,_  |   _       ,_     _   _

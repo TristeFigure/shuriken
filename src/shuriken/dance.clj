@@ -192,7 +192,7 @@
   #(apply and| (reverse %&)))
 
 (println "------>"
-         ((ff any? (context| number?))
+         ((and| (context| number?) (context| any?))
           :a))
 
 (defn merge-dances
