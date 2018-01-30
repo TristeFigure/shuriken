@@ -11,8 +11,8 @@
     (assoc acc ks m)))
 
 (defn flatten-keys
-  "Transforms a nested map into a map where keys are paths through the
-  original map and values are leafs these paths lead to.
+  "Transforms a nested map into a map where keys are paths through
+  the original map and values are leafs these paths lead to.
 
   ```clojure
   (flatten-keys {:a {:b {:c :x
@@ -31,7 +31,7 @@
     (flatten-keys* {} [] m)))
 
 (defn deflatten-keys
-  "Builds a nested map out of a map obtained from flatten-keys.
+  "Builds a nested map out of a map obtained from [[flatten-keys]].
   
   ```clojure
   (deflatten-keys {[:a :b :c] :x
@@ -67,9 +67,9 @@
 
   => {:x {:a :aaa  :b :bb  :c :c}}
   ```"
-  [m1 & more]
+  [m & more]
   (deflatten-keys (apply deep-merge*
-                         (flatten-keys m1)
+                         (flatten-keys m)
                          more)))
 
 (defn- raise-error-index-strategy [key entries]
@@ -105,7 +105,8 @@
                (last entries))
           ms)
   => {2 {:a 1 :b 2}
-      4 {:a 5 :b 4}}"
+      4 {:a 5 :b 4}}
+  ```"
   ([f coll]
    (index-by f raise-error-index-strategy coll))
   ([f strategy coll]

@@ -99,7 +99,7 @@
    pp-> pp->>]
   
   [shuriken.weaving
-   | not|
+   | ?| not|
    *| <-| ->| apply| arity-comp
    when| if| tap|
    and| or|

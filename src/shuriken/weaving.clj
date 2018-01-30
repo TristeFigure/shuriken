@@ -1,6 +1,6 @@
 (ns shuriken.weaving
   (:use clojure.pprint)
-  (:require [shuriken.fn   :refer [arities fake-arity]]
+  (:require [shuriken.fn   :refer [arities fake-arity max-arity min-arity]]
             [shuriken.meta :refer [merge-meta]]))
 
 (defn |
@@ -8,6 +8,10 @@
   arity."
   [v]
   (fake-arity 1 (constantly v)))
+
+(defn ?| [v]
+  "Returns a function `(g x)` that returns `(= x v)`."
+  #(= % v))
 
 (defn not|
   "Returns a function that behaves like `complement` but preserves
@@ -37,12 +41,9 @@
 
 (defn ->|
   "Returns a function that behaves like `comp` but composes functions
-  from left to right.
-  Preserves arity."
+  from left to right. Preserves arity."
   [& fns]
   (apply arity-comp (reverse fns)))
-
-(println)
 
 (defn apply|
   "Transforms a function `f` accepting one argument, presumably a
@@ -106,18 +107,19 @@
 
 (defn or|
   "Returns a function that runs `fns` in order in the style of `or`,
-  i.e. breaking out of the chain unless `false` or `nil`.
+  i.e. breaking out of the chain if one returns `false` or `nil`.
   Preserves arity."
   [& fns]
   (fake-arity
     (->> fns (mapcat arities) distinct sort)
-    #(loop [[f & more] fns]
-       (let [result (apply f %&)]
-         (if result
-           result
-           (if (seq more)
-             (recur more)
-             result))))))
+    (fn [& args]
+      (loop [[f & more] fns]
+        (let [result (apply f args)]
+          (if result
+            result
+            (if (seq more)
+              (recur more)
+              result)))))))
 
 (defn- wrap-context [[form ctx]]
   [::context form ctx])
@@ -157,26 +159,17 @@
                 [false false] (fn
                                 ([x]     (wrap-context [(f x) nil]))
                                 ([x ctx] (wrap-context [(f x) ctx]))))]
-    (fn [& args]
-      (println "--x->" args)
-      (let [r (apply (context-wrapper new-f)
-                     args)]
-        (println "---x>" r)
-        r))))
+    (fake-arity (arities new-f)
+                (fn [& args]
+                  (let [r (apply (context-wrapper new-f)
+                                 args)]
+                    r)))))
 
-; (def ^:dynamic *shifter*
-;   identity)
-
-; (def ^:dynamic *unshifter*
-;   identity)
-
-; (def ^:dynamic *weaver*)
-
-; (defn ->| [& fns]
-;   (binding [*weaver* ->|]
-;     (apply arity-comp (reverse fns))))
-
-; (defmacro shift| [shift-f unshift-f & fns]
-;   `(binding [*shifter* shift-f
-;              *unshifter* unshift-f]
-;      ~@body))
+;; TODO: test and document
+(defn warp| [weaver warper]
+  (fn [& fns]
+    (apply weaver (map (fn [f]
+                         (fake-arity (arities f)
+                                     (fn [& args]
+                                       (apply warper f args))))
+                       fns))))

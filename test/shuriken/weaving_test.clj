@@ -35,6 +35,10 @@
   (is (= 1   ((| 1) :ignored :ditto)))
   (is (= [1] (arities (| 1)))))
 
+(deftest test-?|
+  (is (= true  ((?| 1) 1)))
+  (is (= false ((?| 2) 1))))
+
 (deftest test-not|
   (is (false? ((not| number?) 3)))
   (testing "preserves arity"
@@ -157,5 +161,3 @@
   (testing "with 1, 2 and ##Inf arities"
     (is (= [1 {}] ((context| (fn ([a] a) ([a b] [a 0]) ([a b & c])))
                    1 {})))))
-
-(run-tests)

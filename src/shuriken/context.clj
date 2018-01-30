@@ -100,7 +100,7 @@
 
 (defmacro lexical-eval
   "Evaluates code in the given lexical context. If no context is
-  passed, `(lexical-context)` is used.
+  passed, [[lexical-context]] is used.
   
   ```clojure
   (let [a 1]
