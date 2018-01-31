@@ -7,24 +7,6 @@
             [shuriken.weaving :refer [and| ->| apply| context| warp|
                                       not| arity-comp]]))
 
-(defn- wrap? [k form]
-  (boolean
-    (and (vector? form)
-         (some-> form first #{k}))))
-
-(defn- wrap [k form]
-  (if (wrap? k form)
-    form
-    [k form]))
-
-(defn- unwrap [k form]
-  (if (wrap? k form)
-    (second form)
-    form))
-
-(def ^:private no-walk? (partial wrap? ::no-walk))
-(def ^:private no-walk  (partial wrap  ::no-walk))
-(def ^:private unwalk   (partial unwrap ::no-walk))
 
 (defn- adapt-dance-fns [dance]
   (->> dance
@@ -224,7 +206,8 @@
     [pre-result ctx] 
     (when debug
       (if should-pre
-        (debug-print   (str tabs "Pre         ") pre-result)
+        (when (not= pre-result form)
+          (debug-print   (str tabs "Pre         ") pre-result))
         (debug-print   (str tabs "No pre      ") pre-result))
       (when (and debug-context (not= ctx prev-ctx))
         (debug-print   (str tabs "New context ") ctx)))
@@ -236,7 +219,8 @@
     [result ctx]
     (when debug
       (if should-post
-        (debug-print   (str tabs "Post        ") result)
+        (when (not= result posted out)
+          (debug-print   (str tabs "Post        ") result))
         (debug-print   (str tabs "No post     ") result))
       (when (and debug-context (not= ctx prev-ctx))
         (debug-print   (str tabs "New context ") ctx)))})
@@ -256,12 +240,11 @@
     (let [[form ctx]        (before form context)
           depth             (get ctx :depth 0)
           tabs              (apply str (repeat (inc depth) "  "))
-          [should-walk ctx] (walk? form ctx)
           [should-pre  ctx] (pre? form ctx)
+          [should-walk ctx] (walk? form ctx)
           [pre-result  ctx] (if should-pre (pre form ctx) [form ctx])
-          unwalked          (when (no-walk? pre-result) (unwalk pre-result))
           opts              (assoc opts :context ctx)
-          [out ctx]         (if (and should-walk (not unwalked))
+          [out ctx]         (if should-walk
                               (context-walk
                                 step
                                 scoped
@@ -270,11 +253,21 @@
                                 dance-identity
                                 ctx
                                 pre-result)
-                              (if unwalked [unwalked ctx] [pre-result ctx]))
+                              [pre-result ctx])
           [should-post ctx] (post? out ctx)
           [posted ctx]      (if should-post (post out ctx) [out ctx])
           [result ctx]      (after posted ctx)]
       [result ctx])))
+
+(defn return-early
+  "Used to immediately return a value during a [[dance]]. Cab be used
+  in any of the dance fns."
+  ([form] (return-early form nil))
+  ([form ctx]
+   (throw (ex-info "Returned early"
+                   {:type ::return-early
+                    :form form
+                    :ctx  ctx}))))
 
 ;; TODO: support deepmerge
 ;; - the way contexts are merged.
@@ -371,6 +364,21 @@
   `:debug`, `:return-context`, and `:step` are merged normally, i.e.
   via right-most preference.
   
+  #### Early return
+  
+  At any moment, from within any of the dance fns, [[return-early]]
+  can be used to halt the execution, returning the given form (and
+  optional context). Consider:
+  
+  ```clojure
+  (dance [1 2 3 4 5 6]
+    :pre? number?
+    :pre (fn [x]
+            (if (> x 4)
+              (return-early :abc)
+              (inc x))))
+  ```
+  
   #### Additional options
   
   - `context`       : The initial context (defaults to `{}`)
@@ -379,6 +387,8 @@
   - `debug`         : To print a detailed trace of the walk (`false`).
   - `depth`         : The intial depth. Determines tabulation (`0`)
                       when debugging.
+  - `step`          : low-level option. See [[step]] and
+                      [[step-indexed]]. Defaults to [[step]]
   
   Any option passed to `dance` is optional including the dance fns."
   [form & args]
@@ -405,12 +415,27 @@
                                        (mapcat arities)))))
         {:keys [before-all after-all]} opts-dance
         [form ctx] (before-all form (:context opts-dance))
-        [danced ctx] (dance* form (-> opts-dance
-                                      (dissoc :before-all :after-all)
-                                      (assoc
-                                        :context       ctx
-                                        :debug-context debug-context)))
+        [danced ctx] (try (dance* form (-> opts-dance
+                                           (dissoc :before-all :after-all)
+                                           (assoc
+                                             :context       ctx
+                                             :debug-context debug-context)))
+                       (catch clojure.lang.ExceptionInfo e
+                         (let [d (ex-data e)]
+                           (if (-> d :type (= ::return-early))
+                             ((juxt :form :ctx) d)
+                             (throw e)))))
         [result ctx] (after-all danced ctx)]
     (if (:return-context opts-dance)
       [result ctx]
       result)))
+
+
+(println "-->"
+         (dance [1 2 3 4 5 6 7 8]
+           :pre? number?
+           :pre (fn [x]
+                  (if (> x 4)
+                    (return-early :abc)
+                    (inc x))) 
+           :debug true))

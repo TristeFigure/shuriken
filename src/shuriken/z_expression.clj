@@ -12,7 +12,16 @@
 
 {:a 1 :b 2 :c 3}
 
-(def {})
+(defn parse [s]
+  (loop [s s stack '() acc []]
+    (let [[c & cs] s]
+      (case
+        (\( \[ \{) (recur cs (cons c stack) acc)
+        (\) \] \}) (let [e (peek stack)]
+                     (assert (= c ({\( \) \[ \] \{ \}} e)))
+                     (recur cs (pop stack)))
+        (let [ccs (split-with (complement ))]
+          (recur cs stack (take-)))))))
 
 (println "-->" (parse "(+ 1 (inc 2))"))
 
