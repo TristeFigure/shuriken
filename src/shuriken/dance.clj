@@ -260,7 +260,7 @@
       [result ctx])))
 
 (defn return-early
-  "Used to immediately return a value during a [[dance]]. Cab be used
+  "Used to immediately return a value during a [[dance]]. Can be used
   in any of the dance fns."
   ([form] (return-early form nil))
   ([form ctx]
@@ -271,7 +271,6 @@
 
 ;; TODO: support deepmerge
 ;; - the way contexts are merged.
-;; - :scoped option
 (defn dance
   "A finely tunable version of clojure.walk with enhancements.
   
@@ -287,7 +286,6 @@
     :context        {:cnt 0}
     :return-context true
     :debug          true
-    ;:debug-context  false
     )
   ```
   
@@ -301,13 +299,13 @@
   `pre?` and `post?` respectively condition `pre` and `post` while the
   walk of the substructure itself occurs in between and is conditioned
   by `walk?`. `before`and `after` are respectively called before and
-  after any node is processed while @before-all` and `after-all` are
+  after any node is processed while `before-all` and `after-all` are
   called once, at the beginning and the end of the walk.
   
   Traversal appears to occur in pre-order for `before`, `walk?` `pre?`
   and `pre`, but in post-order for `post?`, `post` and `after`.
   
-  Note that nodes that will not be walked might still be processed by
+  Note that nodes that will not be walked may still be processed by
   `pre` and `post`.
   
   #### Context
@@ -353,12 +351,13 @@
   this plan:
   
   ```
-  - before, pre : composed from left (oldest) to right (newest)
-  - after, post : composed from right to left
-  - pre?, walk? : composed like `and`, from left to right
-  - post?       : composed like `and`, but from right to left.
-  - context     : composed with `merge`
-  - scoped      : composed with `concat`
+  - before, pre    : composed from left to right
+  - after, post    : composed from right to left
+  - pre?, walk?    : composed like `and`, from left to right
+  - post?          : composed like `and`, but from right to left.
+  - context        : composed with `merge`
+  - scoped         : composed with `concat`
+  - return-context : right-most override
   ```
   
   `:debug`, `:return-context`, and `:step` are merged normally, i.e.
@@ -376,7 +375,8 @@
     :pre (fn [x]
             (if (> x 4)
               (return-early :abc)
-              (inc x))))
+              (println x))))
+  => :abc
   ```
   
   #### Additional options
@@ -430,12 +430,3 @@
       [result ctx]
       result)))
 
-
-(println "-->"
-         (dance [1 2 3 4 5 6 7 8]
-           :pre? number?
-           :pre (fn [x]
-                  (if (> x 4)
-                    (return-early :abc)
-                    (inc x))) 
-           :debug true))
