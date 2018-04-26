@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file. This change
   - `lexical-context`.
   - `stored-locals!`, `binding-stored-locals` & more.
   - `lexical-eval`.
+- multi:
+  - `call-multi`.
 - namespace `predicates-composer` renamed to `weaving`:
   - `|` (`constantly`).
   - `*|`, `<-|` & `->|`.

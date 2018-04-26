@@ -285,7 +285,7 @@ exceptions. If no exception is raised, the file is deleted.
 ### `monkey-patch`
 
 ```clojure
-(monkey-patch perfid-incer clojure.core/+ [original & args]
+(monkey-patch :perfid-incer clojure.core/+ [original & args]
   (inc (apply original args)))
 ```
   
@@ -315,6 +315,23 @@ name must be a symbol, quoted or not.
 (refresh-only 'a)
 (only 'a (println "a"))
 ;; a
+```
+
+## Multimethods
+
+### `call-multi`
+
+```clojure
+(defmulti mm :type)
+
+(defmethod mm :xx [m]
+  (call-multi mm :yy m))
+
+(defmethod mm :yy [m]
+  (update m :yy inc))
+
+(mm {:type :xx :yy 0})
+; => {:type :xx, :yy 1}
 ```
 
 ## Namespace
