@@ -2,6 +2,7 @@
   "### Namespace related stuff"
   (:use clojure.pprint)
   (:require [clojure.string :as str]
+            [potemkin :refer [import-vars]]
             [shuriken.context :refer [lexical-eval]]))
 
 ;; TODO
@@ -61,7 +62,7 @@
   within a namespace.
   Handles namespace aliases.
   `ns`defaults tp `*ns*`.
-  
+
   (fully-qualified? 'IRecord)      => clojure.lang.IRecord
   (fully-qualified? 'my-var)       => my-ns/my-var
   (fully-qualified? 'alias/my-var) => actual.namespace/my-var"
@@ -83,7 +84,7 @@
 (defn fully-qualified?
   "Returns true if the symbol constitutes an absolute reference.
   See [[fully-qualified]].
-  
+
   Handles namespace aliases.
   `ns` defaults to `*ns*`.
 
@@ -133,3 +134,8 @@
   [ns & body]
   `(binding [*ns* (the-ns ~ns)]
      (lexical-eval (quote (do ~@body)))))
+
+(defmacro import-namespace [ns & {:keys [exclude]}]
+  (let [vars (->> (keys (ns-publics (find-ns ns)))
+                  (remove (set exclude)))]
+    `(import-vars [~ns ~@vars])))

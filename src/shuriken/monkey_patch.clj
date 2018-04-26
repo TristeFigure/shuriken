@@ -27,13 +27,13 @@
 
 (defmacro only
   "Ensures `body` is executed only once with respect to `name`.
-  If `name` is a symbol or a keyword without a namespace, it will be 
+  If `name` is a symbol or a keyword without a namespace, it will be
   prefixed with `*ns*`.
-  
+
   ```clojure
   (only 'foo (println \"bar\"))
   ; prints bar
-  
+
   (only 'foo (println \"bar\"))
   ; prints nothing
   ```"
@@ -56,11 +56,11 @@
   associated code will be evaluated.
   If `name` is a symbol or a keyword without a namespace, it will be
   prefixed with `*ns*`.
-  
+
   ```clojure
   (only 'foo (println \"bar\"))
   ; prints bar
-  
+
   (refresh-only 'foo)
   (only 'foo (println \"bar\"))
   ; prints bar
@@ -73,14 +73,16 @@
   "```clojure
   (monkey-patch perfid-incer clojure.core/+ [original & args]
     (inc (apply original args)))
-  
+
   (+ 1 2)
   => 4
   ```
-  
-  Supports reload. Name and target can be vars or quoted symbols."
+
+  Supports reload. Name and target can be vars or symbols. Name can also be
+  a keyword."
   [name target args & body]
-  (let [safe-name (wrap-form 'var name)
+  (let [name (-> name clojure.core/name symbol)
+        safe-name (wrap-form 'var name)
         safe-target (wrap-form 'var target)]
     `(do
        (if (fn? (deref ~safe-target))
@@ -259,7 +261,7 @@
       clojure.lang.IFn fn = clojure.java.api.Clojure.var(
         \"%s\", \"%s\"
       );
-      
+
       return %s;
     }",
     (str *ns*)
@@ -279,7 +281,7 @@
       clojure.lang.IFn fn = clojure.java.api.Clojure.var(
         \"%s\", \"%s\"
       );
-      
+
       fn.applyTo(%s);
     }",
     (str *ns*)
@@ -300,7 +302,7 @@
         clojure.lang.IFn fn = clojure.java.api.Clojure.var(
           \"%s\", \"%s\"
         );
-        
+
         $_ = %s;
       }",
       (str *ns*)
@@ -342,7 +344,7 @@
 
 (defmacro java-patch
   "Applies a monkey-patch to a java method.
-   
+
   `mode` can be either `:replace`, `:before` or `:after`.
   `body` can be javassist pseudo-java (a string) or clojure code.
   In the latter case, `args` must be specified before `body` so as to
@@ -350,9 +352,9 @@
   include the method's return value. If the method is an instance
   method, `args` will also include the instance it is called on
   (`this`).
-  
+
   `args`: `[this? return-value? & method-args]`
-  
+
   ```clojure
   (java-patch [clojure.lang.LispReader \"read\"
                [java.io.PushbackReader \"boolean\" Object \"boolean\" Object]]
@@ -363,9 +365,9 @@
               :eof eof-value}
              opts)
       reader))
-  
+
   ;; or
-  
+
   (java-patch [clojure.lang.LispReader$SyntaxQuoteReader \"syntaxQuote\"
                [Object]]
     :after
@@ -393,7 +395,7 @@
 (defn require-from-dependent-namespaces
   "Requires a namespace from any namespace that has required it.
   `requirement` can be anything `require` accepts.
-  
+
   ```clojure
   (require-from-dependent-namespaces
     '[clojure.core :refer [custom-fn]])

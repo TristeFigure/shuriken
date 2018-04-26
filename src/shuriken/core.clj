@@ -10,6 +10,7 @@
                       macro
                       meta
                       monkey-patch
+                      multi
                       namespace
                       navigation
                       sequential
@@ -22,7 +23,7 @@
    flatten-keys deflatten-keys deep-merge
    index-by unindex
    merge-with-plan]
-  
+
   [shuriken.context
    contexts
    context!
@@ -33,14 +34,26 @@
    lexical-context
    lexical-eval
    letmap]
-  
+
   [shuriken.dance
    dance
-   merge-dances]
-  
+   merge-dances
+   step
+   step-indexed
+   empty-dance
+   depth-dance
+   indexed-dance
+   path-dance
+   leaf-collecting-dance
+   splice
+   splicing-dance
+   *default-dance*
+   break-dance
+   backtrack]
+
   [shuriken.debug
    debug]
-  
+
   [shuriken.destructure
    disentangle
    deconstruct
@@ -49,7 +62,7 @@
   [shuriken.exception
    silence
    thrown?]
-  
+
   [shuriken.fn
    arities
    max-arity
@@ -74,11 +87,15 @@
    refresh-only
    monkey-patch
    java-patch]
-  
+
+  [shuriken.multi
+   call-multi]
+
   [shuriken.namespace
    fully-qualify fully-qualified?
    unqualify
-   with-ns]
+   with-ns
+   import-namespace]
 
   [shuriken.navigation
    tree-seq-breadth
@@ -88,16 +105,16 @@
   [shuriken.sequential
    slice separate
    max-by min-by]
-  
+
   [shuriken.string
    tabulate
    truncate]
-  
+
   [shuriken.threading
    tap tap-> tap->>
    if-> if->>
    pp-> pp->>]
-  
+
   [shuriken.weaving
    | ?| not|
    *| <-| ->| apply| arity-comp

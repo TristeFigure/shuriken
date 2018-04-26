@@ -7,17 +7,17 @@
 
 ;; Step 0: substitute Clojure's native reader with that from
 ;; clojure.tools.reader
-; (monkey-patch substitute-clojure-read
+; (monkey-patch :substitute-clojure-read
 ;   clojure.core/read
 ;   [original & args]
 ;   (apply clojure.tools.reader/read args))
 
-; (monkey-patch substitute-clojure-read-string
+; (monkey-patch :substitute-clojure-read-string
 ;   clojure.core/read-string
 ;   [original & args]
 ;   (apply clojure.tools.reader/read-string args))
 
-; (monkey-patch change-tools-reader-read-syntax-quote
+; (monkey-patch :change-tools-reader-read-syntax-quote
 ;   clojure.tools.reader/read-syntax-quote
 ;   [original & args]
 ;   (list 'from-syntax-quote (apply original args)))
@@ -48,7 +48,7 @@
 
 ;; Step 2: Add (from-syntax-quote x) -> `(x) translation into clojure.pprint
 ;;         and translate (unquote-splicing args) to ~@args as well.
-(monkey-patch pprint-from-syntax-quote-as-reader-macro
+(monkey-patch :pprint-from-syntax-quote-as-reader-macro
   clojure.pprint/pprint-reader-macro
   [original alis]
   (or (original alis)
@@ -59,7 +59,7 @@
         (clojure.pprint/write-out (eval (second alis)))
         true)))
 
-(monkey-patch add-unquote-splicing-to-pprint-reader-macros
+(monkey-patch :add-unquote-splicing-to-pprint-reader-macros
   clojure.pprint/reader-macros
   [original]
   (assoc original
@@ -69,7 +69,7 @@
 (define-again 'clojure.pprint/pprint-list)
 (define-again 'clojure.pprint/pprint-code-list)
 
-(with-ns 'clojure.pprint  
+(with-ns 'clojure.pprint
   (use-method simple-dispatch clojure.lang.ISeq pprint-list)
   (use-method code-dispatch   clojure.lang.ISeq pprint-code-list))
 
