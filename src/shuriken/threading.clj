@@ -13,7 +13,7 @@
                 :docstring (s/? string?)
                 :opts      (s/? map?)))))
 
-(s/def ::def-macro-variants-args
+(s/def ::defthreading-args
   (s/cat
     :name-prefix (s/? symbol?)
     :doc-prefix  (s/? string?)
@@ -23,9 +23,9 @@
 (declare &macro-variant &macro-opts)
 
 ;; TODO: document
-(defmacro def-macro-variants [& args]
+(defmacro defthreading [& args]
   (let [{:keys [name-prefix doc-prefix variants args bodies]}
-        (conform! ::def-macro-variants-args args)]
+        (conform! ::defthreading-args args)]
     (cons 'do (for [{:keys [macro docstring opts]} variants
                     :let [specific-name (symbol (str name-prefix macro))
                           specific-doc (if (or doc-prefix docstring)
@@ -47,10 +47,10 @@
                          (into {})
                          (s/unform :shuriken.spec/macro-definition)))))))
 
-(def-macro-variants tap
+(defthreading tap
   "Threads the expr through the forms like -> and returns the value of
   the initial expr."
-  [-> 
+  [->
    ->> "Like tap-> but threads with ->>."]
   [x & forms]
   `(let [result# ~x]
@@ -61,7 +61,7 @@
   "Evaluates expressions in order returning the value of the first.
   Will thread the first expr into any subsequent expr starting with a
   threading macro symbol.
-  
+
   (tap 123
        (println \"yo\")
        (some-> inc println))
@@ -90,7 +90,7 @@
       (adjust :left max-label-length label)
       result)))
 
-(def-macro-variants pp
+(defthreading pp
   [->  "Like ->, but prints a debug statement for f and each expr in forms."
    ->> "Like ->>, but prints a debug statement for f and each expr in forms."]
   [f & forms]
@@ -119,16 +119,33 @@
                                        result#))))
                                forms)))))
 
-(def-macro-variants if
-  "Threads value through test then else. If else is not provided,
-  returns the initial value when test fails."
-  [-> 
-   ->> "Like if->, but with ->> semantics."]
-  ([element test then]
+(defthreading if
+  "Threads `value` through `test` then `then` or `else`. If `else` is
+  not provided, returns the initial value when `test` fails."
+  [->
+   ->> "Like [[if->]], but with `->>` threading style."]
+  ([value test then]
    `(~(symbol (str 'if &macro-variant))
-     ~element ~test ~then identity))
-  ([element test then else]
-   `(let [e# ~element]
+     ~value ~test ~then identity))
+  ([value test then else]
+   `(let [e# ~value]
       (if (~&macro-variant e# ~test)
         (~&macro-variant e# ~then)
         (~&macro-variant e# ~else)))))
+
+(defthreading when
+  "Thread value through `test` then the rest of the exprs if it succeeds.
+  Returns the value that was passed in otherwise."
+  [->
+   ->> "Like [[when->]], but with `->>` threading style."]
+  [value test & exprs]
+  `(let [e# ~value]
+     (if (~&macro-variant e# ~test)
+       (~&macro-variant e# ~@exprs)
+       e#)))
+
+(defmacro <-
+  "Used to provide arbitrary input and output values to threading forms.
+  Mind blown."
+  [& body]
+  `((fn [& _#] ~@body)))

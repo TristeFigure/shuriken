@@ -18,7 +18,12 @@ All notable changes to this project will be documented in this file. This change
 - debug: `debug`.
 - sequential: `max-by` & `min-by`.
 - string: `tabulate` & `truncate`.
-- threading: `if->`,`if->>` & `pp->`.
+- threading:
+  - `defthreading`
+  - `if->` & `if->>`.
+  - `when->` & `when->>`.
+  - `pp->`.
+  - `<-`.
 
 ## Enhanced
 - macro: `file-eval` uses the local lexical context.

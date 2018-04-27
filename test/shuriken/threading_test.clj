@@ -1,9 +1,12 @@
 (ns shuriken.threading-test
+  (:use clojure.pprint)
   (:require [clojure.test :refer :all]
             [shuriken.string :refer [no-print]]
-            [shuriken.threading :refer [tap tap-> tap->>
-                                        if-> if->>
-                                        pp-> pp->>]]))
+            [shuriken.core :refer [tap tap-> tap->>
+                                   if-> if->>
+                                   when-> when->>
+                                   pp-> pp->>
+                                   <-]]))
 
 ;; TODO: require shuriken.core instead of shuriken.threading
 
@@ -29,13 +32,17 @@
   (is (= 2     (if-> 1  number? inc (str "a")))
       (= "a:x" (if-> :x number? inc (str "a"))))
   (testing "with if->>"
-    (is (= 2     (if-> 1  number? inc (str "a")))
-        (= ":xa" (if-> :x number? inc (str "a")))))
+    (is (= 2     (if->> 1  number? inc (str "a")))
+        (= ":xa" (if->> :x number? inc (str "a")))))
   (testing "assserting a missing second case is equivalent to 'identity'"
     (testing "when the predicate succeeds"
       (is (= 2  (if-> 1  number? inc))))
     (testing "when the predicate fails"
       (is (= :x (if-> :x number? inc))))))
+
+(deftest test-when->
+  (is (= "125"  (-> 123 (when-> number? inc inc) str)))
+  (is (= ":x" (-> :x  (when-> number? inc inc) str))))
 
 (deftest test-pp->
   (is (= (-> 1 (/ 2) (/ 2) (/ 2))
@@ -43,3 +50,9 @@
   (testing "with pp->>"
     (is (= (->> 1 (/ 2) (/ 2) (/ 2))
            (no-print (pp->> 1 (/ 2) (/ 2) (/ 2)))))))
+
+(deftest test-<-
+  (is (= 124
+         (-> :x
+             (<- 123)
+             inc))))

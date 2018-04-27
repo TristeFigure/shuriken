@@ -111,9 +111,12 @@
    truncate]
 
   [shuriken.threading
+   defthreading
    tap tap-> tap->>
    if-> if->>
-   pp-> pp->>]
+   when-> when->>
+   pp-> pp->>
+   <-]
 
   [shuriken.weaving
    | ?| not|
