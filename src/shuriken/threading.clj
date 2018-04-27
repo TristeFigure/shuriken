@@ -1,7 +1,7 @@
 (ns shuriken.threading
   (:use clojure.pprint)
   (:require [clojure.spec.alpha :as s]
-            [shuriken.spec :refer [conf either conform!]]
+            [shuriken.spec :refer [conform!]]
             [clojure.string :as str]
             [shuriken.debug :refer [debug-print]]
             [shuriken.string :refer [adjust truncate lines format-code]]))
@@ -143,6 +143,7 @@
      (if (~&macro-variant e# ~test)
        (~&macro-variant e# ~@exprs)
        e#)))
+
 
 (defmacro <-
   "Used to provide arbitrary input and output values to threading forms.
