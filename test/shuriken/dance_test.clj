@@ -81,5 +81,3 @@
                    :post? number?
                    :post inc
                    :return-context true))))
-
-(run-tests)

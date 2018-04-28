@@ -89,7 +89,8 @@
    java-patch]
 
   [shuriken.multi
-   call-multi]
+   call-method
+   super-method]
 
   [shuriken.namespace
    fully-qualify fully-qualified?

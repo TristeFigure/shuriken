@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.13.19] - 2018-04-28
+## Added
+- `multi`: `super-method`.
+
+## Fixed
+- `multi`: `call-multi` renamed to `call-method`.
+
 # [0.13.18] - 2018-04-27
 ## Added
 - macro:
