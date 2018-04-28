@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.13.21] - 2018-04-28
+## Added
+- `sequential`: `get-nth-in` & `assoc-nth-in`.
+
 # [0.13.20] - 2018-04-28
 ## Fixed
 - `multi`: in `super-method`, use the default dispatch val of the multi

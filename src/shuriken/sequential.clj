@@ -4,6 +4,34 @@
 
 (import-vars clojure.core/reduce1)
 
+; Taken from https://stackoverflow.com/questions/43213573/get-in-for-lists
+(defn get-nth-in
+  "Like get-in but also works on lists."
+  [init ks]
+  (reduce
+    (fn [a k]
+      (if (associative? a)
+        (get a k)
+        (nth a k)))
+    init
+    ks))
+
+(defn- assoc-nth [coll n v]
+  (when-not (<= n (count coll))
+    (throw (new IndexOutOfBoundsException)))
+  (if (list? coll)
+    (concat (take n coll)
+            [v]
+            (drop (inc n) coll))
+    (assoc coll n v)))
+
+(defn assoc-nth-in
+  "Like assoc-in but also works on lists."
+  [m [k & ks] v]
+  (if ks
+    (assoc-nth m k (assoc-nth-in (get m k) ks v))
+    (assoc-nth m k v)))
+
 (defn slice
   "Slice a seq using a delimiter predicate. There are two options:
   ```
@@ -13,23 +41,23 @@
                           whether to create empty seqs between
                           successive delimiters
   ```
-  
+
   ```clojure
   (let [coll [1 1 0 1 0 0 1 1]]
     ;; the default
     (slice zero? coll) ;; by default, :include-delimiter false,
                                       :include-empty     false
     => ((1 1) (1) (1 1))
-    
+
     (slice zero? coll :include-empty true)
     => ((1 1) (1) () (1 1))
-    
+
     (slice zero? coll :include-delimiter :left)
     => ((1 1) (0 1) (0 1 1))
-    
+
     (slice zero? coll :include-delimiter :right)
     => ((1 1 0) (1 0) (1 1))
-    
+
     (slice zero? coll :include-delimiter :right :include-empty true)
     => ((1 1 0) (1 0) (0) (1 1))
     )

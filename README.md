@@ -5,7 +5,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.13.20"]
+[org.clojars.tristefigure/shuriken "0.13.21"]
 ```
 
 
@@ -102,6 +102,10 @@ Small yet effective Clojure weapons.
 ```
 
 ## Sequential structures
+
+### `get-nth-in` & `assoc-nth-in`
+
+Respectively like `get-in` and `assoc-in` but also work on lists.
 
 ### `slice`
 
