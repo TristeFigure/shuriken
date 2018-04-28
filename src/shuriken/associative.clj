@@ -1,6 +1,22 @@
 (ns shuriken.associative
   "### Operations on associative structures")
 
+(defn map-keys
+  "Applies `f` to each key of `m`."
+  [f m]
+  (->> m
+       (map (fn [[k v]]
+              [(f k) v]))
+       (into {})))
+
+(defn map-vals
+  "Applies `f` to each value of `m`."
+  [f m]
+  (->> m
+       (map (fn [[k v]]
+              [k (f v)]))
+       (into {})))
+
 (defn- flatten-keys* [acc ks m]
   (if (and (map? m)
            (not (empty? m)))
@@ -20,7 +36,7 @@
   => {[:a :b :c] :x
       [:a :b :d] :y}
   ```
-  
+
       (flatten-keys {:a {:b {:c :x
                              :d :y}}})
       => {[:a :b :c] :x
@@ -32,7 +48,7 @@
 
 (defn deflatten-keys
   "Builds a nested map out of a map obtained from [[flatten-keys]].
-  
+
   ```clojure
   (deflatten-keys {[:a :b :c] :x
                    [:a :b :d] :y})
@@ -59,7 +75,7 @@
 
 (defn deep-merge
   "Deep merges two or more nested maps.
-  
+
   ```clojure
   (deep-merge {:x {:a :a  :b :b  :c :c}}
               {:x {:a :aa :b :bb}}
@@ -89,7 +105,7 @@
   where `entry` is the one that will be indexed.
   The default strategy asserts there is only one entry for the given
   key and returns it.
-  
+
   ```clojure
   (def ms [{:a 1 :b 2} {:a 3 :b 4} {:a 5 :b 4}])
 

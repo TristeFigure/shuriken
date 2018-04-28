@@ -5,7 +5,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.13.21"]
+[org.clojars.tristefigure/shuriken "0.13.22"]
 ```
 
 
@@ -15,6 +15,10 @@ Small yet effective Clojure weapons.
 ```
 
 ## Associative structures
+
+### The boring
+
+`map-keys` & `map-vals`
 
 ### `flatten-keys`
 
