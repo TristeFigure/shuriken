@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.13.23] - 2018-04-28
+## Added
+- `threading`: `and->`, `and->>`, `or->` & `or->>`
+
 # [0.13.22] - 2018-04-28
 ## Added
 - `associative`: `map-keys` & `map-vals`.

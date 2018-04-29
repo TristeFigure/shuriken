@@ -114,10 +114,12 @@
 
   [shuriken.threading
    defthreading
-   tap tap-> tap->>
-   if-> if->>
+   tap    tap->    tap->>
+   if->   if->>
    when-> when->>
-   pp-> pp->>
+   and->  and->>
+   or->   or->>
+   pp->   pp->>
    <-]
 
   [shuriken.weaving

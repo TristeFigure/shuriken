@@ -5,7 +5,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.13.22"]
+[org.clojars.tristefigure/shuriken "0.13.23"]
 ```
 
 
@@ -140,7 +140,8 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
 ```clojure
 (let [coll [1 1 0 1 0 0 1 1 0]]
   (separate zero? coll)
-  ;; [(1 1 1 1 1) (0 0 0 0)])
+  ;; [(1 1 1 1 1) (0 0 0 0)]
+  )
 ```
 
 ## Macro
@@ -367,10 +368,10 @@ Returns true if the symbol constitutes an absolute reference.
 ### `unqualify`
 
 ```clojure
-(unqualifiy 'clojure.lang.IRecord)      ; => IRecord
-(unqualifiy 'my-ns/my-var)              ; => my-var
-(unqualifiy 'alias/my-var)              ; => alias/my-var
-(unqualifiy 'some.path.Class/staticMeth ; => Class/staticMeth
+(unqualifiy 'clojure.lang.IRecord)       ; => IRecord
+(unqualifiy 'my-ns/my-var)               ; => my-var
+(unqualifiy 'alias/my-var)               ; => alias/my-var
+(unqualifiy 'some.path.Class/staticMeth) ; => Class/staticMeth
 ```
 
 ### `with-ns`

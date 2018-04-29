@@ -121,7 +121,7 @@
 
 (defthreading if
   "Threads `value` through `test` then `then` or `else`. If `else` is
-  not provided, returns the initial value when `test` fails."
+  not provided, returns `value` when `test` fails."
   [->
    ->> "Like [[if->]], but with `->>` threading style."]
   ([value test then]
@@ -134,8 +134,8 @@
         (~&macro-variant e# ~else)))))
 
 (defthreading when
-  "Thread value through `test` then the rest of the exprs if it succeeds.
-  Returns the value that was passed in otherwise."
+  "Threads `value` through `test` then the rest of the exprs if it succeeds.
+  Returns `value` otherwise."
   [->
    ->> "Like [[when->]], but with `->>` threading style."]
   [value test & exprs]
@@ -143,6 +143,28 @@
      (if (~&macro-variant e# ~test)
        (~&macro-variant e# ~@exprs)
        e#)))
+
+(defthreading and
+  "Threads `value` through each expr halting on a `nil` or `false` result."
+  [->
+   ->> "Like [[and->]], but with `->>` threading style."]
+  [value & exprs]
+  (let [v-sym (gensym "v-")]
+    `(let [~v-sym ~value]
+       (and ~@(map (fn [e]
+                     `(~&macro-variant ~v-sym ~e))
+                   exprs)))))
+
+(defthreading or
+  "Threads `value` through each expr halting on a non `nil` or `false` result."
+  [->
+   ->> "Like [[or->]], but with `->>` threading style."]
+  [value & exprs]
+  (let [v-sym (gensym "v-")]
+    `(let [~v-sym ~value]
+       (or ~@(map (fn [e]
+                     `(~&macro-variant ~v-sym ~e))
+                   exprs)))))
 
 
 (defmacro <-

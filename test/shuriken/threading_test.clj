@@ -2,10 +2,12 @@
   (:use clojure.pprint)
   (:require [clojure.test :refer :all]
             [shuriken.string :refer [no-print]]
-            [shuriken.core :refer [tap tap-> tap->>
-                                   if-> if->>
+            [shuriken.core :refer [tap    tap->   tap->>
+                                   if->   if->>
                                    when-> when->>
-                                   pp-> pp->>
+                                   and->  and->>
+                                   or->   or->>
+                                   pp->   pp->>
                                    <-]]))
 
 ;; TODO: require shuriken.core instead of shuriken.threading
@@ -51,8 +53,18 @@
     (is (= (->> 1 (/ 2) (/ 2) (/ 2))
            (no-print (pp->> 1 (/ 2) (/ 2) (/ 2)))))))
 
+(deftest test-and->
+  (is (true?  (and->  1 number? (> 0))))
+  (is (false? (and->> 1 number? (> 0)))))
+
+(deftest test-or->
+  (is (true?  (or->  1 number? (> 0))))
+  (is (true? (or->> 1 number? (> 0)))))
+
 (deftest test-<-
   (is (= 124
          (-> :x
              (<- 123)
              inc))))
+
+(run-tests)
