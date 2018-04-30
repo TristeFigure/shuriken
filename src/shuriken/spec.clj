@@ -2,7 +2,7 @@
   (:require [clojure.spec.alpha :as s])
   (:require [clojure.pprint :refer [pprint]]))
 
-;; TODO: expose this namespace ?
+;; TODO: document
 
 (defn conf
   ([form f]     (conf form f identity))
@@ -17,7 +17,7 @@
          (if (instance? clojure.lang.IObj x#)
            (vary-meta (val x#) (fnil assoc {}) ::source-either-case (key x#))
            (val x#)))
-       
+
        (fn [x#]
          (let [original-case# (-> x# meta ::source-either-case)
                unform# ~(:unform cases)

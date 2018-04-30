@@ -14,6 +14,7 @@
                       namespace
                       navigation
                       sequential
+                      spec
                       string
                       threading
                       weaving]))
@@ -108,6 +109,9 @@
   [shuriken.sequential
    slice separate
    max-by min-by]
+
+  [shuriken.spec
+   conf either conform!]
 
   [shuriken.string
    adjust

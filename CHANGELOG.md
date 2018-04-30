@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.13.26] - 2018-04-30
+## Fixed
+- Exposed `spec` namespace.
+
 # [0.13.25] - 2018-04-30
 ## Fixed
 - `string`: exposed `adjust`, `format-code`, `join-lines`, `lines` &
