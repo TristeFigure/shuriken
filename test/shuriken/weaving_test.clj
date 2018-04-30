@@ -1,8 +1,7 @@
 (ns shuriken.weaving-test
   (:require [clojure.test :refer :all]
-            [shuriken.core :refer :all]
-            [shuriken.test-utils :refer :all])
-  (:use shuriken.test-utils))
+            [shuriken.core :refer :all])
+  (:use shuriken.test))
 
 (def john
   {:name "john"

@@ -59,8 +59,7 @@
 
 (defmacro tap
   "Evaluates expressions in order returning the value of the first.
-  Will thread the first expr into any subsequent expr starting with a
-  threading macro symbol.
+  Will thread the first expr into any subsequent threading expr.
 
   (tap 123
        (println \"yo\")

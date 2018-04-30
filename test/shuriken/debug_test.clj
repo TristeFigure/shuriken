@@ -1,10 +1,7 @@
 (ns shuriken.debug-test
   (:require [clojure.test :refer :all]
             [shuriken.debug :refer [debug debug-print]])
-  (:use shuriken.test-utils))
-
-;; TODO: require shuriken.core instead of shuriken.debug
-
+  (:use shuriken.test))
 
 (defn-call do-something [x] x)
 (defn-call do-nothing [x] x)

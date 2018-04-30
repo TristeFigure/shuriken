@@ -1,4 +1,4 @@
-(ns shuriken.test-utils
+(ns shuriken.test
   (:require [clojure.test :refer :all]))
 
 (def calls

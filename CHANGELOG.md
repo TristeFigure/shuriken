@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.13.24] - 2018-04-30
+## Added
+- Exposed test utils in `shuriken.test`. Not included in `shuriken.core`.
+
 # [0.13.23] - 2018-04-28
 ## Added
 - `threading`: `and->`, `and->>`, `or->` & `or->>`
