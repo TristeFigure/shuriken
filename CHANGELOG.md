@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.13.25] - 2018-04-30
+## Fixed
+- `string`: exposed `adjust`, `format-code`, `join-lines`, `lines` &
+  `no-print`.
+  - `debug`: exposed `debug-print`.
+
 # [0.13.24] - 2018-04-30
 ## Added
 - Exposed test utils in `shuriken.test`. Not included in `shuriken.core`.

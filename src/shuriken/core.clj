@@ -53,7 +53,8 @@
    backtrack]
 
   [shuriken.debug
-   debug]
+   debug
+   debug-print]
 
   [shuriken.destructure
    disentangle
@@ -109,6 +110,11 @@
    max-by min-by]
 
   [shuriken.string
+   adjust
+   format-code
+   join-lines
+   lines
+   no-print
    tabulate
    truncate]
 
