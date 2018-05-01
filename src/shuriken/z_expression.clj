@@ -1,8 +1,7 @@
 (ns shuriken.z-expression
   (:use clojure.pprint)
   (:require [shuriken.reader-macros :refer [def-reader-macro read-form]]
-            [shuriken.dance :refer [dance merge-dances leaf-collecting-dance]]
-            [shuriken.weaving :refer [not| or|]]
+            [shuriken.dance :refer [dance merge-dances leaf-collecting-dance]]]
             [clojure.data :refer [diff]]))
 
 (def-reader-macro \§ [reader _paragraph opts pending-forms]

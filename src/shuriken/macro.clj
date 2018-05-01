@@ -8,11 +8,11 @@
             [shuriken.namespace :refer [fully-qualify unqualify]]
             [shuriken.context :refer [context! binding-context delete-context!
                                       lexical-context]]
-            [shuriken.dance :refer [dance merge-dances]]))
+            [dance.core :refer [dance merge-dances]]))
 
 (defn is-form?
   "Determines whether `code` is a form starting with `sym`.
-  
+
   ```clojure
   (is-form? 'a 1)       ; => false
   (is-form? 'a '[a :z]) ; => false
@@ -24,7 +24,7 @@
 (defn wrap-form
   "Wraps `code` in a form begining with `sym` unless it is already
   the case.
-  
+
   ```clojure
   (wrap-form 'a :z)                      ; => (a :z)
   (->> :z (wrap-form 'a) (wrap-form 'a)) ; => (a :z)
@@ -37,7 +37,7 @@
 (defn unwrap-form
   "Unwraps `code` if it is a form starting with `sym`. Returns `code`
   otherwise.
-  
+
   ```clojure
   (unwrap-form 'a '(a :z))                        ; a
   (->> '(a :z) (unwrap-form 'a) (unwrap-form 'a)) ; a
@@ -66,12 +66,12 @@
 (defn clean-code
   "Recursively unqualifies qualified code in the provided form,
    fully-qualifying back any unqualified symbol with a namespace.
-  
+
   ```clojure
   (clean-code `(a (b c)))
   => '(a (b c))
   ```"
-  [code]  
+  [code]
   (prewalk (fn [form]
              (if (symbol? form)
                (as-> (unqualify form) $
@@ -114,7 +114,7 @@
       (throw t)
       (throw
           (doto
-            (Exception. 
+            (Exception.
               (str "file-eval: caught an exception evaluating code in:"
                    \newline
                    (.getAbsolutePath f)
@@ -126,7 +126,7 @@
   "Evaluate code in a temporary file via `load-file` in the local
   lexical context. Keep the temporary file aside if an error is
   raised, deleting it on the next run.
-  
+
   ```clojure
   (let [a 1]
     (file-eval '(+ 1 a)))
@@ -142,7 +142,7 @@
                f# (create-tmp-file!)]
            (context! (.getAbsolutePath f#) lc#)
            (dump-code
-             f# (binding-context ~'*file* ~code)) 
+             f# (binding-context ~'*file* ~code))
            (try
              (let [result# (load-file (.getAbsolutePath f#))]
                (delete-tmp-file! f#)
@@ -152,13 +152,13 @@
 
 (defn macroexpand-all-eager
   "Like clojure.walk/macroexpand-all but does not expand quoted forms.
-  
+
   ```clojure
   (defmacro m [] :abc)
-  
+
   (clojure.walk/macroexpand-all '((m) (quote (m))))
   => (:abc (quote :abc))
-  
+
   (macroexpand-all-eager '((m) (quote (m))))
   => (:abc (quote (m)))
   ```"
@@ -175,7 +175,7 @@
   "Recursively macroexpands seqs in `expr` whose first element matches
   `pred`. Symbols are passed to `filter`, their namespace stripped.
   Quoted forms are not expanded.
-  
+
   ```clojure
   (macroexpand-some #{'let}
     '(let [a (let [aa 1] aa)
@@ -248,7 +248,7 @@
        (println "-- Macro expansion --")
        (let [mode# ~mode
              mode-arg# ~mode-arg
-             expander# (case mode# 
+             expander# (case mode#
                          nil    macroexpand
                          :all   macroexpand-all-eager
                          :n     (partial macroexpand-n     mode-arg#)
@@ -257,7 +257,7 @@
              expansion# (clean-code (expander# (quote ~expr)))]
          (pprint expansion#)
          (newline)
-         
+
          (println "--  Running macro  --")
          (let [result# (file-eval expansion#)]
            (pprint result#)

@@ -2,11 +2,9 @@
   (:require [potemkin :refer [import-vars]]
             [shuriken associative
                       context
-                      dance
                       debug
                       destructure
                       exception
-                      fn
                       macro
                       meta
                       monkey-patch
@@ -15,9 +13,7 @@
                       navigation
                       sequential
                       spec
-                      string
-                      threading
-                      weaving]))
+                      string]))
 
 (import-vars
   [shuriken.associative
@@ -37,22 +33,6 @@
    lexical-eval
    letmap]
 
-  [shuriken.dance
-   dance
-   merge-dances
-   step
-   step-indexed
-   empty-dance
-   depth-dance
-   indexed-dance
-   path-dance
-   leaf-collecting-dance
-   splice
-   splicing-dance
-   *default-dance*
-   break-dance
-   backtrack]
-
   [shuriken.debug
    debug
    debug-print]
@@ -65,12 +45,6 @@
   [shuriken.exception
    silence
    thrown?]
-
-  [shuriken.fn
-   arities
-   max-arity
-   min-arity
-   fake-arity]
 
   [shuriken.macro
    is-form?
@@ -120,21 +94,4 @@
    lines
    no-print
    tabulate
-   truncate]
-
-  [shuriken.threading
-   defthreading
-   tap    tap->    tap->>
-   if->   if->>
-   when-> when->>
-   and->  and->>
-   or->   or->>
-   pp->   pp->>
-   <-]
-
-  [shuriken.weaving
-   | ?| not|
-   *| <-| ->| apply| arity-comp
-   when| if| tap|
-   and| or|
-   context|])
+   truncate])

@@ -1,7 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-# [Unreleased]
+# [0.13.27] - 2018-05-01
+## Removed
+- Externalized `threading`, `weaving`, `dance` and `fn` (this latter as
+  `arity`) into distinct libs of their own.
+
 ## Added
 - `associative`: a plan to `merge-plan` can be a map as well as a function.
 
