@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [Unreleased]
+## Added
+- `associative`: a plan to `merge-plan` can be a map as well as a function.
+
 # [0.13.26] - 2018-04-30
 ## Fixed
 - Exposed `spec` namespace.

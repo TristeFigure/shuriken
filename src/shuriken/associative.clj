@@ -140,14 +140,16 @@
   of entries is determined by looking up their key in `plan`. If not
   found, falls back to the function found under key `:else` or if not
   provided to a function that returns the value in the right-most map,
-  thus providing the behavior of `merge`."
+  thus providing the behavior of `merge`.
+  In addition to a map, `plan` can also be a function accepting a key
+  and returning a combination fn for the two values to merge."
   [plan & maps]
     (when (some identity maps)
       (let [merge-entry (fn [m e]
                           (let [k (key e) v (val e)]
                             (if (contains? m k)
-                              (let [else-f (get plan :else #(identity %2))
-                                    f (get plan k else-f)]
+                              (let [else-f (or (plan :else) #(identity %2))
+                                    f (or (plan k) else-f)]
                                 (assoc m k (f (get m k) v)))
                               (assoc m k v))))
             merge2 (fn [m1 m2]
