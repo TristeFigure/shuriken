@@ -2,10 +2,13 @@
 
 Small yet effective Clojure weapons.
 
+![ninja](https://upload.wikimedia.org/wikipedia/commons/1/1a/Yamato_Takeru_at_16-crop.jpg)\
+*Yamato Takeru dressed as a maidservant, preparing to kill the Kumaso leaders.*
+
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.13.28"]
+[org.clojars.tristefigure/shuriken "0.13.29"]
 ```
 
 
@@ -96,6 +99,9 @@ Small yet effective Clojure weapons.
   (do (println "watch out !")
       (/ 1 0)))
 ;; watch out !
+;; => nil
+
+(silence "Divide by zero" (/ 1 0))
 ;; => nil
 
 (silence :substitute
@@ -199,7 +205,7 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
 
 ### `clean-code`
 
-Recursively unqualifies qualified code in the provided form.`
+Recursively unqualifies qualified code in the provided form.
 
 ```clojure
 (clean-code `(a (b c)))

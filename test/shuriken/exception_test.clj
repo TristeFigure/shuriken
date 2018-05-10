@@ -19,14 +19,19 @@
                       (/ 1 0))))
       (is (= nil
              (silence (fn [_] true)
+                      (/ 1 0))))
+      (is (= nil
+             (silence "Divide by zero"
                       (/ 1 0)))))
-    (testing "and does not match the provided target"   
+    (testing "and does not match the provided target"
       (assert-exception-thrown #(silence IllegalArgumentException
-                               (/ 1 0)))
+                                         (/ 1 0)))
       (assert-exception-thrown #(silence [IllegalArgumentException]
-                               (/ 1 0)))
+                                         (/ 1 0)))
       (assert-exception-thrown #(silence (fn [_] false)
-                               (/ 1 0)))))
+                                         (/ 1 0)))
+      (assert-exception-thrown #(silence "abzabej"
+                                         (/ 1 0)))))
   (testing "when an exception is not thrown"
     (is (= :abc
            (silence :xyz IllegalArgumentException :abc)))))
@@ -45,7 +50,9 @@
     (is (= false
            (thrown? ArithmeticException
                     (/ 1 1)))))
-  
+
   (is (= true
          (thrown? RuntimeException
                   (/ 1 0)))))
+
+(run-tests)

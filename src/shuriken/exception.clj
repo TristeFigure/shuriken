@@ -9,7 +9,7 @@
     - a class
     - a sequence of classes
     - a predicate
-  
+
   ```clojure
   (silence ArithmeticException (/ 1 0))
   => nil
@@ -31,9 +31,10 @@
   ([substitute target expr]
    `(let [target# ~target
           pred# (cond
-                  (class? target#) #(isa? (class %) target#)
-                  (coll? target#) #(some (partial isa? (class %)) target#)
-                  (ifn? target#)  target#
+                  (class? target#)  #(isa? (class %) target#)
+                  (string? target#) #(= target# (.getMessage %))
+                  (coll? target#)   #(some (partial isa? (class %)) target#)
+                  (ifn? target#)    target#
                   :else (throw (IllegalArgumentException.
                                  "target must be sequence of exception class
                                  or a function")))]
@@ -47,7 +48,7 @@
 (defmacro thrown? [target expr]
   "Returns true if `expr` raises an exception matching `target`.
   See [[silence]] for the semantics of `target`.
-  
+
   ```clojure
   (thrown? ArithmeticException (/ 1 0))
   => true
