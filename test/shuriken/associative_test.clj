@@ -1,6 +1,6 @@
 (ns shuriken.associative-test
   (:require [clojure.test :refer :all]
-            [shuriken.associative :refer :all]))
+            [shuriken.core :refer :all]))
 
 ;; TODO: require shuriken.core instead of shuriken.associative
 
@@ -69,7 +69,7 @@
 
 (deftest test-index-by
   (let [ms [{:a 1 :b 2} {:a 3 :b 4} {:a 5 :b 4}]]
-    (testing "default strategy"    
+    (testing "default strategy"
       (is (= (index-by :a ms)
              {1 {:a 1, :b 2}
               3 {:a 3, :b 4}
@@ -91,3 +91,20 @@
     (is (= 3 (c 0)))
     (is (= 0 d))
     (is (= merged (merge-with-plan plan merged)))))
+
+(deftest test-split-map
+  (let [m {:a 1 :b 2 :c 3 :d 4}]
+    (is (= [{:a 1 :b 2} {:c 3 :d 4}]   (split-map m [:a :b])))
+    (is (= [{:a 1 :b 2} {:c 3} {:d 4}] (split-map m [:a :b] [:c])))
+    (is (= [{:a 1 :b 2} {:c 3 :d 4}]   (split-map m [:a :b] [:c :d])))
+    (is (= [{} {}]                     (split-map {} [:a :b] [:c :d])))
+    (is (= [{} {}]                     (split-map nil [:a :b] [:c :d])))
+    (is (= [m]                         (split-map m)))))
+
+(deftest test-map-difference
+  (let [m {:a 1 :b 2 :c 3}]
+    (is (= {:a 1 :b 2 :c 3} (map-difference m {})))
+    (is (= {:b 2 :c 3}      (map-difference m {:a :x})))
+    (is (= {:c 3}           (map-difference m {:a :x :b :x})))
+    (is (= {}               (map-difference m {:a :x :b :x :c :x})))
+    (is (= {:c 3}           (map-difference m {:a :x} {:b :x})))))

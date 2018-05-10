@@ -5,7 +5,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.13.27"]
+[org.clojars.tristefigure/shuriken "0.13.28"]
 ```
 
 
@@ -66,6 +66,22 @@ Small yet effective Clojure weapons.
           ms)
 ;; {2 {:a 1 :b 2}
 ;;  4 {:a 5 :b 4}}
+```
+
+### `split-map`
+
+```clojure
+(let [m {:a 1 :b 2 :c 3 :d 4}]
+  (split-map m [:a :b])       ;; [{:a 1 :b 2} {:c 3 :d 4}]
+  (split-map m [:a :b] [:c])) ;; [{:a 1 :b 2} {:c 3} {:d 4}]
+```
+
+### `map-difference`
+
+```clojure
+(let [m {:a 1 :b 2 :c 3}]
+  (map-difference m {:a :x})          ;; {:b 2 :c 3}
+  (map-difference m {:a :x} {:b :x})) ;; {:c 3}
 ```
 
 ## Exceptions

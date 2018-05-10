@@ -155,3 +155,19 @@
             merge2 (fn [m1 m2]
                      (reduce merge-entry (or m1 {}) (seq m2)))]
         (reduce merge2 maps))))
+
+(defn split-map
+  "Returns a series of maps built by splitting `m` along each sequence
+  of keys in `kss`: the first map has `(first kss)` as keys, the second
+  one `(second kss)`, etc ... while the last map has the remaining keys
+  from `m`."
+  [m & kss]
+  (vec (concat (map (partial select-keys m) kss)
+               (let [remaining (apply dissoc m (apply concat kss))]
+                 (when (seq remaining) [remaining])))))
+
+(defn map-difference
+  "Returns a map that is the first map without elements of the
+  remaining maps."
+  [m & ms]
+  (apply dissoc m (keys (apply merge ms))))

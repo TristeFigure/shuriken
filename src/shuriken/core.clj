@@ -20,7 +20,9 @@
    map-keys map-vals
    flatten-keys deflatten-keys deep-merge
    index-by unindex
-   merge-with-plan]
+   merge-with-plan
+   split-map
+   map-difference]
 
   [shuriken.context
    contexts

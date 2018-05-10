@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.13.28] - 2018-05-10
+## Added
+- `associative`: `split-map` & `map-difference`.
+
 # [0.13.27] - 2018-05-01
 ## Removed
 - Externalized `threading`, `weaving`, `dance` and `fn` (this latter as
