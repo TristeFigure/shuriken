@@ -2,8 +2,6 @@
   (:require [clojure.test :refer :all]
             [shuriken.core :refer :all]))
 
-;; TODO: require shuriken.core instead of shuriken.associative
-
 (defmacro assert-flatten-roundtrip [m]
   `(let [m# ~m]
      (is (= (deflatten-keys (flatten-keys m#))
@@ -108,3 +106,14 @@
     (is (= {:c 3}           (map-difference m {:a :x :b :x})))
     (is (= {}               (map-difference m {:a :x :b :x :c :x})))
     (is (= {:c 3}           (map-difference m {:a :x} {:b :x})))))
+
+(deftest test-submap?
+  (let [m1 {:a 1}
+        m2 {:a 1 :b 2}
+        m3 {:a :x}
+        m4 {:x 1}]
+    (is (true?  (submap? m1 m1)))
+    (is (true?  (submap? m1 m2)))
+    (is (false? (submap? m2 m1)))
+    (is (false? (submap? m1 m3)))
+    (is (false? (submap? m1 m4)))))

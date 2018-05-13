@@ -1,6 +1,9 @@
 (ns shuriken.exception
-  "### Macros to deal with exceptions")
+  "### Macros to deal with exceptions"
+  (:require [shuriken.associative :refer [submap?]])
+  (:import [clojure.lang ExceptionInfo]))
 
+;; TODO: use maps to assert ex-data of ExceptionInfos
 (defmacro silence
   "Returns `substitute` if `expr` raises an exception that matches
   `target`.
@@ -9,9 +12,13 @@
     - a class
     - a sequence of classes
     - a predicate
+    - a string
 
   ```clojure
   (silence ArithmeticException (/ 1 0))
+  => nil
+
+  (silence \"Divide by zero\" (/ 1 0))
   => nil
 
   (silence [ArithmeticException]
@@ -32,6 +39,8 @@
    `(let [target# ~target
           pred# (cond
                   (class? target#)  #(isa? (class %) target#)
+                  (map? target#)    #(and (isa? (class %) ExceptionInfo)
+                                          (submap? target# (ex-data %)))
                   (string? target#) #(= target# (.getMessage %))
                   (coll? target#)   #(some (partial isa? (class %)) target#)
                   (ifn? target#)    target#

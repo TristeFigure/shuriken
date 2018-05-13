@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.13.30] - 2018-05-13
+## Added
+- `associative`: `submap?`.
+- `exception`: `silence` and `thrown?` can match and ExceptionInfo ex-data
+  with a map (works with `submap?`).
+- `reflection`: `read-field`, `method` & `static-method`.
+- `multi`:
+    - `method`.  
+    - `augmentable-multi` & `augment-method`.
+    - `extendable-multi` & `extend-method`.
+
 # [0.13.29] - 2018-05-10
 ## Added
 - `exception`: `silence` and `thrown` can match the exception message if

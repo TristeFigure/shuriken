@@ -8,7 +8,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.13.29"]
+[org.clojars.tristefigure/shuriken "0.13.30"]
 ```
 
 
@@ -21,7 +21,8 @@ Small yet effective Clojure weapons.
 
 ### The boring
 
-`map-keys` & `map-vals`
+- `map-keys` & `map-vals`
+- `submap?`
 
 ### `flatten-keys`
 
@@ -117,6 +118,9 @@ Small yet effective Clojure weapons.
 (thrown? ArithmeticException (/ 1 0))
 ;; => true
 
+(thrown? "Divide by zero" (/ 1 0))
+;; => true
+
 (thrown? #{ArithmeticException} (/ 1 1))
 ;; => false
 
@@ -125,6 +129,10 @@ Small yet effective Clojure weapons.
          (throw (IllegalArgumentException. "my-error")))
 ;; raises:
 ;;   IllegalArgumentException my-error
+
+(thrown? {:type :oops}
+         (throw (ex-info "Oops" {:type :oops :value :abc})))
+;; => true
 ```
 
 ## Sequential structures
@@ -350,19 +358,64 @@ name must be a symbol, quoted or not.
 
 ## Multimethods
 
-### `call-multi`
+`(method multi dispatch-val)` to find a specific method implementation fn.
+
+### `call-method`
 
 ```clojure
 (defmulti mm :type)
 
 (defmethod mm :xx [m]
-  (call-multi mm :yy m))
+  (call-method mm :yy m))
 
 (defmethod mm :yy [m]
   (update m :yy inc))
 
 (mm {:type :xx :yy 0})
 ; => {:type :xx, :yy 1}
+```
+
+## `super-multi`
+
+```clojure
+(defmethod mm :zz [m]
+  (call-method (super-method mm :zz)))
+```
+
+## `augmentable-multi` & `augment-method`
+
+```clojure
+(defmulti mm #(first %&))
+(augmentable-multi mm juxt)
+
+(defmethod mm :aa [x]
+  :a)
+
+(augment-method mm :aa [_]
+  :augmented)
+
+(mm :aa)
+;; => [:a :augmented]
+```
+
+## `extendable-multi` & `extend-method`
+
+```clojure
+(defmulti mm #(first %&))
+(extendable-multi mm juxt)
+
+(derive :mm/bb :mm/aa)
+
+(defmethod mm :mm/aa [x]
+  :a)
+
+(extend-method mm :mm/bb [_]
+  :extended)
+
+(mm :bb)
+;; => [:a :extended]
+(mm :aa)
+;; => :a
 ```
 
 ## Namespace

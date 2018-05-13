@@ -424,25 +424,3 @@
        (let [orig (meta v)]
          (eval source)
          (reset-meta! v orig)))))
-
-(defn static-field
-  "Returns the value of a static field by reflection."
-  [class name]
-  (-> (doto (.getDeclaredField class (str name))
-        (.setAccessible true))
-      (.get nil)))
-
-(defn method
-  "Returns a method by reflection."
-  [class name parameter-types]
-  (let [m (-> (doto (.getDeclaredMethod class (str name)
-                                        (into-array Class parameter-types))
-                (.setAccessible true)))]
-    (fn [target & args]
-      (.invoke m target (to-array args)))))
-
-(defn static-method
-  "Returns a static method by reflection."
-  [class name parameter-types]
-  (let [m (method class name parameter-types)]
-    (partial m nil)))

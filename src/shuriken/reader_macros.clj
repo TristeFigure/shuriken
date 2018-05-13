@@ -1,6 +1,6 @@
 (ns shuriken.reader-macros
   "### Defining reader-macros"
-  (:require [shuriken.monkey-patch :refer [static-field static-method]])
+  (:require [shuriken.reflection :refer [read-field static-method]])
   (:import [clojure.lang LispReader]
            [java.io PushbackReader]))
 
@@ -9,7 +9,7 @@
   as a map of chars to objects (a char being an integer index).
   These object respond to `.invoke` with 4 arguments:
     reader, paragraph, opts & pending-forms."
-  (static-field LispReader "macros"))
+  (read-field LispReader "macros"))
 
 (defn ^:no-doc ensure-pending [forms]
   (if (nil? forms)

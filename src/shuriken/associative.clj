@@ -171,3 +171,9 @@
   remaining maps."
   [m & ms]
   (apply dissoc m (keys (apply merge ms))))
+
+(defn submap?
+  "Determines whether `map1` is a subset, keys and values wise, of
+  `map2`."
+  [map1 map2]
+  (clojure.set/subset? (set map1) (set map2)))

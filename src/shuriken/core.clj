@@ -11,6 +11,7 @@
                       multi
                       namespace
                       navigation
+                      reflection
                       sequential
                       spec
                       string]))
@@ -22,7 +23,8 @@
    index-by unindex
    merge-with-plan
    split-map
-   map-difference]
+   map-difference
+   submap?]
 
   [shuriken.context
    contexts
@@ -68,8 +70,11 @@
    java-patch]
 
   [shuriken.multi
+   method
+   super-method
    call-method
-   super-method]
+   augmentable-multi augment-method
+   extendable-multi extend-method]
 
   [shuriken.namespace
    fully-qualify fully-qualified?
@@ -81,6 +86,11 @@
    tree-seq-breadth
    prepostwalk
    prepostwalk-demo]
+
+  [shuriken.reflection
+   read-field
+   method
+   static-method]
 
   [shuriken.sequential
    slice separate
