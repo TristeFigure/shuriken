@@ -22,7 +22,10 @@
                       (/ 1 0))))
       (is (= nil
              (silence "Divide by zero"
-                      (/ 1 0)))))
+                      (/ 1 0))))
+      (is (= nil
+             (silence {:type :some-type}
+                      (throw (ex-info "Oops" {:type :some-type :v 123}))))))
     (testing "and does not match the provided target"
       (assert-exception-thrown #(silence IllegalArgumentException
                                          (/ 1 0)))
@@ -41,6 +44,9 @@
     (testing "and matches the provided target"
       (is (= true
              (thrown? ArithmeticException
+                      (/ 1 0))))
+      (is (= true
+             (thrown? "Divide by zero"
                       (/ 1 0)))))
     (testing "and does not match the provided target"
       (is (assert-exception-thrown
@@ -49,10 +55,6 @@
   (testing "when an exception is not thrown"
     (is (= false
            (thrown? ArithmeticException
-                    (/ 1 1)))))
-
-  (is (= true
-         (thrown? RuntimeException
-                  (/ 1 0)))))
+                    (/ 1 1))))))
 
 (run-tests)

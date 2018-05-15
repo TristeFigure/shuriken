@@ -28,7 +28,7 @@
                          (pr-str dispatch-val))))
         (super-method multi p)))))
 
-;; ===== Extend: compose with the previous implementation
+;; ===== Augment: compose with the previous implementation
 (def augment-composers
   (atom {}))
 
@@ -48,7 +48,7 @@
              (apply (composer# ~original-name (fn ~args ~@body))
                     args#))))))
 
-;; ===== Augment: compose with the super implementation
+;; ===== Extend: compose with the super implementation
 (def extend-composers
   (atom {}))
 
