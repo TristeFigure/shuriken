@@ -1,8 +1,6 @@
 (ns shuriken.multi-test
   (:require [clojure.test :refer :all]
-            [shuriken.core :refer [thrown? call-method super-method
-                                   augmentable-multi augment-method
-                                   extendable-multi extend-method]]))
+            [shuriken.core :refer :all]))
 
 (derive :test/d :test/c)
 (derive :test/g :test/f)
@@ -78,3 +76,11 @@
   (is (= :m4                (m4 {:type :test/a})))
   (is (= [:m4 :extended-m4] (m4 {:type :test/f})))
   (is (= :m4                (m4 {:type :test/c}))))
+
+(deftest test-defmethods
+  (defmethods m4 [:x :y] [m]
+    :xyz)
+  (is (= :xyz (m4 {:type :x})))
+  (is (= :xyz (m4 {:type :y})))
+  (is (true? (thrown? "No method in multimethod 'm4' for dispatch value: :z"
+                      (= :xyz (m4 {:type :z}))))))

@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.13.31] - 2018-05-19
+## Added
+- `multi`: `defmethods`.
+
 # [0.13.30] - 2018-05-13
 ## Added
 - `associative`: `submap?`.

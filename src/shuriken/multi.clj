@@ -63,3 +63,9 @@
      (do (defmethod m# d# [& args#]
            (apply (composer# (super-method m# d#) (fn ~args ~@body))
                   args#)))))
+
+(defmacro defmethods [multi dispatch-vals args & body]
+  (cons 'do
+        (for [d dispatch-vals]
+          `(defmethod ~multi ~d ~args
+             ~@body))))
