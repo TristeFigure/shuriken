@@ -1,4 +1,5 @@
-(ns shuriken.multi)
+(ns shuriken.multi
+  (:require [shuriken.reflection :refer [read-field]]))
 
 ;; TODO: document here and in the README
 (defn method [multi dispatch-val]
@@ -17,7 +18,7 @@
         _ (assert (not (> (count ps) 1))
                   (format (str "Multiple parents found in multimethod '%s' "
                                "for dispatch val %s: %s")
-                          multi
+                          (read-field multi "name")
                           (pr-str dispatch-val)
                           ps))
         p (first ps)]
@@ -27,7 +28,7 @@
         (throw (IllegalArgumentException.
                  (format (str "No super-method in multimethod '%s' for "
                               "dispatch val %s")
-                          multi
+                          (read-field multi "name")
                          (pr-str dispatch-val))))
         (super-method multi p)))))
 
