@@ -2,8 +2,15 @@
 
 Small yet effective Clojure weapons.
 
-![ninja](https://upload.wikimedia.org/wikipedia/commons/1/1a/Yamato_Takeru_at_16-crop.jpg)\
-*Yamato Takeru dressed as a maidservant, preparing to kill the Kumaso leaders.*
+<p align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Yamato_Takeru_at_16-crop.jpg">
+</p>
+
+<p align="center">
+  <i>
+    Yamato Takeru dressed as a maidservant, preparing to kill the Kumaso leaders.
+  </i>
+</p>
 
 # Usage
 
