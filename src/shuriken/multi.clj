@@ -15,16 +15,19 @@
   (let [default (.defaultDispatchVal multi)
         ps (or (parents dispatch-val) #{default})
         _ (assert (not (> (count ps) 1))
-                  (format "Multiple parents found for dispatch val %s: %s"
-                          dispatch-val ps))
+                  (format (str "Multiple parents found in multimethod '%s' "
+                               "for dispatch val %s: %s")
+                          multi
+                          (pr-str dispatch-val)
+                          ps))
         p (first ps)]
     (if-let [m (method multi p)]
       m
       (if (= p default)
         (throw (IllegalArgumentException.
                  (format (str "No super-method in multimethod '%s' for "
-                              "dispatch value %s")
-
+                              "dispatch val %s")
+                          multi
                          (pr-str dispatch-val))))
         (super-method multi p)))))
 
