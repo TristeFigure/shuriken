@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.13.34] - 2018-05-20
+## Added
+- `multi`: `multi-name`.
+
 # [0.13.33] - 2018-05-20
 ## Fixed
 `multi`: fix bug in bug fix of `super-method`.

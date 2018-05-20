@@ -5,6 +5,9 @@
 (defn method [multi dispatch-val]
   (-> multi methods (get dispatch-val)))
 
+(defn multi-name [multi]
+  (symbol (read-field multi "name")))
+
 (defn call-method [& args]
   (let [[method args] (if (-> args first class (isa? clojure.lang.MultiFn))
                         (let [[multi dispatch-val & args] args]
@@ -18,7 +21,7 @@
         _ (assert (not (> (count ps) 1))
                   (format (str "Multiple parents found in multimethod '%s' "
                                "for dispatch val %s: %s")
-                          (read-field multi "name")
+                          (multi-name multi)
                           (pr-str dispatch-val)
                           ps))
         p (first ps)]
@@ -28,7 +31,7 @@
         (throw (IllegalArgumentException.
                  (format (str "No super-method in multimethod '%s' for "
                               "dispatch val %s")
-                          (read-field multi "name")
+                          (multi-name multi)
                          (pr-str dispatch-val))))
         (super-method multi p)))))
 

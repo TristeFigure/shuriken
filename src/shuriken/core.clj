@@ -75,7 +75,8 @@
    call-method
    augmentable-multi augment-method
    extendable-multi extend-method
-   defmethods]
+   defmethods
+   multi-name]
 
   [shuriken.namespace
    fully-qualify fully-qualified?

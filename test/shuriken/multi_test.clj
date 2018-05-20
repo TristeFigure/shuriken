@@ -21,6 +21,9 @@
   (is (= {:type :a :b 1}
          (m1 {:type :a :b 0}))))
 
+(deftest test-multi-name
+  (is (= 'm1 (multi-name m1))))
+
 (defmulti m2 :type)
 
 (defmethod m2 :test/c [m]
