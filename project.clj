@@ -1,4 +1,4 @@
-(defproject org.clojars.tristefigure/shuriken "0.13.34"
+(defproject org.clojars.tristefigure/shuriken "0.14.0"
   :description "TristeFigure's Clojure toolbox"
   :url "https://github.com/TristeFigure/shuriken"
   :license {:name "Eclipse Public License"
@@ -16,16 +16,14 @@
                  ;; For solver
                  [org.clojure/data.priority-map "0.0.7"]
 
-                 ;; Documentation
-                 [codox-theme-rdash "0.1.2"]
-
                  ;; For lein-tools-deps
                  ; [org.clojure/tools.deps.alpha "0.5.398"]
                  ]
   ;; For syntax-quote monkey-patch
   :java-source-paths ["src/java"]
   :profiles {:dev {:aot [shuriken.monkey-patch-test]
-                   :java-source-paths ["test/java"]}}
+                   :java-source-paths ["test/java"]
+                   :dependencies [[codox-theme-rdash "0.1.2"]]}}
   :plugins [;; Documentation
             [lein-codox "0.10.3"]
 

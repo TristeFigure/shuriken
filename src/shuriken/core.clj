@@ -8,7 +8,6 @@
                       macro
                       meta
                       monkey-patch
-                      multi
                       namespace
                       navigation
                       reflection
@@ -68,15 +67,6 @@
    refresh-only
    monkey-patch
    java-patch]
-
-  [shuriken.multi
-   method
-   super-method
-   call-method
-   augmentable-multi augment-method
-   extendable-multi extend-method
-   defmethods
-   multi-name]
 
   [shuriken.namespace
    fully-qualify fully-qualified?

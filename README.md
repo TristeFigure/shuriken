@@ -15,7 +15,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.13.34"]
+[org.clojars.tristefigure/shuriken "0.14.0"]
 ```
 
 
@@ -363,68 +363,6 @@ name must be a symbol, quoted or not.
 (refresh-only 'a)
 (only 'a (println "a"))
 ;; a
-```
-
-## Multimethods
-
-`(method multi dispatch-val)` to find a specific method implementation fn.
-
-#### `call-method`
-
-```clojure
-(defmulti mm :type)
-
-(defmethod mm :xx [m]
-  (call-method mm :yy m))
-
-(defmethod mm :yy [m]
-  (update m :yy inc))
-
-(mm {:type :xx :yy 0})
-; => {:type :xx, :yy 1}
-```
-
-## `super-multi`
-
-```clojure
-(defmethod mm :zz [m]
-  (call-method (super-method mm :zz)))
-```
-
-## `augmentable-multi` & `augment-method`
-
-```clojure
-(defmulti mm #(first %&))
-(augmentable-multi mm juxt)
-
-(defmethod mm :aa [x]
-  :a)
-
-(augment-method mm :aa [_]
-  :augmented)
-
-(mm :aa)
-;; => [:a :augmented]
-```
-
-## `extendable-multi` & `extend-method`
-
-```clojure
-(defmulti mm #(first %&))
-(extendable-multi mm juxt)
-
-(derive :mm/bb :mm/aa)
-
-(defmethod mm :mm/aa [x]
-  :a)
-
-(extend-method mm :mm/bb [_]
-  :extended)
-
-(mm :bb)
-;; => [:a :extended]
-(mm :aa)
-;; => :a
 ```
 
 ## Namespace
