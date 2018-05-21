@@ -1,9 +1,8 @@
-(defproject org.clojars.tristefigure/shuriken "0.14.0"
+(defproject org.clojars.tristefigure/shuriken "0.14.1"
   :description "TristeFigure's Clojure toolbox"
   :url "https://github.com/TristeFigure/shuriken"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :tools/deps [:system :home :project "../src/deps.edn"]
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [potemkin "0.4.3"]
                  [com.palletops/ns-reload "0.1.0"]
@@ -24,14 +23,9 @@
   :profiles {:dev {:aot [shuriken.monkey-patch-test]
                    :java-source-paths ["test/java"]
                    :dependencies [[codox-theme-rdash "0.1.2"]]}}
-  :plugins [;; Documentation
-            [lein-codox "0.10.3"]
-
-            ;; Fox monkey patches
+  :plugins [;; Fox monkey patches
             [lein-jdk-tools "0.1.1"] ; TODO: move to clojure.deps
-
-            ; [lein-tools-deps "0.1.0-SNAPSHOT"]
-            ]
+            [lein-codox "0.10.3"]]
   :codox {:source-uri "https://github.com/TristeFigure/shuriken/" \
                       "blob/{version}/{filepath}#L{line}"
           :metadata {:doc/format :markdown}

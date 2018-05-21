@@ -98,4 +98,5 @@
    lines
    no-print
    tabulate
-   truncate])
+   truncate
+   words])

@@ -1,7 +1,8 @@
 (ns shuriken.string
   "### Functions on strings"
   (:require [clojure.string :as str]
-            [clojure.pprint :refer [pprint] :as pprint]))
+            [clojure.pprint :refer [pprint] :as pprint]
+            [shuriken.sequential :refer [slice]]))
 
 (defn format-code
   "Returns a string as formatted by `clojure.pprint/code-dispatch`."
@@ -28,6 +29,12 @@
   "Splits a string around newlines."
   [s]
   (str/split s #"\r?\n"))
+
+(defn words
+  "Splits a string around whitespaces."
+  [s]
+  (->> (slice #(re-matches #"\s" (str %)) s :include-empty false)
+       (map #(apply str %))))
 
 (defn join-lines
   "Glues strings together with newlines."

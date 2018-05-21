@@ -1,8 +1,10 @@
 (ns shuriken.string-test
   (:require [clojure.test :refer :all]
-            [shuriken.string :refer :all]))
+            [shuriken.core :refer :all]))
 
-;; TODO: replace shuriken.string with shuriken.core
+(deftest test-words
+  (is (= ["abc" "def" "xyz" "12'uçé"]
+         (words "abc def \n xyz 12'uçé"))))
 
 (deftest test-tabulate
   (is (= (str "- aaa\n"
