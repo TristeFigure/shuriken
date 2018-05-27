@@ -26,6 +26,17 @@ Small yet effective Clojure weapons.
 
 ## [API doc](https://tristefigure.github.io/shuriken/index.html)
 
+# Grown-ups
+
+Libraries that were originally part of shuriken.
+
+- [lexikon](https://github.com/TristeFigure/lexikon): Reify, manipulate and replay the lexical environment in Clojure.
+- [arity](https://github.com/TristeFigure/arity): Get and fake arities of Clojure functions.
+- [threading](https://github.com/TristeFigure/threading): A Clojure threading macros library as sobber as its name.
+- [weaving](https://github.com/TristeFigure/weaving): Weaving is to lambdas what threading is to s-expressions.
+- [methodman](https://github.com/TristeFigure/methodman): Shaolin moves for Clojure methods.
+- [dance](https://github.com/TristeFigure/dance): Advanced tree walking in Clojure.
+
 ## Associative structures
 
 #### The boring
