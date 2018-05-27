@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.14.2] - 2018-05-27
+## Added
+- `string`: `join-words`.
+- New namespace `lazy`: `deep-doall`.
+
+## Removed
+- exported `context` to [lexikon](https://github.com/TristeFigure/lexikon).
+
 # [0.14.1] - 2018-05-21
 ## Added
 - `string`: `words`.

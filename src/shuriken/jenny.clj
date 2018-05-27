@@ -21,7 +21,7 @@
   (:use shuriken.debug
         clojure.pprint)
   (:require [dance.core :refer [dance path-dance]]
-            [shuriken.context :refer [lexical-context]]
+            [lexikon.core :refer [lexical-context]]
             [shuriken.exception :refer [silence]]
             [shuriken.sequential :refet [get-nth-in assoc-nth-in]]))
 

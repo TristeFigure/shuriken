@@ -1,10 +1,10 @@
 (ns shuriken.core
   (:require [potemkin :refer [import-vars]]
             [shuriken associative
-                      context
                       debug
                       destructure
                       exception
+                      lazy
                       macro
                       meta
                       monkey-patch
@@ -25,17 +25,6 @@
    map-difference
    submap?]
 
-  [shuriken.context
-   contexts
-   context!
-   context
-   delete-context!
-   binding-context
-   lexical-map
-   lexical-context
-   lexical-eval
-   letmap]
-
   [shuriken.debug
    debug
    debug-print]
@@ -48,6 +37,9 @@
   [shuriken.exception
    silence
    thrown?]
+
+  [shuriken.lazy
+   deep-doall]
 
   [shuriken.macro
    is-form?
@@ -95,6 +87,7 @@
    adjust
    format-code
    join-lines
+   join-words
    lines
    no-print
    tabulate

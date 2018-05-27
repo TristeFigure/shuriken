@@ -6,7 +6,7 @@
             [clojure.spec.alpha :as s]
             [shuriken.spec :refer [conform!]]
             [shuriken.namespace :refer [fully-qualify unqualify]]
-            [shuriken.context :refer [context! binding-context delete-context!
+            [lexikon.core :refer [context! binding-context delete-context!
                                       lexical-context]]
             [dance.core :refer [dance merge-dances]]))
 

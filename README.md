@@ -15,7 +15,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.14.1"]
+[org.clojars.tristefigure/shuriken "0.14.2"]
 ```
 
 
@@ -199,27 +199,6 @@ Returns a vector of `[(filter pred coll) (remove pred coll)]`
 (->> '(a :z) (unwrap-form 'a) (unwrap-form 'a)) ; a
 ```
 
-#### Storing and reusing lexical-context
-
-```clojure
-(declare m)
-(let [a 1]
-  (lexical-context) ; {a 1}
-  (m))
-
-(defmacro m []
-  (lexical-context)             ; {a 1}
-  (lexical-context :local true) ; {&form ... &env ... ...}
-  nil)
-
-(let [a 1]
-  (store-locals! :key))
-
-(binding-stored-locals :key
-  (println "unstored:" a))
-; unstored: 1
-```
-
 #### `clean-code`
 
 Recursively unqualifies qualified code in the provided form.
@@ -227,16 +206,6 @@ Recursively unqualifies qualified code in the provided form.
 ```clojure
 (clean-code `(a (b c)))
 ;; (a (b c))
-```
-
-#### `lexical-eval`
-
-Evaluate code in the local lexical context.
-
-```clojure
-(let [a 1]
-  (lexical-eval '(+ 1 a)))
-; => 2
 ```
 
 #### `file-eval`

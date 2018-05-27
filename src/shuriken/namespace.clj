@@ -3,7 +3,7 @@
   (:use clojure.pprint)
   (:require [clojure.string :as str]
             [potemkin :refer [import-vars]]
-            [shuriken.context :refer [lexical-eval]]))
+            [lexikon.core :refer [lexical-eval]]))
 
 ;; TODO
 ; (defn ns-clear

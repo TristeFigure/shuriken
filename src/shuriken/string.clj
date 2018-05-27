@@ -41,6 +41,11 @@
   [lines]
   (str/join "\n" lines))
 
+(defn join-words
+  "Glues strings together with spaces."
+  [words]
+  (str/join " " words))
+
 (defn tabulate
   "Left-pad a string with `pad`, taking newlines into account."
   [s pad]
