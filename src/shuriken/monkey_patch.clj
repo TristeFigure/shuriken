@@ -28,7 +28,7 @@
 (defmacro only
   "Ensures `body` is executed only once with respect to `name`.
   If `name` is a symbol or a keyword without a namespace, it will be
-  prefixed with `*ns*`.
+  prefixed with the value of `*ns*`.
 
   ```clojure
   (only 'foo (println \"bar\"))
