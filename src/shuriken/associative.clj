@@ -7,7 +7,7 @@
   (->> m
        (map (fn [[k v]]
               [(f k) v]))
-       (into {})))
+       (into (empty m))))
 
 (defn map-vals
   "Applies `f` to each value of `m`."
@@ -15,7 +15,7 @@
   (->> m
        (map (fn [[k v]]
               [k (f v)]))
-       (into {})))
+       (into (empty m))))
 
 (defn- flatten-keys* [acc ks m]
   (if (and (map? m)

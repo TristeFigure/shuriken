@@ -49,12 +49,12 @@
                          {:a :aaa}
                          {})
              {:a :aaa :b :bb :c :c})))
-    (testing "overriding of nested maps"
+    (testing "overriding nested maps"
       (is (= (deep-merge {:x {:a :a  :b :b  :c :c}}
                          {:x {:a :aa :b :bb}}
                          {:x {:a :aaa}})
              {:x {:a :aaa :b :bb :c :c}})))
-    (testing "overriding of empty nested maps"
+    (testing "overriding empty nested maps"
       (is (= (deep-merge {:x 123}
                          {:x {}})
              {:x {}}))
