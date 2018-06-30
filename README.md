@@ -425,64 +425,11 @@ then with post-fn after going up.
 
 (println (prepostwalk inc-it it-times-two data))
 ;; [4 6 {8 10, 12 14}]
-(println (prepostwalk it-times-two data inc-it))
+(println (prepostwalk it-times-two inc-it data))
 ;; [3 5 {7 9, 11 13}]
 ```
 
 Comes equipped with `prepostwalk-demo`
-
-## Predicates composer
-
-#### `and?`, `or?` & `not?`
-
-```clojure
-(filter (and? (or? is-old-enough?
-                   is-vip?)
-              (not? faint-hearted?)))
-```
-
-## Threading
-
-#### `tap`, `tap->`& `tap->>`
-
-Executes the initial expression and the rest of the body, returning this
-expression's value.
-
-`tap->` and `tap->>` work like `->` and `->>` respectively.
-
-```clojure
-(inc (tap-> 123 (println "yo")))
-; 123 yo
-; => 124
-
-(inc (tap->> 123 (println "yo")))
-; yo 123
-; => 124
-```
-
-`tap` is a bit special in that it will thread the initial expresion in
-any subsequent expression that is a threading form.
-
-```clojure
-(tap 123
-     (println "yo")
-     (some-> inc println))
-; yo
-; 124
-; => 123
-```
-
-#### `printhru`
-
-```clojure
-(printhru (+ 1 2))
-; (+ 1 2) : 3
-; => 3
-
-(printhru "result" (+ 1 2))
-; result : 3
-; => 3
-```
 
 ## Dev
 
@@ -543,7 +490,7 @@ But above all it prevents this:
 ```
 
 
-And prints this instead:
+And pprints this instead:
 ```clojure
 (pprint ``(do (fn1 arg1 arg2) (fn2 arg3 arg4)))
 
