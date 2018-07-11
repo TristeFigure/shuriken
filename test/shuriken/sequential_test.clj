@@ -53,3 +53,25 @@
     (is (= john (apply min-by :age [john])))
     (is (= john (apply max-by :age [john eric])))
     (is (= eric (apply min-by :age [john eric])))))
+
+
+(deftest test-order
+  (is (= [6 1 3 2 4 5]
+         (order [1 2 3 4 5 6] [[6 1] [3 2]])))
+  (is (= [6 1 3 2 4 5]
+         (order [1 2 3 4 5 6] {6 1 3 2})))
+  (is (= [6 1 3 2 4 5]
+         (order [1 2 3 4 5 6] [[6 :before 1] [2 :after 3]])))
+  (is (= [6 1 3 2 4 5]
+         (order [1 2 3 4 5 6] [[6 :> 1] [2 :< 3]])))
+  (is (= [6 1 2 4 5 3]
+         (order [1 2 3 4 5 6] [[6 :all] [:all 3]])))
+  (is (= [1 2 3 4 5 6]
+         (order [1 2 3 4 5 6] {1 2 2 3 3 4 4 5 5 6})))
+  (is (= [4 5 6 1 2 3 7]
+         (order [1 2 3 4 5 6 7] {1 2 2 3 3 :all 4 5 5 6 6 1})))
+  (is (= true
+         (thrown? #(= (ex-data %)
+                      {:type :contradictory-constraints
+                       :cycles [[1 :> :all :> 6 :> 1]]})
+                  (order [1 2 3 4 5 6] [[6 1] [1 :all] [:all 6]])))))

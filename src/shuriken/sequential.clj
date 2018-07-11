@@ -1,6 +1,8 @@
 (ns shuriken.sequential
   "### Useful functions on sequential datastructures"
-  (:require [potemkin :refer [import-vars]]))
+  (:require [potemkin :refer [import-vars]]
+            [ubergraph.core :as u]
+            [ubergraph.alg :as alg]))
 
 (import-vars clojure.core/reduce1)
 
@@ -121,3 +123,73 @@
              y))
   ([f x y & more]
    (reduce1 (partial min-by f) (min-by f x y) more)))
+
+(defn- parse-constraint [c]
+  (if (= (count c) 2)
+    (parse-constraint [(first c) :before (second c)])
+    (let [[a word b] c
+          [x y] (case word
+                  (:> :before) [a b]
+                  (:< :after)  [b a])
+          x (if (= x :all) ::after-all x)
+          y (if (= y :all) ::before-all y)]
+      [x y])))
+
+(defn- cycles [g]
+  (->> g
+       alg/scc
+       (filter #(-> % count (> 1)))
+       (mapv (fn [arr]
+               (->> (take (-> arr count inc) (cycle arr))
+                    (interpose :>)
+                    vec)))))
+
+(defn order
+  "Order a sequence with a collection of constraints of the form:
+  - [a b]
+  - [a :before b]
+  - [a :> b]
+  - [b :after a]
+  - [b :< a]
+
+  Can specify constraints on `:all` elements.
+  Raises an exception if constraints are contradictory.
+
+  Example:
+
+  ```clojure
+  (order [1 2 3] {2 1           3 :all})
+  (order [1 2 3] [[2 1]         [3 :all]])
+  (order [1 2 3] [[2 :before 1] [:all :after 3]])
+  (order [1 2 3] [[2 :> 1]      [:all :< 3]])
+  ;; (3 2 1)
+  ```"
+  [array constraints]
+  (let [cycs (cycles (apply u/digraph constraints))
+        _ (when-not (empty? cycs)
+            (throw (ex-info "Contradictory constraints"
+                            {:type :contradictory-constraints
+                             :cycles cycs})))
+        constraints (into {} (map parse-constraint constraints))
+        constrained (clojure.set/union (set (keys constraints))
+                                       (set (vals constraints)))
+        free (filter (complement constrained) array)
+        nodes (concat [::before-all] array [::after-all])
+        g (as-> (u/digraph) $
+            (apply u/add-nodes $ nodes)
+            (apply u/add-edges $ (map reverse constraints))
+            (apply u/add-edges $ (map reverse (partition 2 1 free))))
+        ccs (filter #(> (count %) 1) (alg/connected-components g))
+        g (apply u/add-edges g
+                 (mapcat (fn [[f w g]]
+                           (->> ccs
+                                (filter #(empty?
+                                           (clojure.set/intersection
+                                             (set %)
+                                             #{::before-all ::after-all})))
+                                (map #(g [w (f %)]))))
+                         [[first ::before-all reverse]
+                          [last ::after-all identity]]))]
+    (->> (alg/topsort g)
+         reverse
+         (remove #{::before-all ::after-all}))))

@@ -15,7 +15,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.14.3"]
+[org.clojars.tristefigure/shuriken "0.14.4"]
 ```
 
 
@@ -185,13 +185,25 @@ Respectively like `get-in` and `assoc-in` but also work on lists.
 
 #### `separate`
 
-Returns a vector of `[(filter pred coll) (remove pred coll)]`
+Returns a vector of `[(filter pred coll) (remove pred coll)]`.
 
 ```clojure
 (let [coll [1 1 0 1 0 0 1 1 0]]
   (separate zero? coll)
   ;; [(1 1 1 1 1) (0 0 0 0)]
   )
+```
+
+#### `order`
+
+Order a sequence with constraints.
+
+```clojure
+(order [1 2 3] {2 1           3 :all})
+(order [1 2 3] [[2 1]         [3 :all]])
+(order [1 2 3] [[2 :before 1] [:all :after 3]])
+(order [1 2 3] [[2 :> 1]      [:all :< 3]])
+;; (3 2 1)
 ```
 
 ## Macro

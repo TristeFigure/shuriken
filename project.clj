@@ -1,4 +1,4 @@
-(defproject org.clojars.tristefigure/shuriken "0.14.3"
+(defproject org.clojars.tristefigure/shuriken "0.14.4"
   :description "TristeFigure's Clojure toolbox"
   :url "https://github.com/TristeFigure/shuriken"
   :license {:name "Eclipse Public License"
@@ -18,7 +18,11 @@
 
                  ;; For lein-tools-deps
                  ; [org.clojure/tools.deps.alpha "0.5.398"]
-                 ]
+
+                 ;; To topologically sort sequences
+                 [ubergraph "0.5.0"]]
+  ;; To fix a goddamn bug on reload
+  :aot [loom.graph ubergraph.core]
   ;; For syntax-quote monkey-patch
   :java-source-paths ["src/java"]
   :profiles {:dev {:aot [shuriken.monkey-patch-test]
