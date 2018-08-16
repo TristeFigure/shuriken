@@ -15,7 +15,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.14.4"]
+[org.clojars.tristefigure/shuriken "0.14.5"]
 ```
 
 
@@ -204,6 +204,17 @@ Order a sequence with constraints.
 (order [1 2 3] [[2 :before 1] [:all :after 3]])
 (order [1 2 3] [[2 :> 1]      [:all :< 3]])
 ;; (3 2 1)
+```
+
+### `takes`
+
+Split a sequence in subsequence of predetermined length.
+
+```clojure
+(takes [1 2 3] [:a :b])                ;; => ((:a) (:b))
+(takes [1 2 3] [:a :b :c])             ;; => ((:a) (:b :c))
+(takes [1 2 3] [:a :b :c :d :e :f])    ;; => ((:a) (:b :c) (:d :e :f))
+(takes [1 2 3] [:a :b :c :d :e :f :g]) ;; => ((:a) (:b :c) (:d :e :f) (:g))
 ```
 
 ## Macro

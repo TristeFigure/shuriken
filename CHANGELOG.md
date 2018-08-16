@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.14.5] - 2018-08-16
+## Added
+- `sequential`: `takes`.
+
 # [0.14.4] - 2018-07-11
 ## Added
 - `sequential`: `order` to order a sequence with constraints.

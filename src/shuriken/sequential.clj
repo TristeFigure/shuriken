@@ -193,3 +193,24 @@
     (->> (alg/topsort g)
          reverse
          (remove #{::before-all ::after-all}))))
+
+(defn takes
+  "Split `coll` in sub-sequences of length n1 for the first, n2 for the second,
+  etc... Appends the remaining items of coll as the final sub-sequence if they
+  have not been consumed by the successive takes. If there are not enough items
+  in `coll` to feed all the takes, return the subsequences built out of what
+  could be consumed.
+
+  ```clojure
+  (takes [1 2 3] [:a :b])                ;; => ((:a) (:b))
+  (takes [1 2 3] [:a :b :c])             ;; => ((:a) (:b :c))
+  (takes [1 2 3] [:a :b :c :d :e :f])    ;; => ((:a) (:b :c) (:d :e :f))
+  (takes [1 2 3] [:a :b :c :d :e :f :g]) ;; => ((:a) (:b :c) (:d :e :f) (:g))
+  ```"
+  [[n & more] coll]
+  (concat
+    [(take n coll)]
+    (keep #(and (seq %) %)
+          (if more
+            (lazy-seq (takes more (drop n coll)))
+            [(drop n coll)]))))

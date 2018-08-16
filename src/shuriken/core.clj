@@ -79,7 +79,8 @@
   [shuriken.sequential
    slice separate
    max-by min-by
-   order]
+   order
+   takes]
 
   [shuriken.spec
    conf either conform!]

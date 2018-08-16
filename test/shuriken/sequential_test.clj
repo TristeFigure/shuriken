@@ -75,3 +75,13 @@
                       {:type :contradictory-constraints
                        :cycles [[1 :> :all :> 6 :> 1]]})
                   (order [1 2 3 4 5 6] [[6 1] [1 :all] [:all 6]])))))
+
+(deftest test-takes
+  (is (= '((:a) (:b))
+         (takes [1 2 3] [:a :b])))
+  (is (= '((:a) (:b :c))
+         (takes [1 2 3] [:a :b :c])))
+  (is (= '((:a) (:b :c) (:d :e :f))
+         (takes [1 2 3] [:a :b :c :d :e :f])))
+  (is (= '((:a) (:b :c) (:d :e :f) (:g))
+         (takes [1 2 3] [:a :b :c :d :e :f :g]))))
