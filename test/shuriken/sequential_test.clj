@@ -84,4 +84,6 @@
   (is (= '((:a) (:b :c) (:d :e :f))
          (takes [1 2 3] [:a :b :c :d :e :f])))
   (is (= '((:a) (:b :c) (:d :e :f) (:g))
-         (takes [1 2 3] [:a :b :c :d :e :f :g]))))
+         (takes [1 2 3] [:a :b :c :d :e :f :g])))
+  (is (= '(() () (:a) () (:b :c) (:d :e))
+         (takes [0 0 1 0 2] [:a :b :c :d :e]))))

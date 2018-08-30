@@ -206,11 +206,14 @@
   (takes [1 2 3] [:a :b :c])             ;; => ((:a) (:b :c))
   (takes [1 2 3] [:a :b :c :d :e :f])    ;; => ((:a) (:b :c) (:d :e :f))
   (takes [1 2 3] [:a :b :c :d :e :f :g]) ;; => ((:a) (:b :c) (:d :e :f) (:g))
+  (takes [0 0 1 0 2] [:a :b :c :d :e])   ;; => (() () (:a) () (:b :c) (:d :e))
   ```"
   [[n & more] coll]
-  (concat
-    [(take n coll)]
+  (if more
+    (concat
+      [(take n coll)]
+      (lazy-seq (takes more (drop n coll))))
     (keep #(and (seq %) %)
-          (if more
-            (lazy-seq (takes more (drop n coll)))
+          (concat
+            [(take n coll)]
             [(drop n coll)]))))

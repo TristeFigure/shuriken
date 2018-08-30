@@ -15,7 +15,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.14.5"]
+[org.clojars.tristefigure/shuriken "0.14.6"]
 ```
 
 
@@ -215,6 +215,7 @@ Split a sequence in subsequence of predetermined length.
 (takes [1 2 3] [:a :b :c])             ;; => ((:a) (:b :c))
 (takes [1 2 3] [:a :b :c :d :e :f])    ;; => ((:a) (:b :c) (:d :e :f))
 (takes [1 2 3] [:a :b :c :d :e :f :g]) ;; => ((:a) (:b :c) (:d :e :f) (:g))
+(takes [0 0 1 0 2] [:a :b :c :d :e])   ;; => (() () (:a) () (:b :c) (:d :e))
 ```
 
 ## Macro
