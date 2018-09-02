@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.14.7] - 2018-09-02
+## Added
+- `sequential`: in addition to `get-nth-in` & `assoc-nth-in`, added:
+  - `get-nth` & `assoc-nth`.
+  - `update-nth` & `update-nth-in`.
+
 # [0.14.6] - 2018-08-30
 ## Fixed
 - `sequential`: `takes` handles `0`-sized chunks.

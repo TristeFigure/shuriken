@@ -79,6 +79,9 @@
   [shuriken.sequential
    slice separate
    max-by min-by
+   get-nth get-nth-in
+   assoc-nth assoc-nth-in
+   update-nth update-nth-in
    order
    takes]
 

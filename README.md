@@ -15,7 +15,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.14.6"]
+[org.clojars.tristefigure/shuriken "0.14.7"]
 ```
 
 
@@ -157,9 +157,9 @@ Libraries that were originally part of shuriken.
 
 ## Sequential structures
 
-#### `get-nth-in` & `assoc-nth-in`
+#### `get-nth`, `get-nth-in`, `assoc-nth`,  `assoc-nth-in`, `update-nth` & `update-nth-in`
 
-Respectively like `get-in` and `assoc-in` but also work on lists.
+Respectively like `get`, `get-in`, `assoc` etc... but also work on lists.
 
 #### `slice`
 

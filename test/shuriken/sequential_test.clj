@@ -2,6 +2,33 @@
   (:require [clojure.test :refer :all]
             [shuriken.core :refer :all]))
 
+(deftest test-get-nth
+  (is (= 2 (get-nth '(1 2 3) 1))))
+
+(deftest test-get-nth-in
+  (is (= :b    (get-nth-in '(1 (2 {:a :b}) 4) [1 1 :a])))
+  (is (= nil   (get-nth-in '(1 (2 {:a :b}) 4) [1 1 :x])))
+  (is (= :none (get-nth-in '(1 (2 {:a :b}) 4) [1 1 :x] :none))))
+
+(deftest test-assoc-nth
+  (is (= '(1 0 3)   (assoc-nth '(1 2 3) 1 0)))
+  (is (= '(1 2 3 0) (assoc-nth '(1 2 3) 3 0)))
+  (is (= true (thrown? IndexOutOfBoundsException
+                       (assoc-nth '(1 2 3) 4 0)))))
+
+(deftest test-assoc-nth-in
+  (is (= '(1 (4) 3) (assoc-nth-in '(1 (2) 3) [1 0] 4)))
+  (is (= '(1 (2 4) 3) (assoc-nth-in '(1 (2) 3) [1 1] 4)))
+  (is (= true
+         (thrown? IndexOutOfBoundsException
+                  (assoc-nth-in '(1 (2) 3) [1 2] 4)))))
+
+(deftest test-update-nth
+  (is (= '(1 1 3) (update-nth '(1 2 3) 1 dec))))
+
+(deftest test-update-nth-in
+  (is (= '(1 (2 (300))) (update-nth-in '(1 (2 (3))) [1 1 0] * 100))))
+
 (deftest test-slice
   (let [coll [1 0 1 0 1 0 0 0 1]]
     (testing ":include-empty"

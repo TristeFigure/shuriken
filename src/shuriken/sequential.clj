@@ -6,19 +6,27 @@
 
 (import-vars clojure.core/reduce1)
 
-; Taken from https://stackoverflow.com/questions/43213573/get-in-for-lists
+
+
+; Taken and adapted from
+; https://stackoverflow.com/questions/43213573/get-in-for-lists
+(defn get-nth
+  "Like get but also works on lists."
+  ([coll k] (get-nth coll k nil))
+  ([coll k not-found]
+   (if (associative? coll)
+      (get coll k not-found)
+      (nth coll k not-found))))
+
 (defn get-nth-in
   "Like get-in but also works on lists."
-  [init ks]
-  (reduce
-    (fn [a k]
-      (if (associative? a)
-        (get a k)
-        (nth a k)))
-    init
-    ks))
+  ([m ks] (get-nth-in m ks nil))
+  ([m ks not-found]
+   (reduce #(get-nth %1 %2 not-found)
+           m ks)))
 
-(defn- assoc-nth [coll n v]
+(defn assoc-nth [coll n v]
+  "Like assoc but also works on lists."
   (when-not (<= n (count coll))
     (throw (new IndexOutOfBoundsException)))
   (if (list? coll)
@@ -31,8 +39,31 @@
   "Like assoc-in but also works on lists."
   [m [k & ks] v]
   (if ks
-    (assoc-nth m k (assoc-nth-in (get m k) ks v))
+    (assoc-nth m k (assoc-nth-in (get-nth m k) ks v))
     (assoc-nth m k v)))
+
+(defn update-nth
+  "Like update but also works on lists."
+  ([m k f]
+   (assoc-nth m k (f (get-nth m k))))
+  ([m k f x]
+   (assoc-nth m k (f (get-nth m k) x)))
+  ([m k f x y]
+   (assoc-nth m k (f (get-nth m k) x y)))
+  ([m k f x y z]
+   (assoc-nth m k (f (get-nth m k) x y z)))
+  ([m k f x y z & more]
+   (assoc-nth m k (apply f (get-nth m k) x y z more))))
+
+(defn update-nth-in
+  "Like update-in but also works on lists."
+  ([m ks f & args]
+     (let [up (fn up [m ks f args]
+                (let [[k & ks] ks]
+                  (if ks
+                    (assoc-nth m k (up (get-nth m k) ks f args))
+                    (assoc-nth m k (apply f (get-nth m k) args)))))]
+       (up m ks f args))))
 
 (defn slice
   "Slice a seq using a delimiter predicate. There are two options:
