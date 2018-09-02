@@ -15,7 +15,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.14.7"]
+[org.clojars.tristefigure/shuriken "0.14.8"]
 ```
 
 
@@ -216,6 +216,18 @@ Split a sequence in subsequence of predetermined length.
 (takes [1 2 3] [:a :b :c :d :e :f])    ;; => ((:a) (:b :c) (:d :e :f))
 (takes [1 2 3] [:a :b :c :d :e :f :g]) ;; => ((:a) (:b :c) (:d :e :f) (:g))
 (takes [0 0 1 0 2] [:a :b :c :d :e])   ;; => (() () (:a) () (:b :c) (:d :e))
+```
+
+### `insert-at`
+
+Insert an item into a list or a vector.
+
+```clojure
+(insert-at [1 2 3]  0 :x) ;; => [:x 1 2 3]
+(insert-at '(1 2 3) 1 :x) ;; => '(1 :x 2 3)
+(insert-at '(1 2 3) 3 :x) ;; => '(1 2 3 :x)
+(insert-at [1 2 3]  4 :x) ;; => java.lang.IndexOutOfBoundsException
+(insert-at [1 2 3] -1 :x) ;; => java.lang.IndexOutOfBoundsException
 ```
 
 ## Macro

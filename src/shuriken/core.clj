@@ -77,11 +77,12 @@
    static-method]
 
   [shuriken.sequential
-   slice separate
-   max-by min-by
    get-nth get-nth-in
    assoc-nth assoc-nth-in
    update-nth update-nth-in
+   insert-at
+   slice separate
+   max-by min-by
    order
    takes]
 

@@ -65,6 +65,14 @@
                     (assoc-nth m k (apply f (get-nth m k) args)))))]
        (up m ks f args))))
 
+(defn insert-at [s n x]
+  (when (or (< n 0) (> n (count s)))
+    (throw (new IndexOutOfBoundsException)))
+  (let [[before after] (split-at n s)]
+    (-> (->> (concat before [x] after)
+             (into (empty s)))
+        (as-> $ (if (list? $) (reverse $) $)))))
+
 (defn slice
   "Slice a seq using a delimiter predicate. There are two options:
   ```

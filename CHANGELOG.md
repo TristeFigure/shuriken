@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.14.8] - 2018-09-02
+## Added
+- `sequential`: `insert-at`.
+
 # [0.14.7] - 2018-09-02
 ## Added
 - `sequential`: in addition to `get-nth-in` & `assoc-nth-in`, added:

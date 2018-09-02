@@ -29,6 +29,21 @@
 (deftest test-update-nth-in
   (is (= '(1 (2 (300))) (update-nth-in '(1 (2 (3))) [1 1 0] * 100))))
 
+(deftest test-insert-at
+  (is (= '(4 1 2 3) (insert-at '(1 2 3) 0 4)))
+  (is (= '(1 4 2 3) (insert-at '(1 2 3) 1 4)))
+  (is (= '(1 2 3 4) (insert-at '(1 2 3) 3 4)))
+  (is (= true
+         (thrown? IndexOutOfBoundsException
+                  (insert-at '(1 2 3) 4 4))))
+  (is (= true
+         (thrown? IndexOutOfBoundsException
+                  (insert-at '(1 2 3) -1 4))))
+  (is (instance? clojure.lang.IPersistentVector
+                 (insert-at [1 2 3] 3 0)))
+  (is (instance? clojure.lang.IPersistentList
+                 (insert-at '(1 2 3) 3 0))))
+
 (deftest test-slice
   (let [coll [1 0 1 0 1 0 0 0 1]]
     (testing ":include-empty"
