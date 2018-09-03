@@ -5,10 +5,12 @@
             [shuriken.spec :refer [conf either conform!]]
             [shuriken.namespace :refer [with-ns]]
             [shuriken.macro :refer [is-form? wrap-form unwrap-form]]
-            [clojure.repl :refer [source-fn]])
+            [clojure.repl :refer [source-fn]]
+            [shuriken.reflection
+             :refer [return-type delegate-name static-method?
+                     signature-to-str find-class find-method]])
   (:use robert.hooke)
-  (:import RedefineClassAgent
-           java.lang.reflect.Modifier))
+  (:import RedefineClassAgent))
 
 (defn ^:no-doc prepend-ns
   ([k]
@@ -92,99 +94,6 @@
            (let [~(first args) (deref ~safe-target)]
              (def ~(-> target .getName symbol)
                ~@body)))))))
-
-(defn- ct-class? [x]
-  (instance? javassist.CtClass x))
-
-(defn- type-to-str [type]
-  (println "type" type)
-  (->> (cond
-         (string? type)                      type
-         (symbol? type)                      (str type)
-         (or (class? type) (ct-class? type)) (.getName type)
-         :else                               (name type))
-       symbol
-       resolve
-       str
-       (re-find #"(?<=class ).*")))
-
-(defn ^:no-doc types-to-str [types]
-  (->> (map type-to-str types)
-       (keep identity)
-       vec))
-
-(s/def ::method-signature
-       (-> (s/cat
-             :class-name      (either
-                                :string string?
-                                :class  (conf class? type-to-str #(.getName %))
-                                :symbol (conf symbol? type-to-str str)
-                                :unform (fn [x]
-                                          (cond (string? x) :string
-                                                (class? x)  :class
-                                                (symbol? x) :symbol)))
-             :method-name     (either
-                                :string string?
-                                :ident  (conf ident? name)
-                                :quote? (conf #(is-form? 'quote %)
-                                              #(-> % first str))
-                                :unform :string)
-             :parameter-types (s/?
-                                (conf (s/coll-of
-                                        #(or (string? %) (ident? %) (class? %)))
-                                      types-to-str)))
-           (conf (comp vec (juxt :class-name :method-name :parameter-types))
-                 #(zipmap % [:class-name :method-name :parameter-types]))))
-
-(defn ^:no-doc signature-to-str [method-signature]
-  (let [[class-name method-name parameter-types]
-        (conform! ::method-signature method-signature)
-        args (remove nil? (concat [class-name method-name]
-                                  parameter-types))]
-    (-> (clojure.string/join "-" args)
-        (clojure.string/replace #"\." "_"))))
-
-(defn ^:no-doc find-class [method-signature]
-  (let [[class-name _method-name _parameter-types]
-        (conform! ::method-signature method-signature)
-        class-pool (javassist.ClassPool/getDefault)
-        ct-class (.get class-pool class-name)]
-    (assert ct-class "Class not found")
-    (println "------> class-name" class-name)
-    (println "-->" method-signature)
-    (.stopPruning ct-class true)
-    ct-class))
-
-(defn ^:no-doc find-method [method-signature]
-  (let [[_class-name method-name parameter-types]
-        (conform! ::method-signature method-signature)
-        ct-class (find-class method-signature)
-        ct-method (->> (.getMethods ct-class)
-                       (filter
-                         #(and (= method-name (.getName %))
-                               (if (nil? parameter-types)
-                                 true
-                                 (= (->> % .getParameterTypes  types-to-str)
-                                        parameter-types))))
-                       first)]
-    (assert ct-method "Method not found")
-    ct-method))
-
-(defn ^:no-doc return-type [method-signature]
-  (let [ct-method (find-method method-signature)]
-    (-> ct-method .getReturnType .getName)))
-
-(defn ^:no-doc delegate-name [method-signature]
-  (-> method-signature
-      signature-to-str
-      (str "-clojure-delegate")
-      symbol))
-
-(defn ^:no-doc static-method? [method-signature]
-  (-> method-signature
-      find-method
-      .getModifiers
-      Modifier/isStatic))
 
 ;; TODO
 ; (defn copy-class [class-name new-name]
