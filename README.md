@@ -15,7 +15,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.14.11"]
+[org.clojars.tristefigure/shuriken "0.14.12"]
 ```
 
 
@@ -106,6 +106,16 @@ Libraries that were originally part of shuriken.
 (let [m {:a 1 :b 2 :c 3}]
   (map-difference m {:a :x})          ;; {:b 2 :c 3}
   (map-difference m {:a :x} {:b :x})) ;; {:c 3}
+```
+
+#### `getsoc`
+
+Works like `get` if the key is present in the hash, else works like assoc`.
+Returns a vector of the form `[get-or-stored-value new-coll]`.
+
+```clojure
+(getsoc {:a 1} :a (constantly 2)) ;; => [1 {:a 1}] 
+(getsoc {} :a (constantly 2)))    ;; => [2 {:a 2}]
 ```
 
 ## Exceptions

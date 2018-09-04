@@ -177,3 +177,13 @@
   `map2`."
   [map1 map2]
   (clojure.set/subset? (set map1) (set map2)))
+
+(defn getsoc
+  "Gets value at key `k` in hash `m` if present, otherwise runs
+  `(f)` and stores it in `m` under `k`.
+  Returns a vector of the form [get-or-stored-value new-coll]."
+  [coll k f]
+  (if (contains? coll k)
+    [(get coll k) coll]
+    (let [v (f)]
+      [v (assoc coll k v)])))

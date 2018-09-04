@@ -117,3 +117,7 @@
     (is (false? (submap? m2 m1)))
     (is (false? (submap? m1 m3)))
     (is (false? (submap? m1 m4)))))
+
+(deftest test-getsoc
+  (is (= [1 {:a 1}] (getsoc {:a 1} :a (constantly 2))))
+  (is (= [2 {:a 2}] (getsoc {}     :a (constantly 2)))))

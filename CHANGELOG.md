@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.12] - 2018-09-05
+### Added
+- `associative`: `getsoc`.
+
 ## [0.14.11] - 2018-09-04
 ### Fixed
 - `spec`: somes specs use `seq?` insted of `list?` as a more general predicate.

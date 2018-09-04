@@ -23,7 +23,8 @@
    merge-with-plan
    split-map
    map-difference
-   submap?]
+   submap?
+   getsoc]
 
   [shuriken.debug
    debug
