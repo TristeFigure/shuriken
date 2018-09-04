@@ -126,7 +126,8 @@
                     _#          (~f method#)
                     bytecode#   (.toBytecode ct-class#)
                     [class-name# _method-name# _parameter-types#]
-                    (conform! ::method-signature ~method-signature-sym)
+                    (conform! :shuriken.reflection/method-signature
+                              ~method-signature-sym)
                     definition# (java.lang.instrument.ClassDefinition.
                                   (Class/forName class-name#)
                                   bytecode#)]
