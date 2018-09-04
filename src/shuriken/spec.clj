@@ -56,7 +56,7 @@
 (s/def ::args+bodies
   (either
     :arity-1 (conf ::args+body vector first)
-    :arity-n (s/+ (s/and list? ::args+body))
+    :arity-n (s/+ (s/and seq? ::args+body))
     :unform  (fn [x]
                (if (= (count x) 1)
                  :arity-1
@@ -82,4 +82,4 @@
     :bodies ::args+bodies))
 
 (s/def ::letfn-specs
-  (s/* (s/and list? ::letfn-spec)))
+  (s/* (s/and seq? ::letfn-spec)))

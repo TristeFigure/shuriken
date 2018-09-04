@@ -1,11 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-# [0.14.10] - 2018-09-04
+## [0.14.11] - 2018-09-04
+### Fixed
+- `spec`: somes specs use `seq?` insted of `list?` as a more general predicate.
+
+## [0.14.10] - 2018-09-04
 ### Added
 - `spec`: `:shuriken.spec/leftn-spec` and `:shuriken.spec/letfn-specs`
 
-# [0.14.9] - 2018-09-04
+## [0.14.9] - 2018-09-04
 ### Added
 - `spec`: `:shuriken.spec/fn-form` spec.
 
@@ -13,34 +17,34 @@ All notable changes to this project will be documented in this file. This change
 - `spec`: spec `:shuriken.spec/macro-definition` renamed to
   `:shuriken.spec/defmacro-form`.
 
-# [0.14.8] - 2018-09-02
+## [0.14.8] - 2018-09-02
 ### Added
 - `sequential`: `insert-at`.
 
-# [0.14.7] - 2018-09-02
+## [0.14.7] - 2018-09-02
 ### Added
 - `sequential`: in addition to `get-nth-in` & `assoc-nth-in`, added:
   - `get-nth` & `assoc-nth`.
   - `update-nth` & `update-nth-in`.
 
-# [0.14.6] - 2018-08-30
+## [0.14.6] - 2018-08-30
 ### Fixed
 - `sequential`: `takes` handles `0`-sized chunks.
 
-# [0.14.5] - 2018-08-16
+## [0.14.5] - 2018-08-16
 ### Added
 - `sequential`: `takes`.
 
-# [0.14.4] - 2018-07-11
+## [0.14.4] - 2018-07-11
 ### Added
 - `sequential`: `order` to order a sequence with constraints.
 
-# [0.14.3] - 2018-06-15
+## [0.14.3] - 2018-06-15
 ### Fixed
 - `map-keys` & `map-vals`: will preserve the class of the passed associative
   structure.
 
-# [0.14.2] - 2018-05-27
+## [0.14.2] - 2018-05-27
 ### Added
 - `string`: `join-words`.
 - New namespace `lazy`: `deep-doall`.
@@ -48,31 +52,31 @@ All notable changes to this project will be documented in this file. This change
 ### Removed
 - exported `context` to [lexikon](https://github.com/TristeFigure/lexikon).
 
-# [0.14.1] - 2018-05-21
+## [0.14.1] - 2018-05-21
 ### Added
 - `string`: `words`.
 
-# [0.14.0] - 2018-05-20
+## [0.14.0] - 2018-05-20
 ### Removed
 - exported `multi` to [methodman](https://github.com/TristeFigure/methodman).
 
-# [0.13.34] - 2018-05-20
+## [0.13.34] - 2018-05-20
 ### Added
 - `multi`: `multi-name`.
 
-# [0.13.33] - 2018-05-20
+## [0.13.33] - 2018-05-20
 ### Fixed
 `multi`: fix bug in bug fix of `super-method`.
 
-# [0.13.32] - 2018-05-20
+## [0.13.32] - 2018-05-20
 ### Fixed
 `multi`: error reporting in `super-method`.
 
-# [0.13.31] - 2018-05-19
+## [0.13.31] - 2018-05-19
 ### Added
 - `multi`: `defmethods`.
 
-# [0.13.30] - 2018-05-13
+## [0.13.30] - 2018-05-13
 ### Added
 - `associative`: `submap?`.
 - `exception`: `silence` and `thrown?` can match and ExceptionInfo ex-data
@@ -83,16 +87,16 @@ All notable changes to this project will be documented in this file. This change
     - `augmentable-multi` & `augment-method`.
     - `extendable-multi` & `extend-method`.
 
-# [0.13.29] - 2018-05-10
+## [0.13.29] - 2018-05-10
 ### Added
 - `exception`: `silence` and `thrown` can match the exception message if
   passed a string.
 
-# [0.13.28] - 2018-05-10
+## [0.13.28] - 2018-05-10
 ### Added
 - `associative`: `split-map` & `map-difference`.
 
-# [0.13.27] - 2018-05-01
+## [0.13.27] - 2018-05-01
 ### Removed
 - Externalized `threading`, `weaving`, `dance` and `fn` (this latter as
   `arity`) into distinct libs of their own.
@@ -100,45 +104,45 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 - `associative`: a plan to `merge-plan` can be a map as well as a function.
 
-# [0.13.26] - 2018-04-30
+## [0.13.26] - 2018-04-30
 ### Fixed
 - Exposed `spec` namespace.
 
-# [0.13.25] - 2018-04-30
+## [0.13.25] - 2018-04-30
 ### Fixed
 - `string`: exposed `adjust`, `format-code`, `join-lines`, `lines` &
   `no-print`.
   - `debug`: exposed `debug-print`.
 
-# [0.13.24] - 2018-04-30
+## [0.13.24] - 2018-04-30
 ### Added
 - Exposed test utils in `shuriken.test`. Not included in `shuriken.core`.
 
-# [0.13.23] - 2018-04-28
+## [0.13.23] - 2018-04-28
 ### Added
 - `threading`: `and->`, `and->>`, `or->` & `or->>`
 
-# [0.13.22] - 2018-04-28
+## [0.13.22] - 2018-04-28
 ### Added
 - `associative`: `map-keys` & `map-vals`.
 
-# [0.13.21] - 2018-04-28
+## [0.13.21] - 2018-04-28
 ### Added
 - `sequential`: `get-nth-in` & `assoc-nth-in`.
 
-# [0.13.20] - 2018-04-28
+## [0.13.20] - 2018-04-28
 ### Fixed
 - `multi`: in `super-method`, use the default dispatch val of the multi
   instead of `:default`.
 
-# [0.13.19] - 2018-04-28
+## [0.13.19] - 2018-04-28
 ### Added
 - `multi`: `super-method`.
 
 ### Fixed
 - `multi`: `call-multi` renamed to `call-method`.
 
-# [0.13.18] - 2018-04-27
+## [0.13.18] - 2018-04-27
 ### Added
 - macro:
   - `is-form?`, `wrap-form` & `unwrap-form`.
@@ -168,18 +172,18 @@ All notable changes to this project will be documented in this file. This change
 ### Fixed
 - macro: fix `clean-code` and `macroexpand-some`.
 
-# [0.13.8] - 2017-11-28
+## [0.13.8] - 2017-11-28
 ### Enhanced
 - macro:
   - `macroexpand-do` accepts predicates.
   - `file-eval` has better file output.
 
-# [0.13.7] - 2017-11-28
+## [0.13.7] - 2017-11-28
 ### Fixed
 - `macro`: errors from `file-eval` display both the extended message with the
   temporary file path and the actual error stacktrace.
 
-# [0.13.6] - 2017-11-28
+## [0.13.6] - 2017-11-28
 ### Fixed
 - `macroexpand-do`: dumps the expanded form at the file-eval stage.
 
@@ -187,7 +191,7 @@ All notable changes to this project will be documented in this file. This change
 - `tap` threads the initial expr to the forms in its body that are threading
   forms.
 
-# [0.13.5] - 2017-11-28
+## [0.13.5] - 2017-11-28
 ### Added
 - `macro`: `file-eval`, `macroexpand-n`.
 - `threading`: `tap`, `tap->` & `tap->>`.
@@ -200,7 +204,7 @@ All notable changes to this project will be documented in this file. This change
 - `macro`: `macroexpand-do` with a number calls `macroexpand-1` the right
   number of times.
 
-# [0.13.4] - 2017-11-27
+## [0.13.4] - 2017-11-27
 ### Added
 - `macro`: `macroexpand-some`.
 
@@ -212,7 +216,7 @@ All notable changes to this project will be documented in this file. This change
 - `namespace`: `fully-qualify`, `fully-qualified?` and `unqualify` support
   static method symbols like `some.Class/staticMethod`.
 
-# [0.13.3] - 2017-11-27
+## [0.13.3] - 2017-11-27
 ### Added
 - `navigation`: `prepostwalk` & `prepostwalk-demo`.
 - `monkey-patch`: `monkey-patch`, `only` & `refresh-only`.
@@ -221,7 +225,7 @@ All notable changes to this project will be documented in this file. This change
 ### Removed
 - `namespace`: `once-ns`.
 
-# [0.13.2] - 2017-10-29
+## [0.13.2] - 2017-10-29
 ### Added
 - `shuriken.dev` namespace with `shuriken.monkey-patches.syntax-quote`.
 
@@ -230,12 +234,12 @@ All notable changes to this project will be documented in this file. This change
 - `shuriken.monkey-patches.syntax-quote` changes `clojure.lang.LispReader`
   to use `clojure.tools.reader/read`.
 
-# [0.13.1] - 2017-10-28
+## [0.13.1] - 2017-10-28
 ### Added
 - Monkey-patch clojure:
   - New `pprint` translations for reader macro `~@`.
 
-# [0.13.0] - 2017-10-22
+## [0.13.0] - 2017-10-22
 ### Added
 - Execute code in another namespace with `with-ns`.
 - Ensure a namespace is loaded only once with `once-ns` even using `use`
