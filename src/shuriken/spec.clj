@@ -75,3 +75,11 @@
     :op symbol?
     :name (s/? symbol?)
     :bodies ::args+bodies))
+
+(s/def ::letfn-spec
+  (s/cat
+    :name symbol?
+    :bodies ::args+bodies))
+
+(s/def ::letfn-specs
+  (s/* (s/and list? ::letfn-spec)))
