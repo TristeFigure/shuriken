@@ -62,10 +62,16 @@
                  :arity-1
                  :arity-n))))
 
-(s/def ::macro-definition
+(s/def ::defmacro-form
   (s/cat
-    :def-macro  symbol?
+    :op         symbol?
     :name       symbol?
     :doc-string (s/? string?)
     :attr-map   (s/? map?)
     :bodies     ::args+bodies))
+
+(s/def ::fn-form
+  (s/cat
+    :op symbol?
+    :name (s/? symbol?)
+    :bodies ::args+bodies))

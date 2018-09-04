@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [0.14.9] - 2018-09-04
+## Added
+- `spec`: `:shuriken.spec/fn-form` spec.
+
+## Changed
+- `spec`: spec `:shuriken.spec/macro-definition` renamed to
+  `:shuriken.spec/defmacro-form`.
+
 # [0.14.8] - 2018-09-02
 ## Added
 - `sequential`: `insert-at`.
