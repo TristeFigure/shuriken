@@ -1,7 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-## [0.14.13] - 2018-09-05
+## [0.14.14] - 2018-09-14
+### Fixed:
+- `debug`: fix `debug-print` again.
+
+## [0.14.13] - 2018-09-14
 ### Fixed:
 - `debug`: `debug-print` now handles multi-line results properly.
 

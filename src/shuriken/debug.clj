@@ -13,6 +13,7 @@
     (if (empty? more)
       (println (str label ": " f))
       (do (print (str label ": " f))
+          (print \newline)
           (println (tabulate (join-lines more)
                              tabs))))
     result))
