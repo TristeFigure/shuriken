@@ -10,7 +10,7 @@
                      (format-code result))
         [f & more] (lines result-str)
         tabs (apply str (repeat label-length " "))]
-    (if (empty more)
+    (if (empty? more)
       (println (str label ": " f))
       (do (print (str label ": " f))
           (println (tabulate (join-lines more)
@@ -20,7 +20,7 @@
 (defmacro debug
   "Evaluates and prints a debug statement for each form.
   Returns the value of the last.
-  
+
   ```clojure
   (debug (+ 1 2)
          (- 3 4))
