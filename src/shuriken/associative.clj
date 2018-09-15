@@ -2,20 +2,26 @@
   "### Operations on associative structures")
 
 (defn map-keys
-  "Applies `f` to each key of `m`."
+  "Applies `f` to each value of `m`."
   [f m]
-  (->> m
-       (map (fn [[k v]]
-              [(f k) v]))
-       (into (empty m))))
+  (let [result (->> m
+                    (map (fn [[k v]]
+                           [(f k) v]))
+                    (into (empty m)))]
+    (if (list? m)
+      (reverse result)
+      result)))
 
 (defn map-vals
   "Applies `f` to each value of `m`."
   [f m]
-  (->> m
-       (map (fn [[k v]]
-              [k (f v)]))
-       (into (empty m))))
+  (let [result (->> m
+                    (map (fn [[k v]]
+                           [k (f v)]))
+                    (into (empty m)))]
+    (if (list? m)
+      (reverse result)
+      result)))
 
 (defn- flatten-keys* [acc ks m]
   (if (and (map? m)

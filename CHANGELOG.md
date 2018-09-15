@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.15] - 2018-09-15
+### Fixed:
+- `associative`: `map-keys` and `map-vals` order on lists.
+
 ## [0.14.14] - 2018-09-14
 ### Fixed:
 - `debug`: fix `debug-print` again.

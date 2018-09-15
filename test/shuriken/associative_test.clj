@@ -17,6 +17,20 @@
    [:a :b :d] 456
    [:e :f]    789})
 
+(deftest test-map-vals
+  (is (= [[:a 2] [:b 3]]
+         (map-vals inc [[:a 1] [:b 2]])
+         (map-vals inc '([:a 1] [:b 2]))))
+  (is (= {:a 2 :b 3}
+         (map-vals inc {:a 1 :b 2}))))
+
+(deftest test-map-keys
+  (is (= [["a" 1] ["b" 2]]
+         (map-keys name [[:a 1] [:b 2]])
+         (map-keys name '([:a 1] [:b 2]))))
+  (is (= {"a" 1 "b" 2}
+         (map-keys name {:a 1 :b 2}))))
+
 (deftest test-flatten-keys
   (testing "flattening"
     (is (= (flatten-keys m)
