@@ -22,14 +22,18 @@
          (map-vals inc [[:a 1] [:b 2]])
          (map-vals inc '([:a 1] [:b 2]))))
   (is (= {:a 2 :b 3}
-         (map-vals inc {:a 1 :b 2}))))
+         (map-vals inc {:a 1 :b 2})))
+  (is (= [[:a 2]]
+         (map-vals inc (lazy-seq [[:a 1]])))))
 
 (deftest test-map-keys
   (is (= [["a" 1] ["b" 2]]
          (map-keys name [[:a 1] [:b 2]])
          (map-keys name '([:a 1] [:b 2]))))
   (is (= {"a" 1 "b" 2}
-         (map-keys name {:a 1 :b 2}))))
+         (map-keys name {:a 1 :b 2})))
+  (is (= [["a" 1]]
+         (map-keys name (lazy-seq [[:a 1]])))))
 
 (deftest test-flatten-keys
   (testing "flattening"

@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.16] - 2018-09-16
+### Fixed:
+- `associative`: `map-keys` and `map-vals` order on sequences.
+
 ## [0.14.15] - 2018-09-15
 ### Fixed:
 - `associative`: `map-keys` and `map-vals` order on lists.

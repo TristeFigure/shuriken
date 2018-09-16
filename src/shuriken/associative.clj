@@ -8,7 +8,7 @@
                     (map (fn [[k v]]
                            [(f k) v]))
                     (into (empty m)))]
-    (if (list? m)
+    (if (seq? m)
       (reverse result)
       result)))
 
@@ -19,7 +19,7 @@
                     (map (fn [[k v]]
                            [k (f v)]))
                     (into (empty m)))]
-    (if (list? m)
+    (if (seq? m)
       (reverse result)
       result)))
 
