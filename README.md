@@ -110,7 +110,7 @@ Libraries that were originally part of shuriken.
 
 #### `getsoc`
 
-Works like `get` if the key is present in the hash, else works like assoc`.
+Works like `get` if the key is present in the hash, else works like `assoc`.
 Returns a vector of the form `[get-or-stored-value new-coll]`.
 
 ```clojure
