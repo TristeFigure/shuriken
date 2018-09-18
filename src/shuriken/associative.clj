@@ -1,5 +1,6 @@
 (ns shuriken.associative
-  "### Operations on associative structures")
+  "### Operations on associative structures"
+  (:require [clojure.set :as set]))
 
 (defn map-keys
   "Applies `f` to each value of `m`."
@@ -173,16 +174,22 @@
                  (when (seq remaining) [remaining])))))
 
 (defn map-difference
-  "Returns a map that is the first map without elements of the
-  remaining maps."
+  "Returns a submap of m excluding any entry whose key appear in any of
+  the remaining maps."
   [m & ms]
   (apply dissoc m (keys (apply merge ms))))
+
+(defn map-intersection
+  "Returns a submap of m including only entries whose key appear in all of
+  the remaining maps."
+  [m & ms]
+  (select-keys m (apply set/intersection (map (comp set keys) ms))))
 
 (defn submap?
   "Determines whether `map1` is a subset, keys and values wise, of
   `map2`."
   [map1 map2]
-  (clojure.set/subset? (set map1) (set map2)))
+  (set/subset? (set map1) (set map2)))
 
 (defn getsoc
   "Gets value at key `k` in hash `m` if present, otherwise runs

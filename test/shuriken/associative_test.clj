@@ -119,11 +119,21 @@
 
 (deftest test-map-difference
   (let [m {:a 1 :b 2 :c 3}]
+    (is (= {:a 1 :b 2 :c 3} (map-difference m nil)))
     (is (= {:a 1 :b 2 :c 3} (map-difference m {})))
     (is (= {:b 2 :c 3}      (map-difference m {:a :x})))
     (is (= {:c 3}           (map-difference m {:a :x :b :x})))
     (is (= {}               (map-difference m {:a :x :b :x :c :x})))
     (is (= {:c 3}           (map-difference m {:a :x} {:b :x})))))
+
+(deftest test-map-intersection
+  (let [m {:a 1 :b 2 :c 3}]
+    (is (= {}               (map-intersection m nil)))
+    (is (= {}               (map-intersection m {})))
+    (is (= {:a 1}           (map-intersection m {:a :x})))
+    (is (= {:a 1 :b 2}      (map-intersection m {:a :x :b :x})))
+    (is (= {:a 1 :b 2 :c 3} (map-intersection m {:a :x :b :x :c :x})))
+    (is (= {}               (map-intersection m {:a :x} {:b :x})))))
 
 (deftest test-submap?
   (let [m1 {:a 1}

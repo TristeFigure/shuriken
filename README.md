@@ -15,7 +15,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.14.16"]
+[org.clojars.tristefigure/shuriken "0.14.17"]
 ```
 
 
@@ -106,6 +106,16 @@ Libraries that were originally part of shuriken.
 (let [m {:a 1 :b 2 :c 3}]
   (map-difference m {:a :x})          ;; {:b 2 :c 3}
   (map-difference m {:a :x} {:b :x})) ;; {:c 3}
+```
+#### `map-intersection`
+
+```clojure
+(let [m {:a 1 :b 2 :c 3}]
+  (map-intersection m {:a :x})         ;; {:a 1}
+  (map-intersection m {:a :x :b :x})   ;; {:a 1 :b 2}
+  (map-intersection m {:a :x} {:b :x}) ;; {}
+  (map-intersection m {})              ;; {}
+  (map-intersection m nil))            ;; {}
 ```
 
 #### `getsoc`

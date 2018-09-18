@@ -23,6 +23,7 @@
    merge-with-plan
    split-map
    map-difference
+   map-intersection
    submap?
    getsoc]
 
