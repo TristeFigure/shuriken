@@ -13,12 +13,14 @@
 (deftest test-assoc-nth
   (is (= '(1 0 3)   (assoc-nth '(1 2 3) 1 0)))
   (is (= '(1 2 3 0) (assoc-nth '(1 2 3) 3 0)))
+  (is (= {:a 1} (assoc-nth {} :a 1)))
   (is (= true (thrown? IndexOutOfBoundsException
                        (assoc-nth '(1 2 3) 4 0)))))
 
 (deftest test-assoc-nth-in
   (is (= '(1 (4) 3) (assoc-nth-in '(1 (2) 3) [1 0] 4)))
   (is (= '(1 (2 4) 3) (assoc-nth-in '(1 (2) 3) [1 1] 4)))
+  (is (= {:a {:b '(({:c 1}))}} (assoc-nth-in {:a {:b '(())}} [:a :b 0 0 :c] 1)))
   (is (= true
          (thrown? IndexOutOfBoundsException
                   (assoc-nth-in '(1 (2) 3) [1 2] 4)))))

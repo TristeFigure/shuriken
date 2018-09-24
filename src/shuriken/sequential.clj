@@ -27,12 +27,12 @@
 
 (defn assoc-nth [coll n v]
   "Like assoc but also works on lists."
-  (when-not (<= n (count coll))
-    (throw (new IndexOutOfBoundsException)))
   (if (list? coll)
-    (concat (take n coll)
-            [v]
-            (drop (inc n) coll))
+    (do (when-not (<= n (count coll))
+          (throw (new IndexOutOfBoundsException)))
+        (concat (take n coll)
+                [v]
+                (drop (inc n) coll)))
     (assoc coll n v)))
 
 (defn assoc-nth-in
