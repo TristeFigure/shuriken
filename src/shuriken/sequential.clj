@@ -27,13 +27,13 @@
 
 (defn assoc-nth [coll n v]
   "Like assoc but also works on lists."
-  (if (list? coll)
+  (if (or (nil? coll) (associative? coll))
+    (assoc coll n v)
     (do (when-not (<= n (count coll))
           (throw (new IndexOutOfBoundsException)))
         (concat (take n coll)
                 [v]
-                (drop (inc n) coll)))
-    (assoc coll n v)))
+                (drop (inc n) coll)))))
 
 (defn assoc-nth-in
   "Like assoc-in but also works on lists."
@@ -71,7 +71,7 @@
   (let [[before after] (split-at n s)]
     (-> (->> (concat before [x] after)
              (into (empty s)))
-        (as-> $ (if (list? $) (reverse $) $)))))
+        (as-> $ (if (seq? $) (reverse $) $)))))
 
 (defn slice
   "Slice a seq using a delimiter predicate. There are two options:

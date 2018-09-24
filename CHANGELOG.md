@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.19] - 2018-09-24
+### Fixed:
+- `sequential`: fix `assoc-nth` on `nil` and `assoc-nth-in` on sequences.
+  
 ## [0.14.18] - 2018-09-24
 ### Fixed:
 - `sequential`: fix `assoc-nth` and `assoc-nth-in`.

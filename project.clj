@@ -1,4 +1,4 @@
-(defproject org.clojars.tristefigure/shuriken "0.14.18"
+(defproject org.clojars.tristefigure/shuriken "0.14.19"
   :description "TristeFigure's Clojure toolbox"
   :url "https://github.com/TristeFigure/shuriken"
   :license {:name "Eclipse Public License"
