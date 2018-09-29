@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.20] - 2018-09-29
+- `exception`: `silence` and `thrown?` now support regex patterns.
+
 ## [0.14.19] - 2018-09-24
 ### Fixed:
 - `sequential`: fix `assoc-nth` on `nil` and `assoc-nth-in` on sequences.

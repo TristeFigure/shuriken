@@ -15,7 +15,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.14.19"]
+[org.clojars.tristefigure/shuriken "0.14.20"]
 ```
 
 
@@ -145,6 +145,9 @@ Returns a vector of the form `[get-or-stored-value new-coll]`.
 (silence "Divide by zero" (/ 1 0))
 ;; => nil
 
+(silence #"zero" (/ 1 0))
+;; => nil
+
 (silence :substitute
          (fn [x]
            (isa? (class x) ArithmeticException))
@@ -159,6 +162,9 @@ Returns a vector of the form `[get-or-stored-value new-coll]`.
 ;; => true
 
 (thrown? "Divide by zero" (/ 1 0))
+;; => true
+
+(thrown? #"zero" (/ 1 0))
 ;; => true
 
 (thrown? #{ArithmeticException} (/ 1 1))

@@ -3,22 +3,52 @@
   (:require [shuriken.associative :refer [submap?]])
   (:import [clojure.lang ExceptionInfo]))
 
+(defn ^:no-doc regex? [x]
+  (instance? java.util.regex.Pattern x))
+
 ;; TODO: use maps to assert ex-data of ExceptionInfos
+(defmacro silence*
+  ([substitute pattern expr]
+   (let [z `(let [pattern# ~pattern
+                  matches?# (fn f# [e# pattern#]
+                              (cond
+                                (class? pattern#)  (instance? pattern# e#)
+                                (map? pattern#)    (and (instance? ExceptionInfo e#)
+                                                        (submap? pattern# (ex-data e#)))
+                                (string? pattern#) (= pattern# (.getMessage e#))
+                                (coll? pattern#)   (some (partial f# e#) pattern#)
+                                (ifn? pattern#)    (pattern# e#)
+                                (regex? pattern#)  (re-find pattern# (.getMessage e#))
+                                :else             (throw (IllegalArgumentException.
+                                                           "Invalid pattern clause"))))]
+              (try
+                ~expr
+                (catch Throwable t#
+                  (if (matches?# t# pattern#)
+                    ~substitute
+                    (throw t#)))))]
+     z)))
+
 (defmacro silence
   "Returns `substitute` if `expr` raises an exception that matches
-  `target`.
+  `pattern`.
   If not provided, `substitute` is `nil`.
-  Target can be:
+  `pattern` can be:
+    - a function
     - a class
-    - a sequence of classes
-    - a predicate
     - a string
+    - a regex pattern (used via `re-find`)
+    - a map (matches if it's a submap of an ExceptionInfo's data)
+    - or a sequence of such elements.
 
   ```clojure
   (silence ArithmeticException (/ 1 0))
   => nil
 
   (silence \"Divide by zero\" (/ 1 0))
+  => nil
+
+  (silence #\"zero\" (/ 1 0))
   => nil
 
   (silence [ArithmeticException]
@@ -33,30 +63,15 @@
            (/ 1 0))
   => :substitute
   ```"
-  ([target expr]
-   `(silence nil ~target ~expr))
-  ([substitute target expr]
-   `(let [target# ~target
-          pred# (cond
-                  (class? target#)  #(isa? (class %) target#)
-                  (map? target#)    #(and (isa? (class %) ExceptionInfo)
-                                          (submap? target# (ex-data %)))
-                  (string? target#) #(= target# (.getMessage %))
-                  (coll? target#)   #(some (partial isa? (class %)) target#)
-                  (ifn? target#)    target#
-                  :else (throw (IllegalArgumentException.
-                                 "target must be sequence of exception class
-                                 or a function")))]
-      (try
-        ~expr
-        (catch Throwable t#
-          (if (pred# t#)
-            ~substitute
-            (throw t#)))))))
+  ([pattern expr]
+   `(silence nil ~pattern ~expr))
+  ([substitute pattern expr]
+   (let [mexpr (silence* substitute pattern expr)]
+     `(silence* ~substitute ~pattern ~mexpr))))
 
-(defmacro thrown? [target expr]
-  "Returns true if `expr` raises an exception matching `target`.
-  See [[silence]] for the semantics of `target`.
+(defmacro thrown? [pattern expr]
+  "Returns true if `expr` raises an exception matching `pattern`.
+  See [[silence]] for the semantics of `pattern`.
 
   ```clojure
   (thrown? ArithmeticException (/ 1 0))
@@ -72,4 +87,4 @@
   ;;   IllegalArgumentException my-error
   ```"
   `(= ::thrown!
-      (silence ::thrown! ~target ~expr)))
+      (silence ::thrown! ~pattern ~expr)))

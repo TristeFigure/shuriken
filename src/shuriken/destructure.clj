@@ -26,11 +26,11 @@
 
 (defn disentangle
   "Parses one level of destructuring.
-  
+
   ```clojure
   (disentangle '[a b & [c]])
   => '{:items [a b], :more [c]}
-  
+
   (disentangle '{:keys [a] b :b [c1 c2] :c :or {d 1} :as m})
   => '{:items [a b [c1 c2]],
        :as m,
@@ -59,7 +59,7 @@
 (defn deconstruct
   "Returns a flat sequence of the symbols bound in the binding-form
   in depth-first order.
-  
+
   ```clojure
   (deconstruct '[a & {:keys [x] y :_y :or {x 1} :as m}])
   => '[a x y m]
@@ -83,13 +83,13 @@
                 (if (map? restr#)
                   (reduce concat restr#)
                   restr#))
-              
+
               (sequential? more)
               (restructure* more mapping)
-              
+
               (map? more)
               (->> (restructure* more mapping) (reduce concat))
-              
+
               :else [])))))
 
 (defn- restructure-associative [binding-form mapping]
@@ -109,7 +109,7 @@
     (map? binding-form)         (restructure-associative binding-form mapping)
     :else (mapping binding-form)))
 
-(defn- dequote [form]
+(defn dequote [form]
   (if (and (sequential? form)
            (-> form first (= 'quote)))
     (second form)
@@ -123,7 +123,7 @@
 
 (defn restructure
   "Undoes what destructure does.
-  
+
   ```clojure
   (restructure [x & {:keys [a b] c :cc d :d :or {d 3}}]
                {x 0 a 1 b 2 c 3})
