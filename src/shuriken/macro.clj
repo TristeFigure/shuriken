@@ -243,7 +243,6 @@
   | :some <fn>                    | `macroexpand-some`               |"
   [& args]
   (let [{:keys [mode mode-arg expr]} (conform! ::macroexpand-do-args args)]
-    (println "[mode mode-arg expr]" [mode mode-arg expr])
     `(do
        (println "-- Macro expansion --")
        (let [mode# ~mode

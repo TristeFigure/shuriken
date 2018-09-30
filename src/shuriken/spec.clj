@@ -28,11 +28,11 @@
                             "unforming value\n"
                             (with-out-str (pprint x#)))))]
            (cond
-             original-case#      [original-case# x#]
+             original-case#     [original-case# x#]
              (keyword? unform#) [unform# x#]
              (ifn? unform#)     [(unform# x#) x#]
              (nil? unform#)     (throw (ex# "Missing unform statement"))
-             :else               (throw (ex# "Invalid unform statement"))))))))
+             :else              (throw (ex# "Invalid unform statement"))))))))
 
 (defn conform! [spec value]
   (let [result (s/conform spec value)]
