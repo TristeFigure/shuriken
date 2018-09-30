@@ -168,8 +168,8 @@
     (parse-constraint [(first c) :before (second c)])
     (let [[a word b] c
           [x y] (case word
-                  (:> :before) [a b]
-                  (:< :after)  [b a])
+                  (:< :before) [a b]
+                  (:> :after)  [b a])
           x (if (= x :all) ::after-all x)
           y (if (= y :all) ::before-all y)]
       [x y])))
@@ -180,19 +180,20 @@
        (filter #(-> % count (> 1)))
        (mapv (fn [arr]
                (->> (take (-> arr count inc) (cycle arr))
-                    (interpose :>)
+                    (interpose :<)
                     vec)))))
 
 (defn order
   "Order a sequence with a collection of constraints of the form:
   - [a b]
   - [a :before b]
-  - [a :> b]
+  - [a :< b]
   - [b :after a]
-  - [b :< a]
+  - [b :> a]
 
   Can specify constraints on `:all` elements.
-  Raises an exception if constraints are contradictory.
+  Throws a `{:type :contradictory-constraints}` ex-info if constraints
+  are contradictory.
 
   Example:
 
@@ -200,7 +201,7 @@
   (order [1 2 3] {2 1           3 :all})
   (order [1 2 3] [[2 1]         [3 :all]])
   (order [1 2 3] [[2 :before 1] [:all :after 3]])
-  (order [1 2 3] [[2 :> 1]      [:all :< 3]])
+  (order [1 2 3] [[2 :< 1]      [:all :> 3]])
   ;; (3 2 1)
   ```"
   [array constraints]

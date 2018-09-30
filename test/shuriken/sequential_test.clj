@@ -107,7 +107,7 @@
   (is (= [6 1 3 2 4 5]
          (order [1 2 3 4 5 6] [[6 :before 1] [2 :after 3]])))
   (is (= [6 1 3 2 4 5]
-         (order [1 2 3 4 5 6] [[6 :> 1] [2 :< 3]])))
+         (order [1 2 3 4 5 6] [[6 :< 1] [2 :> 3]])))
   (is (= [6 1 2 4 5 3]
          (order [1 2 3 4 5 6] [[6 :all] [:all 3]])))
   (is (= [1 2 3 4 5 6]
@@ -117,7 +117,7 @@
   (is (= true
          (thrown? #(= (ex-data %)
                       {:type :contradictory-constraints
-                       :cycles [[1 :> :all :> 6 :> 1]]})
+                       :cycles [[1 :< :all :< 6 :< 1]]})
                   (order [1 2 3 4 5 6] [[6 1] [1 :all] [:all 6]])))))
 
 (deftest test-takes

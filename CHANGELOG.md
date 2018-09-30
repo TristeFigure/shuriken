@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.22] - 2018-09-30
+- `sequential`: invert the meaning of `:>` and `:<` in `order`.
+
 ## [0.14.21] - 2018-09-30
 - `macro`: remove debug statement in `macroexpand-do`.
 
