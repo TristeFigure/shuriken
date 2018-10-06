@@ -2,27 +2,55 @@
   "### Operations on associative structures"
   (:require [clojure.set :as set]))
 
-(defn map-keys
-  "Applies `f` to each value of `m`."
-  [f m]
-  (let [result (->> m
-                    (map (fn [[k v]]
-                           [(f k) v]))
-                    (into (empty m)))]
+(defn- into-empty [m vs]
+  (let [result (into (empty m) vs)]
     (if (seq? m)
       (reverse result)
       result)))
 
+(defn map-keys
+  "Applies `f` to each key of `m`."
+  [f m]
+  (->> m
+       (map (fn [[k v]]
+              [(f k) v]))
+       (into-empty m)))
+
 (defn map-vals
   "Applies `f` to each value of `m`."
   [f m]
-  (let [result (->> m
-                    (map (fn [[k v]]
-                           [k (f v)]))
-                    (into (empty m)))]
-    (if (seq? m)
-      (reverse result)
-      result)))
+  (->> m
+       (map (fn [[k v]]
+              [k (f v)]))
+       (into-empty m)))
+
+(defn filter-keys
+  "Filters `m` by applyng `f` to each key."
+  [f m]
+  (->> m
+       (filter #(-> % first f))
+       (into-empty m)))
+
+(defn filter-vals
+  "Filters `m` by applyng `f` to each value."
+  [f m]
+  (->> m
+       (filter #(-> % second f))
+       (into-empty m)))
+
+(defn remove-keys
+  "Removes `m` by applyng `f` to each key."
+  [f m]
+  (->> m
+       (remove #(-> % first f))
+       (into-empty m)))
+
+(defn remove-vals
+  "Removes `m` by applyng `f` to each value."
+  [f m]
+  (->> m
+       (remove #(-> % second f))
+       (into-empty m)))
 
 (defn- flatten-keys* [acc ks m]
   (if (and (map? m)

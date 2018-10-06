@@ -18,6 +18,8 @@
 (import-vars
   [shuriken.associative
    map-keys map-vals
+   filter-keys filter-vals
+   remove-keys remove-vals
    flatten-keys deflatten-keys deep-merge
    index-by unindex
    merge-with-plan

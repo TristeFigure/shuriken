@@ -1,13 +1,20 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [Unreleased]
+### Added
+- `associative`: `filter-keys`, `filter-vals`, `remove-keys` & `remove-vals`.
+
 ## [0.14.22] - 2018-09-30
+### Changed
 - `sequential`: invert the meaning of `:>` and `:<` in `order`.
 
 ## [0.14.21] - 2018-09-30
+### Fixed
 - `macro`: remove debug statement in `macroexpand-do`.
 
 ## [0.14.20] - 2018-09-29
+### Enhanced
 - `exception`: `silence` and `thrown?` now support regex patterns.
 
 ## [0.14.19] - 2018-09-24

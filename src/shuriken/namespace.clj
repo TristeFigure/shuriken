@@ -1,6 +1,5 @@
 (ns shuriken.namespace
   "### Namespace related stuff"
-  (:use clojure.pprint)
   (:require [clojure.string :as str]
             [potemkin :refer [import-vars]]
             [lexikon.core :refer [lexical-eval]]))

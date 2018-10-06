@@ -149,3 +149,19 @@
 (deftest test-getsoc
   (is (= [1 {:a 1}] (getsoc {:a 1} :a (constantly 2))))
   (is (= [2 {:a 2}] (getsoc {}     :a (constantly 2)))))
+
+(deftest test-filter-keys
+  (is (= {:a 1}
+         (filter-keys #{:a} {:a 1 :b 2}))))
+
+(deftest test-filter-vals
+  (is (= {:a 1}
+         (filter-vals #{1} {:a 1 :b 2}))))
+
+(deftest test-remove-keys
+  (is (= {:b 2}
+         (remove-keys #{:a} {:a 1 :b 2}))))
+
+(deftest test-remove-vals
+  (is (= {:b 2}
+         (remove-vals #{1} {:a 1 :b 2}))))
