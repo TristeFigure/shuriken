@@ -268,3 +268,23 @@
           (concat
             [(take n coll)]
             [(drop n coll)]))))
+
+; (defn- containment-constraints [t]
+;   (->> (tree-seq coll? seq t)
+;        (filter coll?)
+;        (mapcat (fn [subt]
+;               (for [node subt]
+;                 [subt node])))
+;        (into {})))
+
+; (defn- remove-ghost-constraints [ss constraints]
+;   (->> (map parse-constraint constraints)
+;        (filter (fn [[k v]]
+;                  (and (ss k) (ss v))))
+;        (into {})))
+
+; (defn order-tree [root constraints]
+;   )
+
+; (let [tree [1 2 [[3 [4]] [5 6]]]]
+;   (println "->>->" (order-tree tree {6 2})))
