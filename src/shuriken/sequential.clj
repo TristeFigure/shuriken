@@ -204,20 +204,31 @@
   (order [1 2 3] [[2 :< 1]      [:all :> 3]])
   ;; (3 2 1)
   ```"
-  [array constraints]
-  (let [cycs (cycles (apply u/digraph constraints))
+  [s constraints]
+  (let [ss (set s)
+        spec-kws #{:all ::before-all ::after-all}
+        _ (assert (= (count ss) (count s))
+                  "Can't order a sequence whose elements are not distinct")
+        filtered-constraints (filter (fn unnecessary? [c]
+                                       (if (> (count c) 2)
+                                         (unnecessary? [(first c) (nth c 2)])
+                                         (let [[k v] c]
+                                           (and (or (spec-kws k) (ss k))
+                                                (or (spec-kws v) (ss v))))))
+                                     constraints)
+        cycs (cycles (apply u/digraph filtered-constraints))
         _ (when-not (empty? cycs)
             (throw (ex-info "Contradictory constraints"
                             {:type :contradictory-constraints
                              :cycles cycs})))
-        constraints (into {} (map parse-constraint constraints))
-        constrained (clojure.set/union (set (keys constraints))
-                                       (set (vals constraints)))
-        free (filter (complement constrained) array)
-        nodes (concat [::before-all] array [::after-all])
+        parsed-constraints (into {} (map parse-constraint filtered-constraints))
+        constrained (clojure.set/union (set (keys parsed-constraints))
+                                       (set (vals parsed-constraints)))
+        free (filter (complement constrained) s)
+        nodes (concat [::before-all] s [::after-all])
         g (as-> (u/digraph) $
             (apply u/add-nodes $ nodes)
-            (apply u/add-edges $ (map reverse constraints))
+            (apply u/add-edges $ (map reverse parsed-constraints))
             (apply u/add-edges $ (map reverse (partition 2 1 free))))
         ccs (filter #(> (count %) 1) (alg/connected-components g))
         g (apply u/add-edges g

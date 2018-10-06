@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 - `associative`: `filter-keys`, `filter-vals`, `remove-keys` & `remove-vals`.
 
+### Fixed:
+- `sequential`: `order` now ignores constraints about absent elements and
+  raises an exception if the collection is not `distinct?`.
+
 ## [0.14.22] - 2018-09-30
 ### Changed
 - `sequential`: invert the meaning of `:>` and `:<` in `order`.

@@ -118,7 +118,12 @@
          (thrown? #(= (ex-data %)
                       {:type :contradictory-constraints
                        :cycles [[1 :< :all :< 6 :< 1]]})
-                  (order [1 2 3 4 5 6] [[6 1] [1 :all] [:all 6]])))))
+                  (order [1 2 3 4 5 6] [[6 1] [1 :all] [:all 6]]))))
+  (is (true? (thrown? #"Can't order a sequence whose elements are not distinct"
+                      (order [1 2 3 6 4 5 6] {6 2}))))
+  (is (= [1 2]   (order [1 2]   {6 3})))
+  (is (= [1 2]   (order [1 2]   {6 2})))
+  (is (= [1 6 2] (order [1 2 6] {6 2}))))
 
 (deftest test-takes
   (is (= '((:a) (:b))
