@@ -1,9 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-## [Unreleased]
+## [0.14.23] - 2018-10-06
 ### Added
 - `associative`: `filter-keys`, `filter-vals`, `remove-keys` & `remove-vals`.
+- `spec`: `::defn-form` (same as `::defmacro-form`).
 
 ### Fixed:
 - `sequential`: `order` now ignores constraints about absent elements and

@@ -62,13 +62,17 @@
                  :arity-1
                  :arity-n))))
 
-(s/def ::defmacro-form
+;; TODO: rename doc-string to docstring (as it appears in (doc defn))
+(s/def ::defn-form
   (s/cat
     :op         symbol?
     :name       symbol?
     :doc-string (s/? string?)
     :attr-map   (s/? map?)
     :bodies     ::args+bodies))
+
+(s/def ::defmacro-form
+  ::defn-form)
 
 (s/def ::fn-form
   (s/cat
