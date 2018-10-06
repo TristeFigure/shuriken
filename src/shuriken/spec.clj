@@ -87,3 +87,32 @@
 
 (s/def ::letfn-specs
   (s/* (s/and seq? ::letfn-spec)))
+
+(s/def ::reify-method
+  (s/cat
+    :name symbol?
+    :args vector?
+    :body (conf (s/* any?)
+                #(apply list %) vec)))
+
+(s/def ::reify-form
+  (s/cat
+    :op symbol?
+    :protocol-or-interface-or-Object symbol?
+    :methods (s/* (s/spec ::reify-method))))
+
+(s/def ::deftype-method
+  ::reify-method)
+
+(s/def ::deftype-spec
+  (s/cat
+    :protocol-or-interface-or-Object symbol?
+    :methods (s/* (s/spec ::deftype-method))))
+
+(s/def ::deftype-form
+  (s/cat
+    :op symbol?
+    :name symbol?
+    :fields vector?
+    :options (s/* keyword?)
+    :specs (s/* ::deftype-spec)))

@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.24] - 2018-10-06
+### Added
+- `spec`: `::reify-form` & `::deftype-form`.
+
 ## [0.14.23] - 2018-10-06
 ### Added
 - `associative`: `filter-keys`, `filter-vals`, `remove-keys` & `remove-vals`.
