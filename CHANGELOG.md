@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.25] - 2018-10-26
+### Added
+- `shuriken.monkey-patches.pprint-meta`.
+
 ## [0.14.24] - 2018-10-06
 ### Added
 - `spec`: `::reify-form` & `::deftype-form`.
