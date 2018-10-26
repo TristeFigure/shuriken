@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.26] - 2018-10-26
+### Fixed
+- bumped `dance` to `0.1.2`.
+ 
 ## [0.14.25] - 2018-10-26
 ### Added
 - `shuriken.monkey-patches.pprint-meta`.

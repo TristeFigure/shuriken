@@ -1,4 +1,4 @@
-(defproject org.clojars.tristefigure/shuriken "0.14.25"
+(defproject org.clojars.tristefigure/shuriken "0.14.26"
   :description "TristeFigure's Clojure toolbox"
   :url "https://github.com/TristeFigure/shuriken"
   :license {:name "Eclipse Public License"
@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [potemkin "0.4.3"]
                  [com.palletops/ns-reload "0.1.0"]
-                 [dance "0.1.1"]
+                 [dance "0.1.2"]
                  [lexikon "0.1.0"]
 
                  ;; For monkey patches
