@@ -86,8 +86,9 @@
   (let [name (-> name clojure.core/name symbol)
         safe-name (wrap-form 'var name)
         safe-target (wrap-form 'var target)]
-    `(do
-       (if (fn? (deref ~safe-target))
+    `(let [derefed# (deref ~safe-target)]
+       (if (or (fn? derefed#)
+               (instance? clojure.lang.MultiFn derefed#))
          (do (defn ~name ~args ~@body)
              (add-hook ~safe-target ~safe-name))
          (with-ns '~(-> target .getNamespace symbol)

@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [Unreleased] - 2018-10-27
+### Fixed
+- `shuriken.monkey-patches.pprint-meta`:
+  - works recursively.
+  - handles shorthands (`^Tag` & `^:flag`).
+
 ## [0.14.26] - 2018-10-26
 ### Fixed
 - bumped `dance` to `0.1.2`.
