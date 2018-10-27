@@ -42,9 +42,16 @@
                sym]))
        (into {})))
 
-(def fully-qualified-regex
-  ;; ns   . or /  name  eol
-  #"(^.*)(?:/|\.)([^./]+)$")
+(def fully-qualified-var-regex
+  #"^([^/]+)/(.+)$")
+
+(def fully-qualified-class-regex
+  #"^(.+)[$.]([^.$]+)$")
+
+(defn parse-fully-qualified-sym [sym]
+  (let [s (str sym)]
+    (or (re-matches fully-qualified-var-regex s)
+        (re-matches fully-qualified-class-regex s))))
 
 (defn- could-be-class-name? [x]
   (let [x (str x)]
@@ -89,14 +96,15 @@
 
   (fully-qualified? 'clojure.lang.IRecord) => true
   (fully-qualified? 'my-ns/my-var)         => true
-  (fully-qualified? 'alias/my-var)         => false"
+  (fully-qualified? 'alias/my-var)         => false
+  (fully-qualified? '.toString)            => false"
   ([sym]
    (fully-qualified? *ns* sym))
   ([ns sym]
    (boolean
      (and (= (fully-qualify ns sym)
              sym)
-          (re-matches fully-qualified-regex (str sym))))))
+          (parse-fully-qualified-sym sym)))))
 
 (defn unqualify
   "Returns the unqualified form of sym.
@@ -111,7 +119,7 @@
    (unqualify *ns* sym))
   ([ns sym]
    (if (fully-qualified? sym)
-     (let [[_ ns-part name] (re-matches fully-qualified-regex (str sym))
+     (let [[_ ns-part name] (parse-fully-qualified-sym sym)
            shortcut (or (some-> ns-part could-be-class-name?)
                         (-> (->> ns ns-aliases
                                  (map (fn [[sym ns]]

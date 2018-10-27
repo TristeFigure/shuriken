@@ -1,11 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-## [Unreleased] - 2018-10-27
+## [0.14.27] - 2018-10-27
 ### Fixed
-- `shuriken.monkey-patches.pprint-meta`:
+- `namespace`: `unqualify`, `fully-qualify` and `fully-qualified?`
+  now handle symbols starting with a dot. 
+- `monkey-patches.pprint-meta`:
   - works recursively.
-  - handles shorthands (`^Tag` & `^:flag`).
+  - handles shorthands (`^Tag` & `^:boolean-flag`).
 
 ## [0.14.26] - 2018-10-26
 ### Fixed
@@ -13,7 +15,7 @@ All notable changes to this project will be documented in this file. This change
  
 ## [0.14.25] - 2018-10-26
 ### Added
-- `shuriken.monkey-patches.pprint-meta`.
+- `monkey-patches.pprint-meta`.
 
 ## [0.14.24] - 2018-10-06
 ### Added

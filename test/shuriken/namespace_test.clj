@@ -3,7 +3,7 @@
             [shuriken.core :refer :all
              :reload true]
             [shuriken.virtual-test-namespace
-             :refer [a-var AProtocol]
+             :refer [a-var .dot-var AProtocol]
              :as virtual])
   (:import [shuriken.virtual_test_namespace AType]))
 
@@ -11,29 +11,32 @@
   '{Object              java.lang.Object
     fully-qualify       shuriken.namespace/fully-qualify
     a-var               shuriken.virtual-test-namespace/a-var
-    not-found           not-found
     virtual/another-var shuriken.virtual-test-namespace/another-var
     AType               shuriken.virtual_test_namespace.AType
     AProtocol           shuriken.virtual-test-namespace/AProtocol
-    Object/staticMeth   java.lang.Object/staticMeth})
+    Object/staticMeth   java.lang.Object/staticMeth
+    not-found           not-found
+    .toString           .toString
+    .dot-var            shuriken.virtual-test-namespace/.dot-var})
 
 (deftest test-fully-qualify
   (binding [*ns* (find-ns 'shuriken.namespace-test)]
     (doseq [[unqualified qualified] expectations]
-      (is (= (fully-qualify unqualified)
-             qualified)))))
+      (is (= qualified
+             (fully-qualify unqualified))))))
 
 (deftest test-fully-qualified?
   (binding [*ns* (find-ns 'shuriken.namespace-test)]
-    (doseq [[unqualified qualified] (dissoc expectations 'not-found)]
+    (doseq [[unqualified qualified] (dissoc expectations
+                                            'not-found '.toString)]
       (is (false? (fully-qualified? unqualified)))
       (is (true?  (fully-qualified? qualified))))))
 
 (deftest test-unqualify
   (binding [*ns* (find-ns 'shuriken.namespace-test)]
     (doseq [[unqualified qualified] expectations]
-      (is (= (unqualify qualified)
-             unqualified)))))
+      (is (= unqualified
+             (unqualify qualified))))))
 
 (deftest fully-qualify-round-trips
   (testing "fully-qualify --> fully-qualify"

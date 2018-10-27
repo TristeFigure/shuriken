@@ -15,7 +15,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.14.26"]
+[org.clojars.tristefigure/shuriken "0.14.27"]
 ```
 
 
@@ -500,6 +500,17 @@ Comes equipped with `prepostwalk-demo`
 For all features listed below:
 ```clojure
 (require 'shuriken.dev)
+```
+
+#### `shuriken.monkey-patches.pprint-meta`
+
+```clojure
+(require 'shuriken.monkey-patches.pprint-meta)
+(alter-var-root #'clojure.pprint/*print-meta* (constantly true))
+
+(pprint ^Object ^:flag ^{:meta :yes} [1 2 3])
+;; ^Object ^:flag ^{:meta :yes} [1 2 3]
+
 ```
 
 #### `shuriken.monkey-patches.syntax-quote`
