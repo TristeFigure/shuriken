@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [Unreleased]
+### Fixed
+- `monkey-patches.pprint-meta`: handle `clojure.lang.IMeta` like vars.
+
 ## [0.14.27] - 2018-10-27
 ### Fixed
 - `namespace`: `unqualify`, `fully-qualify` and `fully-qualified?`

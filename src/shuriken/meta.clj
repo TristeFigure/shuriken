@@ -3,7 +3,9 @@
 (defn without-meta
   "Sets meta of `x` to `nil`."
   [x]
-  (with-meta x nil))
+  (if (instance? clojure.lang.IObj x)
+    (with-meta x nil)
+    x))
 
 (defn merge-meta
   "Merge `m` into the meta of `x`."

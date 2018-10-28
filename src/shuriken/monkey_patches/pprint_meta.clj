@@ -7,6 +7,7 @@
             [clojure.pprint]))
 
 (deftype ThingWithMeta [thing])
+(deftype ThingWithoutMeta [thing])
 
 (with-ns 'clojure.pprint
   (def ^:dynamic *print-meta* false))
@@ -18,9 +19,14 @@
             (or writer *out*)))
 
 (monkey-patch :write-out-meta clojure.pprint/write-out [original object]
-  (if (and (meta object) clojure.pprint/*print-meta*)
+  (cond
+    (and (meta object) clojure.pprint/*print-meta*)
     (clojure.pprint/*print-pprint-dispatch* (ThingWithMeta. object))
-    (original object)))
+
+    (instance? ThingWithoutMeta object)
+    (clojure.pprint/*print-pprint-dispatch* (.thing object))
+
+    :else (original object)))
 
 (with-ns 'clojure.pprint
   (defn- pprint-meta-map [object]
@@ -31,7 +37,7 @@
       (when tag
         (.write
           ^java.io.Writer *out*
-          (str (-> tag ((memfn ^Class getName)) symbol
+          (str (-> tag .getName symbol ;; .getName: either a Class or Symbol
                    shuriken.namespace/unqualify)
                " ")))
       (when (seq bools)
@@ -44,7 +50,8 @@
       (when (seq others)
         (when-not (and (not tag) (empty? bools))
           (.write ^java.io.Writer *out* "^"))
-        (write-out others)
+        (binding [*print-meta* false]
+          (write-out others))
         (.write ^java.io.Writer *out* " "))))
 
   (defn- pprint-thing-with-meta
@@ -54,7 +61,8 @@
         :prefix "^" :suffix ""
         (pprint-meta-map thing)
         (pprint-newline :linear)
-        (write-out (shuriken.meta/without-meta thing))))))
+        (write-out
+          (shuriken.monkey_patches.pprint_meta.ThingWithoutMeta. thing))))))
 
 (define-again 'clojure.pprint/pprint-list)
 (define-again 'clojure.pprint/pprint-vector)

@@ -20,9 +20,15 @@
                                    ^{:meta 5} #{:set}
                                    ^{:meta 6} {' ^{:meta 7} key
                                                ' ^{:meta 8} value}])))))
+    (testing "doesn't print metas in metas"
+      (is (= "^{:meta [2]} [1]\n"
+             (with-out-str (pprint ^{:meta ^{:meta [3]} [2]} [1])))))
     (testing "shorthands"
       (is (= "^Object [123]\n"
              (with-out-str (pprint ^Object [123]))))
       (is (= "^Object ^:static ^:dynamic ^{:meta :yes} [123]\n"
              (with-out-str (pprint ^Object ^:dynamic ^:static ^{:meta :yes}
-                                   [123])))))))
+                                   [123])))))
+    (testing "vars (IMeta but not IObj)"
+      (is (= "^{:ns nil, :name nil} #<Var: --unnamed-->\n"
+             (with-local-vars [x 1] (with-out-str (pprint x))))))))
