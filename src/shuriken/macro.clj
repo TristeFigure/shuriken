@@ -253,7 +253,8 @@
                          :n     (partial macroexpand-n     mode-arg#)
                          :depth (partial macroexpand-depth mode-arg#)
                          :some  (partial macroexpand-some  mode-arg#))
-             expansion# (clean-code (expander# (quote ~expr)))]
+             expansion# (clean-code
+                          (expander# (quote ~(unwrap-form 'quote expr))))]
          (pprint expansion#)
          (newline)
 

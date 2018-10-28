@@ -1,8 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-## [Unreleased]
+## [0.14.28] - 2018-10-28
 ### Fixed
+- `macro`: `macroexpand-do` accepts quoted and unquoted code.
 - `monkey-patch`: guard against unexisting sources in `define-again`.
 - `monkey-patches.pprint-meta`: handle `clojure.lang.IMeta` like vars.
 - `namespace`: better support of class names for `unqualify` & friends.
