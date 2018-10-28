@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 ### Fixed
+- `monkey-patch`: guard against unexisting sources in `define-again`.
 - `monkey-patches.pprint-meta`: handle `clojure.lang.IMeta` like vars.
 - `namespace`: better support of class names for `unqualify` & friends.
 

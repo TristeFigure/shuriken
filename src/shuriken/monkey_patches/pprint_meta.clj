@@ -9,8 +9,21 @@
 (deftype ThingWithMeta [thing])
 (deftype ThingWithoutMeta [thing])
 
+(def ^:private pprinters
+  (->> (find-ns 'clojure.pprint)
+       ns-interns
+       vals
+       (filter #(re-matches #"^[^/]+/pprint-.*$" (str %)))
+       (map #(symbol (str (.getName ^clojure.lang.Namespace
+                                    (.ns ^clojure.lang.Var %))
+                          \/
+                          (.sym ^clojure.lang.Var %))))
+       (concat '[clojure.pprint/directive-table
+                 clojure.pprint/cached-compile])))
+
 (with-ns 'clojure.pprint
-  (def ^:dynamic *print-meta* false))
+  (def ^:dynamic *print-meta* false)
+  (def ^:dynamic *print-metas-in-metas* false))
 
 (monkey-patch :pprint-meta clojure.pprint/pprint [original object & [writer]]
   (original (if (and (meta object) clojure.pprint/*print-meta*)
@@ -50,7 +63,7 @@
       (when (seq others)
         (when-not (and (not tag) (empty? bools))
           (.write ^java.io.Writer *out* "^"))
-        (binding [*print-meta* false]
+        (binding [*print-meta* *print-metas-in-metas*]
           (write-out others))
         (.write ^java.io.Writer *out* " "))))
 
@@ -64,14 +77,8 @@
         (write-out
           (shuriken.monkey_patches.pprint_meta.ThingWithoutMeta. thing))))))
 
-(define-again 'clojure.pprint/pprint-list)
-(define-again 'clojure.pprint/pprint-vector)
-(define-again 'clojure.pprint/pprint-map)
-(define-again 'clojure.pprint/pprint-set)
-(define-again 'clojure.pprint/pprint-pqueue)
-(define-again 'clojure.pprint/pprint-simple-default)
-(define-again 'clojure.pprint/pprint-ideref)
-(define-again 'clojure.pprint/pprint-simple-default)
+(doseq [sym pprinters]
+  (define-again sym))
 
 (with-ns 'clojure.pprint
   (use-method simple-dispatch
