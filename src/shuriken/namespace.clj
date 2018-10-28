@@ -55,7 +55,7 @@
 
 (defn- could-be-class-name? [x]
   (let [x (str x)]
-    (and (some-> x
+    (and (some-> (re-matches #"[^/]*" x)
                  (clojure.string/split #"\.")
                  last
                  seq
@@ -111,7 +111,8 @@
   Handles namespace aliases.
   `ns` defaults to `*ns*`.
 
-  (unqualifiy 'clojure.lang.IRecord)      => IRecord
+  (unqualifiy 'java.lang.Object)          => Object
+  (unqualifiy 'clojure.lang.IRecord)      => clojure.lang.IRecord
   (unqualifiy 'my-ns/my-var)              => my-var
   (unqualifiy 'alias/my-var)              => alias/my-var
   (unqualifiy 'some.path.Class/staticMeth => Class/staticMeth"
@@ -119,18 +120,22 @@
    (unqualify *ns* sym))
   ([ns sym]
    (if (fully-qualified? sym)
-     (let [[_ ns-part name] (parse-fully-qualified-sym sym)
-           shortcut (or (some-> ns-part could-be-class-name?)
-                        (-> (->> ns ns-aliases
-                                 (map (fn [[sym ns]]
-                                        [(-> ns str symbol)
-                                         sym]))
-                                 (into {}))
-                            (get (symbol ns-part))))]
-       (if (and shortcut
-                (not (contains? (ns-syms ns) sym)))
-         (symbol (str (unqualify (symbol shortcut)) \/ name))
-         (symbol name)))
+     (if (could-be-class-name? sym)
+       (if-let [short (get (ns-syms ns) sym)]
+         short
+         sym)
+       (let [[_ ns-part name] (parse-fully-qualified-sym sym)
+             shortcut (or (some-> ns-part could-be-class-name?)
+                          (-> (->> ns ns-aliases
+                                   (map (fn [[sym ns]]
+                                          [(-> ns str symbol)
+                                           sym]))
+                                   (into {}))
+                              (get (symbol ns-part))))]
+         (if (and shortcut
+                  (not (contains? (ns-syms ns) sym)))
+           (symbol (str (unqualify (symbol shortcut)) \/ name))
+           (symbol name))))
      sym)))
 
 ;; Taken and adapted from clojure.contrib

@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file. This change
 ## [Unreleased]
 ### Fixed
 - `monkey-patches.pprint-meta`: handle `clojure.lang.IMeta` like vars.
+- `namespace`: better support of class names for `unqualify` & friends.
 
 ## [0.14.27] - 2018-10-27
 ### Fixed

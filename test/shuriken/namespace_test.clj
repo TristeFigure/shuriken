@@ -9,6 +9,7 @@
 
 (def expectations
   '{Object              java.lang.Object
+    java.util.Formatter java.util.Formatter
     fully-qualify       shuriken.namespace/fully-qualify
     a-var               shuriken.virtual-test-namespace/a-var
     virtual/another-var shuriken.virtual-test-namespace/another-var
@@ -28,9 +29,10 @@
 (deftest test-fully-qualified?
   (binding [*ns* (find-ns 'shuriken.namespace-test)]
     (doseq [[unqualified qualified] (dissoc expectations
-                                            'not-found '.toString)]
-      (is (false? (fully-qualified? unqualified)))
-      (is (true?  (fully-qualified? qualified))))))
+                                            'not-found '.toString
+                                            'java.util.Formatter)]
+      (testing unqualified (is (false? (fully-qualified? unqualified))))
+      (testing qualified   (is (true?  (fully-qualified? qualified)))))))
 
 (deftest test-unqualify
   (binding [*ns* (find-ns 'shuriken.namespace-test)]
