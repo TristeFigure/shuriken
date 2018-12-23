@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.29] - 2018-12-23
+### Added:
+- `fn-source` monkey-patch.
+
 ## [0.14.28] - 2018-10-28
 ### Fixed
 - `macro`: `macroexpand-do` accepts quoted and unquoted code.
