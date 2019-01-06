@@ -1,7 +1,7 @@
 (ns shuriken.solver
   (:use clojure.pprint
         clojure.data)
-  (:require [clojure.data.priority-map :refer [priority-map-by  ]]))
+  (:require [clojure.data.priority-map :refer [priority-map-by]]))
 
 ;; TODO: integrate in shuriken.core
 
@@ -151,7 +151,7 @@
 ;     time)
 
 
-(pprint
+#_(pprint
   (diff '(def missionaries-and-cannibals
           {:init [[3 3] [0 0] :left]
            :goal? #{[[0 0] [3 3] :right]}

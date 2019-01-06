@@ -3,48 +3,69 @@
             [shuriken.core :refer :all]))
 
 (deftest test-get-nth
-  (is (= 2 (get-nth '(1 2 3) 1))))
+  (is (= 2 (get-nth '(1 2 3) 1)))
+  (testing "edge cases"
+    (is (= nil (get-nth nil 1)))
+    (is (= nil (get-nth nil :a)))))
 
 (deftest test-get-nth-in
   (is (= :b    (get-nth-in '(1 (2 {:a :b}) 4) [1 1 :a])))
   (is (= nil   (get-nth-in '(1 (2 {:a :b}) 4) [1 1 :x])))
-  (is (= :none (get-nth-in '(1 (2 {:a :b}) 4) [1 1 :x] :none))))
+  (is (= :none (get-nth-in '(1 (2 {:a :b}) 4) [1 1 :x] :none)))
+  (testing "edge cases"
+    (is (= nil (get-nth-in nil [1])))
+    (is (= nil (get-nth-in nil [1 1])))))
 
 (deftest test-assoc-nth
   (is (= '(1 0 3)   (assoc-nth '(1 2 3) 1 0)))
   (is (= '(1 2 3 0) (assoc-nth '(1 2 3) 3 0)))
   (is (= {:a 1} (assoc-nth {} :a 1)))
-  (is (= true (thrown? IndexOutOfBoundsException
-                       (assoc-nth '(1 2 3) 4 0)))))
+  (testing "edge cases"
+    (is (= true (thrown? IndexOutOfBoundsException
+                         (assoc-nth '(1 2 3) 4 0))))
+    (is (= {:a 1} (assoc-nth nil :a 1)))
+    (is (= {0  1} (assoc-nth nil 0 1)))))
 
 (deftest test-assoc-nth-in
   (is (= '(1 (4) 3) (assoc-nth-in '(1 (2) 3) [1 0] 4)))
   (is (= '(1 (2 4) 3) (assoc-nth-in '(1 (2) 3) [1 1] 4)))
   (is (= {:a {:b '(({:c 1}))}} (assoc-nth-in {:a {:b '(())}} [:a :b 0 0 :c] 1)))
-  (is (= true
-         (thrown? IndexOutOfBoundsException
-                  (assoc-nth-in '(1 (2) 3) [1 2] 4)))))
+  (testing "edge cases"
+    (is (= true
+           (thrown? IndexOutOfBoundsException
+                    (assoc-nth-in '(1 (2) 3) [1 2] 4))))
+    (is (= {:a {:b {:c 1}}} (assoc-nth-in nil [:a :b :c] 1)))))
 
 (deftest test-update-nth
-  (is (= '(1 1 3) (update-nth '(1 2 3) 1 dec))))
+  (is (= '(1 1 3) (update-nth '(1 2 3) 1 dec)))
+  (testing "edge cases"
+    (is (= {:a 1}
+           (update-nth nil :a (fnil inc 0))))))
 
 (deftest test-update-nth-in
-  (is (= '(1 (2 (300))) (update-nth-in '(1 (2 (3))) [1 1 0] * 100))))
+  (is (= '(1 (2 (300))) (update-nth-in '(1 (2 (3))) [1 1 0] * 100)))
+  (testing "edge cases"
+    (is (= {:a {:b {:c 1}}}
+           (update-nth-in nil [:a :b :c] (fnil inc 0))))))
 
 (deftest test-insert-at
   (is (= '(4 1 2 3) (insert-at '(1 2 3) 0 4)))
   (is (= '(1 4 2 3) (insert-at '(1 2 3) 1 4)))
   (is (= '(1 2 3 4) (insert-at '(1 2 3) 3 4)))
-  (is (= true
-         (thrown? IndexOutOfBoundsException
-                  (insert-at '(1 2 3) 4 4))))
-  (is (= true
-         (thrown? IndexOutOfBoundsException
-                  (insert-at '(1 2 3) -1 4))))
-  (is (instance? clojure.lang.IPersistentVector
-                 (insert-at [1 2 3] 3 0)))
-  (is (instance? clojure.lang.IPersistentList
-                 (insert-at '(1 2 3) 3 0))))
+  (testing "edge cases"
+    (is (= true
+           (thrown? IndexOutOfBoundsException
+                    (insert-at '(1 2 3) 4 4))))
+    (is (= true
+           (thrown? IndexOutOfBoundsException
+                    (insert-at '(1 2 3) -1 4))))
+    (is (instance? clojure.lang.IPersistentVector
+                   (insert-at [1 2 3] 3 0)))
+    (is (instance? clojure.lang.IPersistentList
+                   (insert-at '(1 2 3) 3 0)))
+    (is (= '(1) (insert-at nil 0 1)))
+    (is (true? (thrown? java.lang.IndexOutOfBoundsException
+                        (insert-at nil 1 1))))))
 
 (deftest test-slice
   (let [coll [1 0 1 0 1 0 0 0 1]]

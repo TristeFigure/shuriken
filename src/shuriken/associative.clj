@@ -183,8 +183,8 @@
       (let [merge-entry (fn [m e]
                           (let [k (key e) v (val e)]
                             (if (contains? m k)
-                              (let [else-f (or (plan :else) #(identity %2))
-                                    f (or (plan k) else-f)]
+                              (let [else-f (get plan :else #(identity %2))
+                                    f (get plan k else-f)]
                                 (assoc m k (f (get m k) v)))
                               (assoc m k v))))
             merge2 (fn [m1 m2]

@@ -18,7 +18,7 @@
 (defn adjust
   "Left or right-adjust a string."
   [direction n s]
-  {:pre [(contains? #{:left :right} direction)]}
+  {:pre [(#{:left :right} direction)]}
   (let [orientation (if (= direction :left)
                       "-"
                       "")]

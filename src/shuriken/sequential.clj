@@ -14,7 +14,7 @@
   "Like get but also works on lists."
   ([coll k] (get-nth coll k nil))
   ([coll k not-found]
-   (if (associative? coll)
+   (if (or (associative? coll) (nil? coll))
       (get coll k not-found)
       (nth coll k not-found))))
 

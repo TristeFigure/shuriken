@@ -79,7 +79,7 @@
      (symbol (str (-> (.getNamespace sym) symbol fully-qualify)
                   \/
                   (-> sym .getName symbol)))
-     (if-let [r (ns-resolve *ns* sym)]
+     (if-let [r (ns-resolve ns sym)]
        (if (class? r)
          (class-name r)
          (symbol (str (-> r meta :ns str)

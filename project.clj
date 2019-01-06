@@ -1,13 +1,15 @@
-(defproject org.clojars.tristefigure/shuriken "0.14.30"
+(defproject org.clojars.tristefigure/shuriken "0.14.31"
   :description "TristeFigure's Clojure toolbox"
   :url "https://github.com/TristeFigure/shuriken"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.9.0"]
+  :dependencies [;; NOTE: 1.10.0 breaks shuriken.spec
+                 [org.clojure/clojure "1.9.0"]
+
                  [potemkin "0.4.3"]
                  [com.palletops/ns-reload "0.1.0"]
                  [dance "0.1.2"]
-                 [lexikon "0.1.0"]
+                 [lexikon "0.2.0"]
 
                  ;; For monkey patches
                  [robert/hooke "1.3.0"]
@@ -20,7 +22,10 @@
                  ; [org.clojure/tools.deps.alpha "0.5.398"]
 
                  ;; To topologically sort sequences
-                 [ubergraph "0.5.0"]]
+                 [ubergraph "0.5.0"]
+
+                 ;; For nonograms
+                 [net.cgrand/seqexp "0.6.2"]]
   ;; To fix a goddamn bug on reload
   :aot [loom.graph ubergraph.core]
   ;; For syntax-quote monkey-patch
