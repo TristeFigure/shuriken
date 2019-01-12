@@ -1,9 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.32] - 2019-01-12
+### Enhanced:
+- `sequential`: additional arguments for:
+  - `assoc-nth` & `update-nth`: `not-found`.
+  - `assoc-nth-in` & `update-nth-in`: `not-found-f`.
+
 ## [0.14.31] - 2018-12-24
 ### Fixed:
-  - `sequential`: edge cases.
+- `sequential`: edge cases.
 
 ## [0.14.30] - 2018-12-24
 ### Added:

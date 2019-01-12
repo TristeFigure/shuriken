@@ -24,7 +24,8 @@
     (is (= true (thrown? IndexOutOfBoundsException
                          (assoc-nth '(1 2 3) 4 0))))
     (is (= {:a 1} (assoc-nth nil :a 1)))
-    (is (= {0  1} (assoc-nth nil 0 1)))))
+    (is (= {0  1} (assoc-nth nil 0 1)))
+    (is (= '(1)   (assoc-nth '() nil 0 1)))))
 
 (deftest test-assoc-nth-in
   (is (= '(1 (4) 3) (assoc-nth-in '(1 (2) 3) [1 0] 4)))
@@ -34,19 +35,29 @@
     (is (= true
            (thrown? IndexOutOfBoundsException
                     (assoc-nth-in '(1 (2) 3) [1 2] 4))))
-    (is (= {:a {:b {:c 1}}} (assoc-nth-in nil [:a :b :c] 1)))))
+    (is (= {:a {:b {:c 1}}} (assoc-nth-in nil [:a :b :c] 1)))
+    (is (= '(((1)))   (assoc-nth-in (constantly '()) nil [0 0 0] 1)))
+    (is (= '(({:a 1}))   (assoc-nth-in (fn [pth coll]
+                                         (if (= :a (last pth)) {} '()))
+                                       nil [0 0 :a] 1)))
+    (is (true? (thrown? IndexOutOfBoundsException
+                        (assoc-nth-in (constantly '()) nil [0 0 1] 1))))))
 
 (deftest test-update-nth
   (is (= '(1 1 3) (update-nth '(1 2 3) 1 dec)))
   (testing "edge cases"
-    (is (= {:a 1}
-           (update-nth nil :a (fnil inc 0))))))
+    (is (= {:a 1} (update-nth nil :a (fnil inc 0))))
+    (is (= '(1)   (update-nth '() nil 0 (fnil inc 0))))))
 
 (deftest test-update-nth-in
   (is (= '(1 (2 (300))) (update-nth-in '(1 (2 (3))) [1 1 0] * 100)))
   (testing "edge cases"
-    (is (= {:a {:b {:c 1}}}
-           (update-nth-in nil [:a :b :c] (fnil inc 0))))))
+    (is (= {:a {:b {:c 1}}} (update-nth-in nil [:a :b :c] (fnil inc 0))))
+    (is (= '(((1))) (update-nth-in (constantly '()) nil [0 0 0]
+                                   (fnil inc 0))))
+    (is (true? (thrown? IndexOutOfBoundsException
+                        (update-nth-in (constantly '()) nil [0 0 1]
+                                       (fnil inc 0)))))))
 
 (deftest test-insert-at
   (is (= '(4 1 2 3) (insert-at '(1 2 3) 0 4)))
@@ -64,7 +75,7 @@
     (is (instance? clojure.lang.IPersistentList
                    (insert-at '(1 2 3) 3 0)))
     (is (= '(1) (insert-at nil 0 1)))
-    (is (true? (thrown? java.lang.IndexOutOfBoundsException
+    (is (true? (thrown? IndexOutOfBoundsException
                         (insert-at nil 1 1))))))
 
 (deftest test-slice

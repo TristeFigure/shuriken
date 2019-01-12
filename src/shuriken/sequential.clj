@@ -1,22 +1,21 @@
 (ns shuriken.sequential
   "### Useful functions on sequential datastructures"
-  (:require [potemkin :refer [import-vars]]
+  (:require [clojure.spec.alpha :as s]
+            [potemkin :refer [import-vars]]
             [ubergraph.core :as u]
-            [ubergraph.alg :as alg]))
+            [ubergraph.alg :as alg]
+            [weaving.core :refer :all]
+            [shuriken.spec :refer [conform!]]))
 
 (import-vars clojure.core/reduce1)
 
-
-
-; Taken and adapted from
-; https://stackoverflow.com/questions/43213573/get-in-for-lists
 (defn get-nth
   "Like get but also works on lists."
   ([coll k] (get-nth coll k nil))
   ([coll k not-found]
    (if (or (associative? coll) (nil? coll))
-      (get coll k not-found)
-      (nth coll k not-found))))
+     (get coll k not-found)
+     (nth coll k not-found))))
 
 (defn get-nth-in
   "Like get-in but also works on lists."
@@ -25,45 +24,75 @@
    (reduce #(get-nth %1 %2 not-found)
            m ks)))
 
-(defn assoc-nth [coll n v]
-  "Like assoc but also works on lists."
-  (if (or (nil? coll) (associative? coll))
-    (assoc coll n v)
-    (do (when-not (<= n (count coll))
-          (throw (new IndexOutOfBoundsException)))
-        (concat (take n coll)
-                [v]
-                (drop (inc n) coll)))))
+(defn assoc-nth
+  "Like assoc but also works on lists.
+  Optionally accepts an initial `not-found` argument (defaults to `nil`)."
+  ([coll n v] (assoc-nth {} coll n v))
+  ([not-found coll n v]
+   (let [coll (if (nil? coll) not-found coll)]
+     (if (associative? coll)
+       (assoc coll n v)
+       (do (when-not (<= n (count coll))
+             (throw (new IndexOutOfBoundsException)))
+           (concat (take n coll)
+                   [v]
+                   (drop (inc n) coll)))))))
 
 (defn assoc-nth-in
-  "Like assoc-in but also works on lists."
-  [m [k & ks] v]
-  (if ks
-    (assoc-nth m k (assoc-nth-in (get-nth m k) ks v))
-    (assoc-nth m k v)))
+  "Like assoc-in but also works on lists.
+  Optionally accepts an initial `not-found-f` argument, a fn of signature
+    `(fn [path coll])`
+  (defaults to `(constantly {})`)."
+  ([coll ks v] (assoc-nth-in (constantly {}) coll ks v))
+  ([not-found-f coll ks v] (assoc-nth-in [] not-found-f coll ks v))
+  ([pth not-found-f coll [k & ks] v]
+   (let [pth (conj pth k)]
+     (if ks
+       (assoc-nth (not-found-f pth coll) coll k
+                  (assoc-nth-in pth not-found-f (get-nth coll k) ks v))
+       (assoc-nth (not-found-f pth coll) coll k v)))))
+
+(s/def ::update-nth-args
+  (s/cat
+    :not-found (s/? (or| coll? nil?))
+    :m (or| coll? nil?)
+    :k any?
+    :f ifn?
+    :args (s/* any?)))
 
 (defn update-nth
-  "Like update but also works on lists."
-  ([m k f]
-   (assoc-nth m k (f (get-nth m k))))
-  ([m k f x]
-   (assoc-nth m k (f (get-nth m k) x)))
-  ([m k f x y]
-   (assoc-nth m k (f (get-nth m k) x y)))
-  ([m k f x y z]
-   (assoc-nth m k (f (get-nth m k) x y z)))
-  ([m k f x y z & more]
-   (assoc-nth m k (apply f (get-nth m k) x y z more))))
+  "Like update but also works on lists.
+  Optionally accepts an initial `not-found` argument (defaults to `nil`)."
+  [& args]
+  (let [{:keys [not-found m k f args] :or {not-found {}}}
+        (conform! ::update-nth-args args)]
+    (assoc-nth not-found m k (apply f (get-nth m k) args))))
+
+(s/def ::update-nth-in-args
+  (s/cat
+    :not-found-f (s/? ifn?)
+    :m           (or| coll? nil?)
+    :ks          sequential?
+    :f           ifn?
+    :args        (s/* any?)))
 
 (defn update-nth-in
-  "Like update-in but also works on lists."
-  ([m ks f & args]
-     (let [up (fn up [m ks f args]
-                (let [[k & ks] ks]
-                  (if ks
-                    (assoc-nth m k (up (get-nth m k) ks f args))
-                    (assoc-nth m k (apply f (get-nth m k) args)))))]
-       (up m ks f args))))
+  "Like update-in but also works on lists.
+  Optionally accepts an initial `not-found-f` argument, a fn of signature
+    `(fn [path coll])`
+  (defaults to `(constantly {})`)."
+  [& args]
+  (let [{:keys [not-found-f m ks f args] :or {not-found-f (constantly {})}}
+        (conform! ::update-nth-in-args args)
+        up (fn up [pth m ks f args]
+             (let [[k & ks] ks
+                   pth (conj pth k)]
+               (if ks
+                 (assoc-nth (not-found-f pth m) m k
+                            (up pth (get-nth m k) ks f args))
+                 (assoc-nth (not-found-f pth m) m k
+                            (apply f (get-nth m k) args)))))]
+    (up [] m ks f args)))
 
 (defn insert-at [s n x]
   (when (or (< n 0) (> n (count s)))
