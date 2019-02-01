@@ -22,7 +22,7 @@
   (-> obj System/identityHashCode Integer/toHexString))
 
 (defn- class-name [obj]
-  (-> + class .getName (clojure.string/replace #"\$" "/")))
+  (-> obj class .getName (clojure.string/replace #"\$" "/")))
 
 (defn pprint-fn [f]
   (pprint-logical-block

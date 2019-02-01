@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.33] - 2019-01-30
+### Fixed:
+- `spec`: `:single-body` info on `args+bodies` spec.
+- `pprint-fn` works.
+
 ## [0.14.32] - 2019-01-12
 ### Enhanced:
 - `sequential`: additional arguments for:
@@ -29,7 +34,7 @@ All notable changes to this project will be documented in this file. This change
 ## [0.14.27] - 2018-10-27
 ### Fixed
 - `namespace`: `unqualify`, `fully-qualify` and `fully-qualified?`
-  now handle symbols starting with a dot. 
+  now handle symbols starting with a dot.
 - `monkey-patches.pprint-meta`:
   - works recursively.
   - handles shorthands (`^Tag` & `^:boolean-flag`).
@@ -37,7 +42,7 @@ All notable changes to this project will be documented in this file. This change
 ## [0.14.26] - 2018-10-26
 ### Fixed
 - bumped `dance` to `0.1.2`.
- 
+
 ## [0.14.25] - 2018-10-26
 ### Added
 - `monkey-patches.pprint-meta`.
@@ -70,7 +75,7 @@ All notable changes to this project will be documented in this file. This change
 ## [0.14.19] - 2018-09-24
 ### Fixed:
 - `sequential`: fix `assoc-nth` on `nil` and `assoc-nth-in` on sequences.
-  
+
 ## [0.14.18] - 2018-09-24
 ### Fixed:
 - `sequential`: fix `assoc-nth` and `assoc-nth-in`.
@@ -181,7 +186,7 @@ All notable changes to this project will be documented in this file. This change
   with a map (works with `submap?`).
 - `reflection`: `read-field`, `method` & `static-method`.
 - `multi`:
-    - `method`.  
+    - `method`.
     - `augmentable-multi` & `augment-method`.
     - `extendable-multi` & `extend-method`.
 
@@ -296,7 +301,7 @@ All notable changes to this project will be documented in this file. This change
 
 ### Enhanced
 - `macro`: `macroexpand-do` use `file-eval` to evaluate the expression's
-  expansion. Useful to track exceptions raised by macro-generated code. 
+  expansion. Useful to track exceptions raised by macro-generated code.
 
 ### Fixed
 - `macro`: `macroexpand-do` with a number calls `macroexpand-1` the right

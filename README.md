@@ -15,7 +15,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.14.32"]
+[org.clojars.tristefigure/shuriken "0.14.33"]
 ```
 
 
@@ -126,7 +126,7 @@ Works like `get` if the key is present in the hash, else works like `assoc`.
 Returns a vector of the form `[get-or-stored-value new-coll]`.
 
 ```clojure
-(getsoc {:a 1} :a (constantly 2)) ;; => [1 {:a 1}] 
+(getsoc {:a 1} :a (constantly 2)) ;; => [1 {:a 1}]
 (getsoc {} :a (constantly 2)))    ;; => [2 {:a 2}]
 ```
 
@@ -208,16 +208,16 @@ Insert an item into a list or a vector.
   ;; the default
   (slice zero? coll) ;; by default, :include-delimiter false, include-empty true
   ;; ((1 1) (1) (1 1))
-  
+
   (slice zero? coll :include-empty true)
   ;; ((1 1) (1) () (1 1))
-  
+
   (slice zero? coll :include-delimiter :left)
   ;; ((1 1) (0 1) (0 1 1))
-  
+
   (slice zero? coll :include-delimiter :right)
   ;; ((1 1 0) (1 0) (1 1))
-  
+
   (slice zero? coll :include-delimiter :right :include-empty true)
   ;; ((1 1 0) (1 0) (0) (1 1))
   )
@@ -380,7 +380,7 @@ exceptions. If no exception is raised, the file is deleted.
 (monkey-patch :perfid-incer clojure.core/+ [original & args]
   (inc (apply original args)))
 ```
-  
+
 Supports reload. Name and target can be vars or quoted symbols.
 
 #### `only`

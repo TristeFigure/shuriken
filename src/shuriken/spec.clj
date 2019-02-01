@@ -55,7 +55,9 @@
 
 (s/def ::args+bodies
   (either
-    :arity-1 (conf ::args+body vector first)
+    :arity-1 (conf ::args+body
+                   (comp vector #(assoc % :single-body true))
+                   first)
     :arity-n (s/+ (s/and seq? ::args+body))
     :unform  (fn [x]
                (if (= (count x) 1)
