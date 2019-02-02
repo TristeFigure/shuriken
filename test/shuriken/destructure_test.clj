@@ -13,25 +13,35 @@
     (is (= '{:items [], :more args}
            (disentangle '[& args])))
     (is (= '{:items [a b], :more {:keys [x], y :_y, :or {x 1}, :as m}}
-           (disentangle '[a b & {:keys [x] y :_y :or {x 1} :as  m}]))))
+           (disentangle '[a b & {:keys [x] y :_y :or {x 1} :as  m}])))
+    (testing "edge cases"
+      (is (= {:items []} (disentangle [])))
+      (is (= {:items []} (disentangle nil)))))
   (testing "when params is a hash"
     (is (= '{:items [a b [c1 c2]],
              :as m,
              :or {d 1},
              :mapping {a :a, b :b, [c1 c2] :c}}
-           (disentangle '{:keys [a] b :b [c1 c2] :c :or {d 1} :as m})))))
+           (disentangle '{:keys [a] b :b [c1 c2] :c :or {d 1} :as m})))
+    (testing "edge cases"
+      (is (= {:items [] :mapping {}} (disentangle {}))))))
 
 (deftest test-deconstruct
   (testing "when params is an array"
     (is (= '[a x y m]
            (deconstruct '[a & {:keys [x] y :_y :or {x 1} :as m}])))
     (is (= '[args]
-        (deconstruct '[& args]))))
+        (deconstruct '[& args])))
+    (testing "edge cases"
+      (is (= [] (deconstruct [])))
+      (is (= [] (deconstruct nil)))))
   (testing "when params is a hash"
     (is (= '[a]
            (deconstruct '{a :a})))
     (is (= '[a b m]
-           (deconstruct '{:keys [a] b :b :or {a 1} :as m})))))
+           (deconstruct '{:keys [a] b :b :or {a 1} :as m})))
+    (testing "edge cases"
+      (is (= [] (deconstruct {}))))))
 
 (deftest test-restructure
   (testing "when params is an array"

@@ -39,8 +39,10 @@
   ```"
   [binding-form]
   (cond
-    (sequential?  binding-form) (disentangle-sequential  binding-form)
-    (map? binding-form)         (disentangle-associative binding-form)
+    (or (sequential?  binding-form) (nil? binding-form))
+    (  disentangle-sequential  binding-form)
+    (map? binding-form)
+    (  disentangle-associative binding-form)
     :else (throw (Exception. (str "Cannot disentangle " binding-form)))))
 
 (declare deconstruct)
@@ -68,7 +70,7 @@
   (vec (cond
          (sequential?  binding-form) (deconstruct-sequential  binding-form)
          (map? binding-form)         (deconstruct-associative binding-form)
-         :else [binding-form])))
+         :else (when binding-form [binding-form]))))
 
 (declare restructure*)
 

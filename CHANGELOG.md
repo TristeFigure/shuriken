@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.34] - 2019-02-02
+### Fixed:
+- `destructure`: edge cases.
+
 ## [0.14.33] - 2019-01-30
 ### Fixed:
 - `spec`: `:single-body` info on `args+bodies` spec.
