@@ -23,6 +23,7 @@
    flatten-keys deflatten-keys deep-merge
    index-by unindex
    merge-with-plan
+   continue|
    split-map
    map-difference
    map-intersection

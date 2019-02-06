@@ -106,7 +106,15 @@
     (is (= -2 b))
     (is (= 3 (c 0)))
     (is (= 0 d))
-    (is (= merged (merge-with-plan plan merged)))))
+    (is (= merged (merge-with-plan plan merged))))
+  (testing "in cps-like style"
+    (let [f (:f (merge-with-plan {:f continue|}
+                                 {:f inc}
+                                 {:f (fn [next-f x]
+                                       (next-f (* 2 x)))}
+                                 {:f (fn [next-f x]
+                                       (+ 4 (next-f x)))}))]
+      (is (= 7 (f 1))))))
 
 (deftest test-split-map
   (let [m {:a 1 :b 2 :c 3 :d 4}]

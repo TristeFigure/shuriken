@@ -1,6 +1,7 @@
 (ns shuriken.associative
   "### Operations on associative structures"
-  (:require [clojure.set :as set]))
+  (:require [clojure.set :as set]
+            [weaving.core :refer [||]]))
 
 (defn- into-empty [m vs]
   (let [result (into (empty m) vs)]
@@ -177,7 +178,12 @@
   provided to a function that returns the value in the right-most map,
   thus providing the behavior of `merge`.
   In addition to a map, `plan` can also be a function accepting a key
-  and returning a combination fn for the two values to merge."
+  and returning a combination fn for the two values to merge.
+
+  You can use [[continue|]] to combine values of a key known to hold functions
+  in a cps-like style: namely, functions will be composed from right to left,
+  each one being passed as first argument the next function to call in the
+  chain."
   [plan & maps]
     (when (some identity maps)
       (let [merge-entry (fn [m e]
@@ -190,6 +196,14 @@
             merge2 (fn [m1 m2]
                      (reduce merge-entry (or m1 {}) (seq m2)))]
         (reduce merge2 maps))))
+
+(defn continue|
+  "Takes two functions `fa` & `fb` and returns the partial application of `fb`
+  to `fa`.
+
+  See [[merge-with-plan]]."
+  [fa fb]
+  (|| fb fa))
 
 (defn split-map
   "Returns a series of maps built by splitting `m` along each sequence

@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.35] - 2019-02-06
+### Added:
+- `associative`: `continue|` to enhance `merge-with-plan`.
+
 ## [0.14.34] - 2019-02-02
 ### Fixed:
 - `destructure`: edge cases.
