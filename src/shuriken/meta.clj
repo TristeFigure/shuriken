@@ -11,3 +11,6 @@
   "Merge `m` into the meta of `x`."
   [x m]
   (with-meta x (merge (meta x) m)))
+
+(defn preserve-meta [old-expr new-expr]
+  (with-meta new-expr (meta old-expr)))

@@ -73,9 +73,6 @@
     :attr-map   (s/? map?)
     :bodies     ::args+bodies))
 
-(s/def ::defmacro-form
-  ::defn-form)
-
 (s/def ::fn-form
   (s/cat
     :op symbol?

@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.36] - 2019-03-08
+### Fixed:
+- `macro`: `macroexpand-do`.
+
+### Added:
+- `macro`: `macroexpand-all-code`.
+- `meta`: `preserve-meta`.
+
+### Removed:
+- `spec`: removed `::defmacro-form` spec (alias for `::defn-form`).
+
 ## [0.14.35] - 2019-02-06
 ### Added:
 - `associative`: `continue|` to enhance `merge-with-plan`.

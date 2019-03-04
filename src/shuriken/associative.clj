@@ -71,12 +71,7 @@
                          :d :y}}})
   => {[:a :b :c] :x
       [:a :b :d] :y}
-  ```
-
-      (flatten-keys {:a {:b {:c :x
-                             :d :y}}})
-      => {[:a :b :c] :x
-          [:a :b :d] :y}"
+  ```"
   [m]
   (if (empty? m)
     m

@@ -52,12 +52,15 @@
    unwrap-form
    clean-code
    file-eval
+   macroexpand-all-code
    macroexpand-some
    macroexpand-n
    macroexpand-do]
 
   [shuriken.meta
-   without-meta]
+   without-meta
+   merge-meta
+   preserve-meta]
 
   [shuriken.monkey-patch
    only
