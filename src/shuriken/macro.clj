@@ -242,15 +242,16 @@
          (throw (file-eval-error f# t#))))))
 
 ;; TODO: doesn't handle ` well. (file-eval `(a-macro)) does not work like eval.
-(defn- file-eval* [code & {:keys [locals line column file]}]
+(defn- file-eval* [code & {:keys [locals line column file surface-code]}]
   (let [code-expr (cond (symbol? code) `(lexical-resolve ~locals '~code)
                         (seq? code)    (wrap-form 'quote code)
                         :else          code)]
-    `(let [code# (vary-meta
-                   ~code-expr merge ~{:line line :column column :file file})
-           f#    (file-for-code code# ~line ~column ~file)
+    `(let [f#    (file-for-code
+                   (vary-meta '~surface-code merge ~{:line line :column
+                                                     column :file file})
+                   ~line ~column ~file)
            sign# (code-signature ~line ~column ~file)]
-       (dump-code f# code#)
+       (dump-code f# ~code-expr)
        (eval-file-delete sign# f#))))
 
 (defmacro file-eval
@@ -264,12 +265,13 @@
   ```
 
   Code evaluated this way will be source-mapped in stacktraces."
-  [code & {:keys [locals line column file]}]
+  [code & {:keys [locals line column file surface-code]}]
   (file-eval* code
-              :locals (or locals (lexical-context))
-              :line   (or line   (:line   (meta &form)))
-              :column (or column (:column (meta &form)))
-              :file   (or file   *file*)))
+              :locals       (or locals       (lexical-context))
+              :line         (or line         (:line   (meta &form)))
+              :column       (or column       (:column (meta &form)))
+              :file         (or file         *file*)
+              :surface-code (or surface-code code)))
 
 ;; -- Macroexpand and friends
 ;; TODO: document opts
@@ -343,8 +345,8 @@
 
 ; TODO: find a way to provide reluctant code expansion as a global opt
 ; such as a binding.
-(defmacro ^:no-doc macroexpand-do* [expanding-code line column file]
-  (let []
+(defmacro ^:no-doc macroexpand-do* [expander expr line column file]
+  (let [expanding-code (concat expander [`'~expr])]
     `(let [expansion# (file-eval ~expanding-code
                                  :line ~line :column ~column :file ~file)]
        (do
@@ -353,7 +355,8 @@
 
          (println "--  Running macro  --")
          (let [result# (file-eval expansion#
-                                  :line ~line :column ~column :file ~file)]
+                                  :line ~line :column ~column :file ~file
+                                  :surface-code ~expr)]
            (pprint result#)
            (newline)
            result#)))))
@@ -403,7 +406,6 @@
                        :some  `(#(macroexpand-some
                                    ~mode-arg
                                    %
-                                   reluctant-macroexpanding-dance)))
-            expanding-code (concat expander [`'~expr])]
+                                   reluctant-macroexpanding-dance)))]
         (println "-- Macro expansion --")
-        `(macroexpand-do* ~expanding-code ~line ~column *file*)))))
+        `(macroexpand-do* ~expander ~expr ~line ~column *file*)))))

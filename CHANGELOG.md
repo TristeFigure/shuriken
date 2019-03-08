@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.37] - 2019-03-08
+### Fixed:
+- `macro`: `macroexpand-do` uses unexpanded code in macroexpansion file names.
+
 ## [0.14.36] - 2019-03-08
 ### Fixed:
 - `macro`: `macroexpand-do`.

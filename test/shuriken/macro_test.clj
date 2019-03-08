@@ -143,7 +143,6 @@
   (with-ns 'shuriken.macro-test
     (testing "unquoted & bogus at compile time"
       (is (true? (thrown? #"Divide by zero"
-
                           (silencing
                             (macroexpand-do
                               (bogus-compilation)))))))
