@@ -179,8 +179,10 @@
           f))))
 
 (defn- unmkdirs [f]
-  (let [mxpd-pth (.getCanonicalPath (io/file *macroexpansions-dir*))
-        dirs (take-while #(not= mxpd-pth (.getCanonicalPath %))
+  (let [mxpd-prt-pth (-> (io/file *macroexpansions-dir*)
+                         .getParentFile
+                         .getCanonicalPath)
+        dirs (take-while #(not= mxpd-prt-pth (.getCanonicalPath %))
                          (parent-dirs f))]
     (doseq [d dirs
             :let [d-pth (.getCanonicalPath d)]
@@ -227,15 +229,13 @@
 (defn- || [f & args]
   #((apply partial f (concat args %&))))
 
-;; TODO: document the fact that if the expansion is the same the file is not
-;; overwritten, allowing for manual tweaking of the expansion to determine
-;; what's wrong.
-
 ;; TODO: make private
 (defmacro eval-file-delete [sign f]
   `(let [f# ~f]
      (try
-       (let [result# (-> f# slurp read-string lexical-eval)]
+       (let [result# (-> (str "(do " (slurp f#) ")")
+                         read-string
+                         lexical-eval)]
          (delete-expansion-file! ~sign)
          result#)
        (catch Throwable t#
@@ -251,13 +251,15 @@
                                                      column :file file})
                    ~line ~column ~file)
            sign# (code-signature ~line ~column ~file)]
-       (dump-code f# ~code-expr)
+       (when-not (.exists f#) (dump-code f# ~code-expr))
        (eval-file-delete sign# f#))))
 
 (defmacro file-eval
-  "Evaluate code in a temporary file via `load-file` in the local
-  lexical context. Keep the temporary file aside if an error is
-  raised, deleting it on the next run.
+  "Evaluates code in a temporary file via `load-file` in the local
+  lexical context. Keeps the temporary file aside if an error is
+  raised, deleting it on the next successful run. Avoids overwriting
+  the file if it already exists, allowing for manual edits in quest of a
+  diagnostic if anything goes wrong.
 
   ```clojure
   (let [a 1]
@@ -323,25 +325,6 @@
          :mode     (s/? any?)
          :mode-arg (s/? any?)
          :expr     any?))
-
-; (def idempotent-file-eval*
-;   (idempotent (fn [env code]
-;                 `(file-eval ~env ~code))
-;               (fn [_expanding-code prev-expansion new-expansion env _code]
-;                 (let [f (-> prev-expansion expansion-file)]
-;                   (if (.exists f)
-;                     `(eval-file-delete ~(code-signature prev-expansion) ~f)
-;                     `(file-eval ~env ~new-expansion))))))
-
-; (def ^:private file-eval-idempotencies
-;   (atom {}))
-
-; (defmacro idempotent-file-eval [expanding-code expansion]
-;   `(let [prev-expansion# (get @file-eval-idempotencies '~expanding-code)
-;          f# (some-> prev-expansion# expansion-file)]
-;      (if (and prev-expansion# (.exists f#))
-;        (eval-file-delete (code-signature prev-expansion#) f#)
-;        (file-eval ~(compile-and-runtime-locals) expansion~))))
 
 ; TODO: find a way to provide reluctant code expansion as a global opt
 ; such as a binding.
