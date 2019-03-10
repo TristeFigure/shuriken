@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.14.39] - 2019-03-10
+### Fixed:
+- `namespace`: `fully-qualify` supports symbols that look like
+  classes but resolve to none.
+
 ## [0.14.38] - 2019-03-08
 ### Fixed:
 - `macro`: `macroexpand-do` avoids overwriting macroexpansion files, allowing

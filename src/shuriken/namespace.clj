@@ -2,7 +2,8 @@
   "### Namespace related stuff"
   (:require [clojure.string :as str]
             [potemkin :refer [import-vars]]
-            [lexikon.core :refer [lexical-eval]]))
+            [lexikon.core :refer [lexical-eval]]
+            [shuriken.exception :refer [silence]]))
 
 ;; TODO
 ; (defn ns-clear
@@ -79,7 +80,7 @@
      (symbol (str (-> (.getNamespace sym) symbol fully-qualify)
                   \/
                   (-> sym .getName symbol)))
-     (if-let [r (ns-resolve ns sym)]
+     (if-let [r (silence ClassNotFoundException (ns-resolve ns sym))]
        (if (class? r)
          (class-name r)
          (symbol (str (-> r meta :ns str)

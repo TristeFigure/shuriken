@@ -18,7 +18,9 @@
     Object/staticMeth   java.lang.Object/staticMeth
     not-found           not-found
     .toString           .toString
-    .dot-var            shuriken.virtual-test-namespace/.dot-var})
+    .dot-var            shuriken.virtual-test-namespace/.dot-var
+    not.a.Class         not.a.Class
+    NotAClass           NotAClass})
 
 (deftest test-fully-qualify
   (binding [*ns* (find-ns 'shuriken.namespace-test)]
@@ -30,7 +32,8 @@
   (binding [*ns* (find-ns 'shuriken.namespace-test)]
     (doseq [[unqualified qualified] (dissoc expectations
                                             'not-found '.toString
-                                            'java.util.Formatter)]
+                                            'java.util.Formatter
+                                            'not.a.Class 'NotAClass)]
       (testing unqualified (is (false? (fully-qualified? unqualified))))
       (testing qualified   (is (true?  (fully-qualified? qualified)))))))
 
