@@ -1,10 +1,8 @@
-(ns shuriken.navigation-test
+(ns shuriken.tree-test
   (:require [clojure.test :refer :all]
-            [shuriken.core :refer [tree-seq-breadth
-                                   prepostwalk
-                                   prepostwalk-demo]]))
+            [shuriken.core :refer :all]))
 
-(def tree
+(def a-tree
   {:a {:d {:j :_}
        :e {:k :_}}
    :b {:f {:l :_}
@@ -14,7 +12,7 @@
 
 (deftest test-breadth-tree-seq
   (testing "it works"
-    (let [result (tree-seq-breadth map? vals tree)]
+    (let [result (tree-seq-breadth map? vals a-tree)]
       (is (= '(:a :b :c :d :e :f :g :h :i :j :k :l :m :n :o)
              (->> result
                   (remove #{:_})
@@ -73,3 +71,13 @@
             "[5 6]"
             "{3 4, 5 6}"
             "[1 2 {3 4, 5 6}]"]))))
+
+(deftest test-tree
+  (let [divisors (tree #(for [m (range 2 %)  :let [div (/ % m)]  :when (integer? div)]
+                          div)
+                       cons
+                       12)]
+    (is (= '(12 (6 (3) (2)) (4 (2)) (3) (2))
+           divisors))))
+
+(run-tests)

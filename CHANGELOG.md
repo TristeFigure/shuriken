@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## Unreleased
+### Changed:
+- renamed `shuriken.navigation` to `shuriken.tree`.
+
+### Added
+- `tree`: `tree`.
+
 ## [0.14.39] - 2019-03-10
 ### Fixed:
 - `namespace`: `fully-qualify` supports symbols that look like
@@ -383,8 +390,7 @@ All notable changes to this project will be documented in this file. This change
 - Monkey-patch clojure to:
   - Use clojure.tools.reader `read` and `read-string`.
   - Introduce `syntax-quote`.
-  - New `pprint` translations for reader macro ```.
-
+  - New `pprint` translations for the backquote reader macro.
 ## [0.12.2] - 2017-03-25
 ### Fixed
 - `macro`: beautify output.

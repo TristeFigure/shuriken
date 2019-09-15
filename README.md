@@ -452,7 +452,7 @@ Like `in-ns` but with the scope of a `let` or a `binding`.
 ;; 123
 ```
 
-## Navigation
+## Tree
 
 #### `tree-seq-breadth`
 
@@ -493,7 +493,26 @@ then with post-fn after going up.
 ;; [3 5 {7 9, 11 13}]
 ```
 
-Comes equipped with `prepostwalk-demo`
+Comes equipped with `prepostwalk-demo`.
+
+#### `tree`
+
+Recursively builds a tree from `root` and functions
+with the following signature:
+- `(children      [node])`         : returns the direct children of `node`.
+- `(join-branches [node children])`: returns a datastructure holding `node`
+                                     and its `children`.
+
+```clojure
+(defn divisors [n]
+  (tree #(for [m (range 2 %)  :let [div (/ % m)]  :when (integer? div)]
+           div)
+        cons
+        n))
+
+(divisors 12)
+;; => (12 (6 (3) (2)) (4 (2)) (3) (2))
+```
 
 ## Dev
 
