@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. This change
 
 ### Added
 - `tree`: `tree`.
+- `exception`: `capturex`.
 
 ## [0.14.39] - 2019-03-10
 ### Fixed:

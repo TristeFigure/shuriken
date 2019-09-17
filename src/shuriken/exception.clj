@@ -6,9 +6,8 @@
 (defn ^:no-doc regex? [x]
   (instance? java.util.regex.Pattern x))
 
-;; TODO: use maps to assert ex-data of ExceptionInfos
-(defmacro silence*
-  ([substitute pattern expr]
+(defmacro catch-it
+  ([substitute-f pattern expr]
    (let [z `(let [pattern# ~pattern
                   matches?# (fn f# [e# pattern#]
                               (cond
@@ -25,7 +24,7 @@
                 ~expr
                 (catch Throwable t#
                   (if (matches?# t# pattern#)
-                    ~substitute
+                    (~substitute-f t#)
                     (throw t#)))))]
      z)))
 
@@ -66,10 +65,9 @@
   ([pattern expr]
    `(silence nil ~pattern ~expr))
   ([substitute pattern expr]
-   (let [mexpr (silence* substitute pattern expr)]
-     `(silence* ~substitute ~pattern ~mexpr))))
+   `(catch-it (constantly ~substitute) ~pattern ~expr)))
 
-(defmacro thrown? [pattern expr]
+(defmacro thrown?
   "Returns true if `expr` raises an exception matching `pattern`.
   See [[silence]] for the semantics of `pattern`.
 
@@ -86,5 +84,12 @@
   ;; raises:
   ;;   IllegalArgumentException my-error
   ```"
+  [pattern expr]
   `(= ::thrown!
       (silence ::thrown! ~pattern ~expr)))
+
+(defmacro capturex
+  "Gently returns exceptions matching `pattern` when they are raised instead
+  of propagating them upwards."
+  [pattern expr]
+  `(catch-it identity ~pattern ~expr))
