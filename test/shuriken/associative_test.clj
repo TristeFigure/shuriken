@@ -155,8 +155,8 @@
     (is (false? (submap? m1 m4)))))
 
 (deftest test-getsoc
-  (is (= [1 {:a 1}] (getsoc {:a 1} :a (constantly 2))))
-  (is (= [2 {:a 2}] (getsoc {}     :a (constantly 2)))))
+  (is (= [1 {:a 1}] (getsoc {:a 1} :a 2)))
+  (is (= [2 {:a 2}] (getsoc {}     :a 2))))
 
 (deftest test-filter-keys
   (is (= {:a 1}
