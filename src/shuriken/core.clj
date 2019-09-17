@@ -9,7 +9,7 @@
                       meta
                       monkey-patch
                       namespace
-                      navigation
+                      tree
                       reflection
                       sequential
                       spec
@@ -74,10 +74,11 @@
    with-ns
    import-namespace]
 
-  [shuriken.navigation
-   tree-seq-breadth
+  [shuriken.tree
    prepostwalk
-   prepostwalk-demo]
+   prepostwalk-demo
+   tree
+   tree-seq-breadth]
 
   [shuriken.reflection
    read-field
