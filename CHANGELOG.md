@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file. This change
 ## Unreleased
 ### Changed:
 - renamed `shuriken.navigation` to `shuriken.tree`.
+- `associative`: `getsoc` is now a macro.
 
 ### Added
 - `tree`: `tree`.

@@ -228,12 +228,13 @@
   [map1 map2]
   (set/subset? (set map1) (set map2)))
 
-(defn getsoc
-  "Gets value at key `k` in hash `m` if present, otherwise runs
-  `(f)` and stores it in `m` under `k`.
+(defmacro getsoc
+  "Gets value at key `k` in hash `m` if present, otherwise eval
+  `expr` and stores its result in `m` under key `k`.
   Returns a vector of the form [get-or-stored-value new-coll]."
-  [coll k f]
-  (if (contains? coll k)
-    [(get coll k) coll]
-    (let [v (f)]
-      [v (assoc coll k v)])))
+  [coll k expr]
+  `(let [coll# ~coll k# ~k]
+     (if (contains? coll# k#)
+       [(get coll# k#) coll#]
+       (let [expr# ~expr]
+         [expr# (assoc coll# k# expr#)]))))
