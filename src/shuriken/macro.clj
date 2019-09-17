@@ -78,6 +78,7 @@
       (second result))))
 
 ;; TODO: use dance to not unqualify data.
+;; TODO: do not unqualify clojure.core/unquote. Idem for "splice-unquote".
 (defn clean-code
   "Unqualifies any symbol in `code`, and fully-qualifies those with an
   aliased namespace.

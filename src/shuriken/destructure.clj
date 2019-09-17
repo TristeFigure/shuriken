@@ -70,7 +70,7 @@
   (vec (cond
          (sequential?  binding-form) (deconstruct-sequential  binding-form)
          (map? binding-form)         (deconstruct-associative binding-form)
-         :else (when binding-form [binding-form]))))
+         :else                       (when binding-form [binding-form]))))
 
 (declare restructure*)
 

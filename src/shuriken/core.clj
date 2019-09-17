@@ -1,6 +1,7 @@
 (ns shuriken.core
   (:require [potemkin :refer [import-vars]]
             [shuriken associative
+                      byte-buddy
                       debug
                       destructure
                       exception
@@ -30,6 +31,9 @@
    submap?
    getsoc]
 
+  [shuriken.byte-buddy
+   copy-class!]
+
   [shuriken.debug
    debug
    debug-print]
@@ -46,6 +50,7 @@
   [shuriken.lazy
    deep-doall]
 
+  ;; TODO: some vars are missing
   [shuriken.macro
    is-form?
    wrap-form
@@ -66,7 +71,9 @@
    only
    refresh-only
    monkey-patch
-   java-patch]
+   java-patch
+   copy-class
+   save-class]
 
   [shuriken.namespace
    fully-qualify fully-qualified?
@@ -82,6 +89,7 @@
 
   [shuriken.reflection
    read-field
+   write-field
    method
    static-method]
 

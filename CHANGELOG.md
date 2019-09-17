@@ -3,12 +3,16 @@ All notable changes to this project will be documented in this file. This change
 
 ## Unreleased
 ### Changed:
-- renamed `shuriken.navigation` to `shuriken.tree`.
+- `shuriken.navigation`: renamed to `shuriken.tree`.
 - `associative`: `getsoc` is now a macro.
 
 ### Added
-- `tree`: `tree`.
+- `byte-buddy` (new namespace): `copy-class!`.
 - `exception`: `capturex`.
+- `reflection`: `write-field`.
+- `tree`: `tree`.
+
+
 
 ## [0.14.39] - 2019-03-10
 ### Fixed:
@@ -192,10 +196,10 @@ All notable changes to this project will be documented in this file. This change
 ## [0.14.2] - 2018-05-27
 ### Added
 - `string`: `join-words`.
-- New namespace `lazy`: `deep-doall`.
+- `lazy` (new namespace): `deep-doall`.
 
 ### Removed
-- exported `context` to [lexikon](https://github.com/TristeFigure/lexikon).
+- `context`: exported to [lexikon](https://github.com/TristeFigure/lexikon).
 
 ## [0.14.1] - 2018-05-21
 ### Added
@@ -203,7 +207,7 @@ All notable changes to this project will be documented in this file. This change
 
 ## [0.14.0] - 2018-05-20
 ### Removed
-- exported `multi` to [methodman](https://github.com/TristeFigure/methodman).
+- `multi`: exported to [methodman](https://github.com/TristeFigure/methodman).
 
 ## [0.13.34] - 2018-05-20
 ### Added
@@ -289,22 +293,22 @@ All notable changes to this project will be documented in this file. This change
 
 ## [0.13.18] - 2018-04-27
 ### Added
-- macro:
+- `macro`:
   - `is-form?`, `wrap-form` & `unwrap-form`.
   - `lexical-context`.
   - `stored-locals!`, `binding-stored-locals` & more.
   - `lexical-eval`.
-- multi:
+- `multi`:
   - `call-multi`.
-- namespace `predicates-composer` renamed to `weaving`:
+- `predicates-composer`: namespace renamed to `weaving`:
   - `|` (`constantly`).
   - `*|`, `<-|` & `->|`.
   - `when|`, `if|` & `tap|`.
   - `and?`, `or?`, `not?` renamed to `and|`, `or|`, `not|`.
-- debug: `debug`.
-- sequential: `max-by` & `min-by`.
-- string: `tabulate` & `truncate`.
-- threading:
+- `debug`: `debug`.
+- `sequential`: `max-by` & `min-by`.
+- `string:` `tabulate` & `truncate`.
+- `threading`:
   - `defthreading`
   - `if->` & `if->>`.
   - `when->` & `when->>`.
@@ -312,14 +316,14 @@ All notable changes to this project will be documented in this file. This change
   - `<-`.
 
 ### Enhanced
-- macro: `file-eval` uses the local lexical context.
+- `macro`: `file-eval` uses the local lexical context.
 
 ### Fixed
-- macro: fix `clean-code` and `macroexpand-some`.
+- `macro`: fix `clean-code` and `macroexpand-some`.
 
 ## [0.13.8] - 2017-11-28
 ### Enhanced
-- macro:
+- `macro`:
   - `macroexpand-do` accepts predicates.
   - `file-eval` has better file output.
 

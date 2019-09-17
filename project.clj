@@ -14,7 +14,10 @@
 
                  ;; For monkey patches
                  [robert/hooke "1.3.0"]
-                 [org.javassist/javassist "3.20.0-GA"]
+                 [org.javassist/javassist "3.24.1-GA"]
+                 [net.bytebuddy/byte-buddy "1.9.12"]
+                 [net.bytebuddy/byte-buddy-agent "1.9.12"]
+                 [camel-snake-kebab "0.4.0"]
 
                  ;; For solver
                  [org.clojure/data.priority-map "0.0.7"]
