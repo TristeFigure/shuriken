@@ -51,10 +51,10 @@
     (join-branches root (map #(tree children join-branches %) cs))))
 
 ;; TODO: test & document & expose
-(defmacro class-tree [mode-or-fn class]
+(defn class-tree [mode-or-fn klass]
   (let [fetch-children (case mode-or-fn
-                         :nested '(memfn ^Class getDeclaredClasses)
+                         :nested #(.getDeclaredClasses %)
                          mode-or-fn)]
-    `(tree (comp seq ~fetch-children)
-           cons
-           ~class)))
+    (tree (comp seq fetch-children)
+          cons
+          klass)))

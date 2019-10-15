@@ -1,16 +1,16 @@
 (ns shuriken.byte-buddy
-  (:use clojure.pprint shuriken.macro)
-  (:require [clojure.string :as str]
+  (:refer-clojure :exclude [require name merge not load resolve])
+  (:require [clojure.core :as clj]
+            [clojure.string :as str]
             [shuriken.associative :refer [getsoc]]
             [shuriken.exception :refer [silence]]
+            [shuriken.namespace :refer [import-namespace-vars]]
             [shuriken.reflection :refer [read-field write-field]]
-            [shuriken.tree :refer [class-tree]]
+            [shuriken.sequential :refer [forcatm mapm maps]]
+            [shuriken.tree :refer [class-tree tree-seq-breadth]]
             [threading.core :refer :all]
             [weaving.core :refer :all]
-            [shuriken.byte-buddy.dsl
-             :refer :all
-             :exclude [require name merge not load]
-             :as dsl])
+            [shuriken.byte-buddy.dsl])
   (:import [clojure.lang DynamicClassLoader]
            [java.io ByteArrayInputStream]
            [net.bytebuddy.dynamic
@@ -20,51 +20,77 @@
             DynamicType$Builder
             ClassFileLocator$Simple
             TypeResolutionStrategy$Passive]
+           [net.bytebuddy.dynamic.loading
+            ClassLoadingStrategy$Default]
            [net.bytebuddy.pool
             TypePool$ClassLoading]
            [javassist
             CtClass
-            ClassPool]))
+            ClassPool
+            Loader
+            Loader$Simple]))
+
+(import-namespace-vars shuriken.byte-buddy.dsl)
 
 ;; TODO: only copy-class! is exposed for now.
-
-;; TODO: move and generalize
-(defmacro forcat [& args]
-  `(apply concat (for ~@args)))
-
-(defmacro forcatm [& args]
-  `(into {} (forcat ~@args)))
-
-(defmacro mapm [& args]
-  `(into {} (map ~@args)))
-
-(defmacro maps [& args]
-  `(set (map ~@args)))
+;; TODO: refactor the .defrost to CtClasses
 
 (defn ->javassist [^DynamicType type]
-  (let [pool (ClassPool/getDefault)
-        name (-> type .getTypeDescription .getName)
-        existing-type (silence javassist.NotFoundException (.get pool name))
-        result (or existing-type (->> type .getBytes ByteArrayInputStream.
-                                      (.makeClass pool)))]
-    (when-> result .isFrozen .defrost)
+  (let [pool        (ClassPool/getDefault)
+        class-name  (-> type .getTypeDescription .getName)
+        _           (doto (silence javassist.NotFoundException
+                            (.get pool class-name))
+                          (some-> (when-> .isFrozen .defrost)))
+        result      (doto (->> type .getBytes ByteArrayInputStream.
+                               (.makeClass pool))
+                          (when-> .isFrozen .defrost))]
     result))
 
-(defn ->byte-buddy [^javassist.CtClass            ctclass
-                    ^DynamicType$Default$Unloaded original-type
-                    & {:keys [type-resolution-strategy]
-                       :or {type-resolution-strategy
-                            TypeResolutionStrategy$Passive/INSTANCE}}]
-  (DynamicType$Default$Unloaded.
-    (.getTypeDescription original-type)
-    (.toBytecode ctclass)
-    (.get (.getLoadedTypeInitializers original-type)
-          (.getTypeDescription original-type))
-    (read-field original-type 'auxiliaryTypes)
-    type-resolution-strategy))
+(defn ->byte-buddy
+  ([ct-class]
+   (throw (Exception. "Not implemented"))
+   ; (let [thread-cl (.getContextClassLoader (Thread/currentThread))
+   ;       tmp-cl (DynamicClassLoader. thread-cl)
+   ;       klass  (.toClass ct-class tmp-cl nil
+   ;                        #_(-> ct-class. originalClass .getProtectionDomain))
+   ;       result (-> (buddy)
+   ;                  (with net.bytebuddy.implementation.attribute.AnnotationValueFilter$Default/SKIP_DEFAULTS)
+   ;                  (redefine klass (class-file-locator :class-loader tmp-cl))
+   ;                  (make))
+   ;       ct-bytecode (seq (.toBytecode ct-class))
+   ;       bb-bytecode (seq (.getBytes result))
+   ;       ct2-bytecode (seq (.toBytecode (->javassist result)))]
+   ;   (println (map vector ct-bytecode bb-bytecode ct2-bytecode))
+   ;   result)
+
+   ; (let [ct-bytecode (seq (.toBytecode ct-class))
+   ;       classes (->> (class-tree :nested ct-class)
+   ;                    flatten
+   ;                    (map #(doto % .defrost))
+   ;                    (mapm (juxt #(type-description :javassist %)
+   ;                                (memfn ^CtClass toBytecode))))
+   ;       locator (class-file-locator :compound [:simple classes] [:class-loader])
+   ;       desc    (type-description :javassist ct-class locator)
+   ;       result  (-> (buddy)
+   ;                   (redefine desc locator)
+   ;                   make)
+   ;       bb-bytecode (seq (.getBytes result))
+   ;       ct2-bytecode (-> result ->javassist .toBytecode seq)]
+   ;   (println (map vector ct-bytecode bb-bytecode ct2-bytecode))
+   ;   result)
+   )
+  ([ct-class original-type]
+   (let [bytecode (.toBytecode ct-class)]
+     (DynamicType$Default$Unloaded.
+       (.getTypeDescription original-type)
+       bytecode
+       (.get (.getLoadedTypeInitializers original-type)
+             (.getTypeDescription original-type))
+       (read-field original-type 'auxiliaryTypes)
+       TypeResolutionStrategy$Passive/INSTANCE))))
 
 ;; Taken from Pomegranate
-(defn ensure-compiler-loader!
+(defn- ensure-compiler-loader!
   "Ensures the clojure.lang.Compiler/LOADER var is bound to a DynamicClassLoader,
   so that we can add to Clojure's classpath dynamically."
   []
@@ -82,11 +108,50 @@
    (map #(select-keys % vars)
         (frames))))
 
-(defn load-in-clojure-classloader! [^DynamicType$Default type]
+(import 'MonkeyPatched)
+
+;; TODO: mmh this fiddling with the binding frames is exciting: extract it.
+(defn load-in-clojure-classloaders! [type]
   (ensure-compiler-loader!)
-  (let [load-type #(-> (dsl/load type % (.allowExistingTypes
-                                          (class-loading-strategy :wrapper))))
+  (let [load-type
+        (condp instance? type
+          DynamicType$Default (fn [class-loader]
+                                (-> (load
+                                      type
+                                      class-loader
+                                      (allow-existing-types
+                                        (class-loading-strategy :wrapper)))
+                                    get-loaded))
+          CtClass             (fn [class-loader]
+                                (-> (Loader$Simple. class-loader)
+                                    (.invokeDefineClass type))
+                                ; (let [pool (ClassPool/getDefault)
+                                ;       loader (Loader. class-loader pool)]
+                                ;   (.loadClass loader (.getName type)))
+
+                                ;; (╯°□°）╯︵ ┻━┻  WHY U NO WOK ?
+                                ;; String rather than TypeDescription using
+                                ;; directly ByteArrayClassLoader ?
+                                ; (-> (load
+                                ;       (allow-existing-types
+                                ;         (class-loading-strategy :wrapper))
+                                ;       class-loader
+                                ;       {(type-description :javassist type)
+                                ;        (.toBytecode type)})
+                                ;     vals
+                                ;     first)
+                                ;; Other way
+                                ; (let [class-name (.getName type)]
+                                ;   (.loadClass
+                                ;     (net.bytebuddy.dynamic.loading.ByteArrayClassLoader.
+                                ;       class-loader false {class-name
+                                ;                           (.toBytecode type)})
+                                ;     class-name))
+                                ;; ┬──┬◡ﾉ(° -°ﾉ)
+                                ))
         th (Thread/currentThread)]
+    (.bindRoot Compiler/LOADER
+               (-> @Compiler/LOADER load-type .getClassLoader DynamicClassLoader.))
     (->> (frames Compiler/LOADER)
          (apply concat)
          (map (fn [[_var tbox]] tbox))
@@ -95,25 +160,21 @@
                    (let [cl (read-field tbox :val)
                          [new-cl new-existing]
                          (getsoc existing cl
-                                 (-> cl load-type get-loaded
-                                     .getClassLoader DynamicClassLoader.))]
+                                 (-> cl load-type .getClassLoader DynamicClassLoader.))]
                      (write-field tbox :val new-cl)
                      new-existing))
                  {}))
-    (.bindRoot Compiler/LOADER (-> @Compiler/LOADER load-type get-loaded
-                                   .getClassLoader DynamicClassLoader.))
-    (doto (Thread/currentThread)
-          (.setContextClassLoader
-            (-> (Thread/currentThread) .getContextClassLoader load-type get-loaded
-                .getClassLoader DynamicClassLoader.)))
-    nil))
+    (let [loaded-class (-> th .getContextClassLoader load-type)]
+      (.setContextClassLoader
+        th (-> loaded-class .getClassLoader DynamicClassLoader.))
+      loaded-class)))
 
 ;; TODO: expose a way to define which (sub)classes are rewritten
 (defn deep-copy [class new-name]
   (let [ctree (class-tree :nested class)
         prefix-pattern (->> class .getName str/re-quote-replacement (str "^")
                             re-pattern)
-        new-name (name new-name)
+        new-name (clj/name new-name)
         get-copy-name (memoize (fn [class]
                                  (str/replace (.getName class)
                                               prefix-pattern
@@ -121,8 +182,9 @@
         class-builder-dict (forcatm [class (flatten ctree)
                                      :let [copy-name (get-copy-name class)
                                            copy-builder (-> (buddy)
+                                                            (.with net.bytebuddy.implementation.attribute.AnnotationValueFilter$Default/SKIP_DEFAULTS)
                                                             (redefine class)
-                                                            (dsl/name copy-name))]]
+                                                            (name copy-name))]]
                              [[class copy-builder]
                               [copy-name  copy-builder]])
         class-name-dict (->> (keys class-builder-dict)
@@ -142,7 +204,7 @@
                      type-with-nested (-> copy-builder
                                           (when-> (<- (seq nested-copies))
                                             (declared-types nested-types)
-                                            (dsl/require nested-copies)
+                                            (require nested-copies)
                                             #_(nest-members nested-types))
                                           make)
                      type-with-renames (-> type-with-nested
@@ -168,4 +230,4 @@
 
 (defn copy-class! [class new-name]
   (-> (deep-copy class new-name)
-      load-in-clojure-classloader!))
+      load-in-clojure-classloaders!))

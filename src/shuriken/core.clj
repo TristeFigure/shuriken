@@ -68,18 +68,20 @@
    preserve-meta]
 
   [shuriken.monkey-patch
-   only
-   refresh-only
+   once
+   refresh-once
    monkey-patch
    java-patch
-   copy-class
-   save-class]
+   ; copy-class
+   ; save-class
+   ]
 
   [shuriken.namespace
    fully-qualify fully-qualified?
    unqualify
    with-ns
-   import-namespace]
+   import-namespace ;; TODO: deprecated
+   import-namespace-vars]
 
   [shuriken.tree
    prepostwalk
@@ -92,16 +94,6 @@
    write-field
    method
    static-method]
-
-  [shuriken.sequential
-   get-nth get-nth-in
-   assoc-nth assoc-nth-in
-   update-nth update-nth-in
-   insert-at
-   slice separate
-   max-by min-by
-   order
-   takes]
 
   [shuriken.spec
    conf either conform!]
@@ -116,3 +108,5 @@
    tabulate
    truncate
    words])
+
+(import-namespace-vars shuriken.sequential)

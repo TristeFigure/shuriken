@@ -6,40 +6,40 @@
 
 ;; TODO: require shuriken.core instead of shuriken.monkey-patch
 
-(defmacro preserve-onlys [& body]
-  `(let [orig-onlys# @shuriken.monkey-patch.no-reload-store/onlys]
+(defmacro preserve-onces [& body]
+  `(let [orig-onces# @shuriken.monkey-patch.no-reload-store/onces]
      ~@body
-     (reset! shuriken.monkey-patch.no-reload-store/onlys orig-onlys#)))
+     (reset! shuriken.monkey-patch.no-reload-store/onces orig-onces#)))
 
-(deftest test-only
+(deftest test-once
   (testing "executes only once"
-    (preserve-onlys
+    (preserve-onces
       (is (= "foo\n"
              (with-out-str
-               (only 'foo (println "foo"))
-               (only 'shuriken.monkey-patch-test/foo (println "foo")))))))
-  (testing "separates 'onlys' by key"
-    (preserve-onlys
+               (once 'foo (println "foo"))
+               (once 'shuriken.monkey-patch-test/foo (println "foo")))))))
+  (testing "separates 'onces' by key"
+    (preserve-onces
       (is (= "foo\nbar\n"
              (with-out-str
-               (only 'foo (println "foo"))
-               (only 'bar (println "bar")))))))
+               (once 'foo (println "foo"))
+               (once 'bar (println "bar")))))))
   (testing "when the key is not a litteral"
-    (preserve-onlys
+    (preserve-onces
       (is (= "foo\n"
              (with-out-str
                (let [k 'foo]
-                 (only k (println "foo"))
-                 (only (symbol (str *ns*) "foo") (println "foo")))))))))
+                 (once k (println "foo"))
+                 (once (symbol (str *ns*) "foo") (println "foo")))))))))
 
-(deftest test-refresh-only
-  (testing "allows 'onlys' to be replayed"
-    (preserve-onlys
+(deftest test-refresh-once
+  (testing "allows 'onces' to be replayed"
+    (preserve-onces
       (is (= "foo\nfoo\n"
              (with-out-str
-               (only 'foo (println "foo"))
-               (refresh-only 'shuriken.monkey-patch-test/foo)
-               (only 'foo (println "foo"))))))))
+               (once 'foo (println "foo"))
+               (refresh-once 'shuriken.monkey-patch-test/foo)
+               (once 'foo (println "foo"))))))))
 
 (defn run-java-patch-test []
   (testing "with clojure code"
@@ -65,6 +65,8 @@
     (is (= 100 (.d (MonkeyPatched.))))))
 
 (deftest test-java-patch
-  (run-java-patch-test)  
+  (run-java-patch-test)
   #_(testing "is idempotent"
     (run-java-patch-test)))
+
+(run-tests)

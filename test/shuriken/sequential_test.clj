@@ -1,6 +1,7 @@
 (ns shuriken.sequential-test
   (:require [clojure.test :refer :all]
-            [shuriken.core :refer :all]))
+            [shuriken.exception :refer :all]
+            [shuriken.sequential :refer :all]))
 
 (deftest test-get-nth
   (is (= 2 (get-nth '(1 2 3) 1)))
@@ -168,3 +169,14 @@
          (takes [1 2 3] [:a :b :c :d :e :f :g])))
   (is (= '(() () (:a) () (:b :c) (:d :e))
          (takes [0 0 1 0 2] [:a :b :c :d :e]))))
+
+(deftest test-get-some
+  (is (= :value (get-some {:a :value}    :a :b :c)))
+  (is (= :value (get-some {:b :value}    :a :b :c)))
+  (is (= :value (get-some {:c :value}    :a :b :c)))
+  (is (nil?     (get-some nil            :a :b :c)))
+  (is (nil?     (get-some {}             :a :b :c)))
+  (is (nil?     (get-some {:x :value}    nil :b :c)))
+  (is (nil?     (get-some {:x :value}    :a nil :c)))
+  (is (nil?     (get-some {:x :value}    :a :b nil)))
+  (is (= :value (get-some {false :value} :a false))))

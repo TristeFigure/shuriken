@@ -14,7 +14,7 @@
 
                  ;; For monkey patches
                  [robert/hooke "1.3.0"]
-                 [org.javassist/javassist "3.24.1-GA"]
+                 [org.javassist/javassist "3.26.0-GA"]
                  [net.bytebuddy/byte-buddy "1.9.12"]
                  [net.bytebuddy/byte-buddy-agent "1.9.12"]
                  [camel-snake-kebab "0.4.0"]
@@ -29,12 +29,15 @@
                  [ubergraph "0.5.0"]
 
                  ;; For nonograms
-                 [net.cgrand/seqexp "0.6.2"]]
+                 [net.cgrand/seqexp "0.6.2"]
+
+                 ;; TODO: update this in dance then remove it.
+                 [org.flatland/ordered "1.5.7"]]
   ;; To fix a goddamn bug on reload
   :aot [loom.graph ubergraph.core]
   ;; For syntax-quote monkey-patch
   :java-source-paths ["src/java"]
-  :profiles {:dev {:aot [shuriken.monkey-patch-test]
+  :profiles {:dev {;:aot [shuriken.monkey-patch-test]
                    :java-source-paths ["test/java"]
                    :dependencies [[codox-theme-rdash "0.1.2"]]}}
   :plugins [;; Fox monkey patches

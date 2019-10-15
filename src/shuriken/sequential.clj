@@ -1,11 +1,13 @@
 (ns shuriken.sequential
   "### Useful functions on sequential datastructures"
   (:require [clojure.spec.alpha :as s]
+            [clojure.set :as set]
             [potemkin :refer [import-vars]]
             [ubergraph.core :as u]
             [ubergraph.alg :as alg]
             [weaving.core :refer :all]
-            [shuriken.spec :refer [conform!]]))
+            [shuriken.spec :refer [conform!]]
+            [lexikon.core :refer [lexical-eval lexical-context]]))
 
 (import-vars clojure.core/reduce1)
 
@@ -163,6 +165,7 @@
                    before-first-delim)
                  result)))))
 
+;; TODO: can be sped up
 (defn separate
   "Returns a vector of `[(filter pred coll) (remove pred coll)]`.
 
@@ -251,8 +254,8 @@
                             {:type :contradictory-constraints
                              :cycles cycs})))
         parsed-constraints (into {} (map parse-constraint filtered-constraints))
-        constrained (clojure.set/union (set (keys parsed-constraints))
-                                       (set (vals parsed-constraints)))
+        constrained (set/union (set (keys parsed-constraints))
+                               (set (vals parsed-constraints)))
         free (filter (complement constrained) s)
         nodes (concat [::before-all] s [::after-all])
         g (as-> (u/digraph) $
@@ -264,7 +267,7 @@
                  (mapcat (fn [[f w g]]
                            (->> ccs
                                 (filter #(empty?
-                                           (clojure.set/intersection
+                                           (set/intersection
                                              (set %)
                                              #{::before-all ::after-all})))
                                 (map #(g [w (f %)]))))
@@ -277,9 +280,8 @@
 (defn takes
   "Split `coll` in sub-sequences of length n1 for the first, n2 for the second,
   etc... Appends the remaining items of coll as the final sub-sequence if they
-  have not been consumed by the successive takes. If there are not enough items
-  in `coll` to feed all the takes, return the subsequences built out of what
-  could be consumed.
+  have not been consumed by the successive takes. Returns what was consummed
+  even if there are not enough items in `coll` to feed all the takes.
 
   ```clojure
   (takes [1 2 3] [:a :b])                ;; => ((:a) (:b))
@@ -317,3 +319,52 @@
 
 ; (let [tree [1 2 [[3 [4]] [5 6]]]]
 ;   (println "->>->" (order-tree tree {6 2})))
+
+(defn compact
+  "Shorthand for `(remove nil? xs)`."
+  [xs]
+  (remove nil? xs))
+
+(defn get-some
+  "Returns the first value present in `m` for keys `ks`, otherwise
+  returns `nil`.
+  Returns `nil` if `m` is empty or one of the keys is `nil`."
+  [m & [k & ks]]
+  (when (and (not (nil? k)))
+    (get m k (apply get-some m ks))))
+
+(def ^:private seq-fns        '#{map for filter remove keep compact take drop})
+(def ^:private seq-suffixes-1 '{cat (apply concat)})
+(def ^:private seq-suffixes-2 '{s   set
+                                v   vec
+                                m   (into {})
+                                str (apply str)})
+
+(defmacro def-compound-seq-fns []
+  `(do ~@(for [seq-fn           seq-fns
+               [suf1 expr1]     (conj seq-suffixes-1 [nil nil])
+               [suf2 expr2]     (conj seq-suffixes-2 [nil nil])
+               :let [seq-macro? (-> seq-fn resolve meta :macro)
+                     nme        (symbol (str seq-fn suf1 suf2))
+                     definer    (if seq-macro? `defmacro `defn)
+                     impl       (remove nil? `(->> ~(if seq-macro?
+                                                      `(~seq-fn ~'~@args)
+                                                      `(apply ~seq-fn ~'args))
+                                                   ~expr1
+                                                   ~expr2))]
+               :when (and (not (every? nil? [suf1 suf2]))
+                          (not (ns-resolve 'clojure.core nme)))]
+           (if seq-macro?
+             `(defmacro ~nme [& ~'args]
+                (->> `(->> (~'~seq-fn ~@~'args)
+                           ~'~expr1
+                           ~'~expr2)
+                     (remove nil?)))
+             `(defn ~nme [& ~'args]
+                ~(->> `(->> (apply ~seq-fn ~'args)
+                            ~expr1
+                            ~expr2)
+                      (remove nil?)))))))
+
+(def-compound-seq-fns)
+

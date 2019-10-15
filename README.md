@@ -383,29 +383,29 @@ exceptions. If no exception is raised, the file is deleted.
 
 Supports reload. Name and target can be vars or quoted symbols.
 
-#### `only`
+#### `once`
 
 Ensures the code is executed only once with respect to the associated name.
 name must be a symbol, quoted or not.
 
 ```clojure
-(only 'only-once (println "printed once"))
-(only 'only-once (println "printed once"))
+(once 'only-once (println "printed once"))
+(once 'only-once (println "printed once"))
 
 ;; printed once
 ```
 
-#### `refresh-only`
+#### `refresh-once`
 
 ```clojure
-(only 'a (println "a"))
+(once 'a (println "a"))
 ;; a
 
-(only 'a (println "a"))
+(once 'a (println "a"))
 ;; prints nothings
 
-(refresh-only 'a)
-(only 'a (println "a"))
+(refresh-once 'a)
+(once 'a (println "a"))
 ;; a
 ```
 

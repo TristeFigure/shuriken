@@ -3,14 +3,17 @@ All notable changes to this project will be documented in this file. This change
 
 ## Unreleased
 ### Changed:
-- `shuriken.navigation`: renamed to `shuriken.tree`.
 - `associative`: `getsoc` is now a macro.
+- `navigation`: renamed to `shuriken.tree`.
+- `monkey-patch`: renamed `only` & `refresh-only` to `once` and `refresh-once`.
+- `namespace`: renamed `import-namespace` to `import-namespace-vars`.
 
 ### Added
 - `byte-buddy` (new namespace): `copy-class!`.
 - `exception`: `capturex`.
 - `reflection`: `write-field`.
 - `tree`: `tree`.
+- `sequential`: `get-some`.
 
 
 

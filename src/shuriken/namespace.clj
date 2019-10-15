@@ -148,7 +148,10 @@
   `(binding [*ns* (the-ns ~ns)]
      (lexical-eval (quote (do ~@body)))))
 
-(defmacro import-namespace [ns & {:keys [exclude]}]
+(defmacro import-namespace-vars [ns & {:keys [exclude]}]
   (let [vars (->> (keys (ns-publics (find-ns ns)))
                   (remove (set exclude)))]
     `(import-vars [~ns ~@vars])))
+
+(defmacro import-namespace [& args]
+  `(import-namespace-vars ~@args))

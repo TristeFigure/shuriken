@@ -1,22 +1,32 @@
 (ns shuriken.reflection
+  "### Utilities to handle various reflection formats in a unified way"
+  (:use clojure.pprint
+        shuriken.debug)
   (:require [clojure.spec.alpha :as s]
             [shuriken.spec :refer [conf either conform!]]
             [shuriken.macro :refer [is-form?]]
-            [shuriken.exception :refer [capturex]])
-  (:import java.lang.reflect.Modifier
-           clojure.lang.Reflector))
+            [shuriken.exception :refer [capturex]]
+            [threading.core :refer :all])
+  (:import [java.lang.reflect Method Modifier]
+           [clojure.lang      Symbol Reflector]
+           [javassist         CtClass]))
 
 ;; TODO: document in the README and/or release as an independent lib
 
 (defn ct-class? [x]
   (instance? javassist.CtClass x))
 
-(defn type-to-str [type]
-  (cond
-    (string? type)                      (-> type symbol resolve .getName)
-    (symbol? type)                      (-> type        resolve .getName)
-    (or (class? type) (ct-class? type)) (-> type                .getName)
-    :else                               (name type)))
+(defn- var-or-class-name [x]
+  (if-> x var?
+    (-> .sym name)
+    .getName))
+
+(defmulti type-to-str class)
+(defmethod type-to-str String   [t]  (-> t symbol resolve var-or-class-name))
+(defmethod type-to-str Symbol   [t]  (-> t        resolve var-or-class-name))
+(defmethod type-to-str Class    [t]  (-> t                .getName))
+(defmethod type-to-str CtClass  [t]  (-> t                .getName))
+(defmethod type-to-str :default [t]  (name t))
 
 (defn types-to-str [types]
   (->> (map type-to-str types)
@@ -29,11 +39,11 @@
                                 :string   string?
                                 :class    (conf #(or (class? %) (ct-class? %))
                                                 type-to-str #(.getName %))
-                                :symbol   (conf symbol? type-to-str str)
+                                :ident    (conf ident? type-to-str str)
                                 :unform   (fn [x]
                                             (cond (string? x) :string
                                                   (class? x)  :class
-                                                  (symbol? x) :symbol)))
+                                                  (ident? x)  :ident)))
              :method-name     (either
                                 :string string?
                                 :ident  (conf ident? name)
@@ -78,12 +88,11 @@
         (conform! ::method-signature method-signature)
         ct-class (find-class method-signature)
         ct-method (->> (.getMethods ct-class)
-                       (filter
-                         #(and (= method-name (.getName %))
-                               (if (nil? parameter-types)
-                                 true
-                                 (= (-> % .getParameterTypes types-to-str)
-                                    parameter-types))))
+                       (filter #(and (= method-name (.getName %))
+                                     (if (nil? parameter-types)
+                                       true
+                                       (= (-> % .getParameterTypes types-to-str)
+                                          parameter-types))))
                        first)]
     (assert ct-method "Method not found")
     ct-method))
@@ -98,11 +107,10 @@
       (str "-clojure-delegate")
       symbol))
 
-(defn static-method? [method-signature]
-  (-> method-signature
-      find-method
-      .getModifiers
-      Modifier/isStatic))
+(defn static-method? [x]
+  (cond
+    (instance? Method x) (-> x .getModifiers Modifier/isStatic)
+    (sequential? x)      (-> x find-method .getModifiers Modifier/isStatic)))
 
 ;; TODO: some optimizations can be made by turning the following into
 ;; a macro.
