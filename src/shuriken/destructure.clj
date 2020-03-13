@@ -99,10 +99,10 @@
   (let [{hash-mapping :mapping orr :or} (disentangle binding-form)]
     (->> hash-mapping
          (map (fn [[item key]]
-                [key (restructure* item (fn [expr]
-                                          (if-let [value (get orr expr)]
-                                            value
-                                            (mapping expr))))]))
+                [key (restructure* item (if (map? mapping)
+                                          #(get mapping % ::not-found)
+                                          mapping))]))
+         (remove #(-> % second (= ::not-found)))
          (into {}))))
 
 (defn ^:no-doc restructure* [binding-form mapping]

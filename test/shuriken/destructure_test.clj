@@ -59,13 +59,17 @@
           (is (= [1 :b 2 :c 3] (restructure '[a & args]
                                             '[a 1 args {:b 2 :c 3}])))))
       (testing "followed by more destructuring"
-        (is   (= [1 2 3  ]     (restructure '[a & [b & c]] '[a 1 b 2 c [3]]))))))
+        (is   (= [1 2 3]       (restructure '[a & [b & c]] '[a 1 b 2 c [3]]))))))
   (testing "when params is a hash"
     (is (= {:a 1 :b 2}  (restructure '{:keys [a b]} '[a 1 b 2])))
     (is (= {:a 1 :bb 2} (restructure '{a :a b :bb}  '[a 1 b 2])))
     (testing "with :or parameter"
-      (is (= {:a 1, :bb 2, :c 3}
-             (restructure '{:keys [a] b :bb c :c :or {c 3}} '[a 1 b 2])))))
+      (testing "(absent)"
+        (is (= {:a 1, :bb 2}
+               (restructure '{:keys [a] b :bb c :c :or {c 3}} '[a 1 b 2]))))
+      (testing "(present)"
+        (is (= {:a 1, :bb 2 :c 4}
+               (restructure '{:keys [a] b :bb c :c :or {c 3}} '[a 1 b 2 c 4]))))))
   (testing "when mapping is a function"
     (is (= {:a "a", :b ["x" "y"]} (restructure '{:keys [a] [x y] :b} str))))
   (testing "when mapping is a hash"
