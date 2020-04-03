@@ -9,11 +9,15 @@ All notable changes to this project will be documented in this file. This change
 - `namespace`: renamed `import-namespace` to `import-namespace-vars`.
 
 ### Added
-- `byte-buddy` (new namespace): `copy-class!`.
+- `byte-buddy`: `copy-class!`.
 - `exception`: `capturex`.
 - `reflection`: `write-field`.
 - `tree`: `tree`.
 - `sequential`: `get-some`.
+
+## [0.14.43] - 2020-04-03
+### Added
+- `destructure`: `efface`.
 
 ## [0.14.42] - 2020-04-03
 ### Added
@@ -205,7 +209,7 @@ All notable changes to this project will be documented in this file. This change
 ## [0.14.2] - 2018-05-27
 ### Added
 - `string`: `join-words`.
-- `lazy` (new namespace): `deep-doall`.
+- `lazy`: `deep-doall`.
 
 ### Removed
 - `context`: exported to [lexikon](https://github.com/TristeFigure/lexikon).

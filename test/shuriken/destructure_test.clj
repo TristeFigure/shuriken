@@ -5,36 +5,35 @@
 ;; TODO: require shuriken.core instead of shuriken.destructure
 
 (deftest test-disentangle-entangle
-  (testing "when binding form is a map"
-    (are [x y z] (and (= x (disentangle y))
-                      (= z (entangle x)))
+  (are [x y z] (and (= x (disentangle y))
+                    (= z (entangle x)))
 
-         ;; - when binding form is an array
-         '{:items [a b]}           '[a b]    '[a b]
-         '{:items [[a b]]}         '[[a b]]  '[[a b]]
-         '{:items [], :more args}  '[& args] '[& args]
+       ;; - when binding form is a vector
+       '{:items [a b]}           '[a b]    '[a b]
+       '{:items [[a b]]}         '[[a b]]  '[[a b]]
+       '{:items [], :more args}  '[& args] '[& args]
 
-         '{:items [a b], :more {:keys [x], y :_y, :or {x 1}, :as m}}
-         '[a b & {:keys [x] y :_y :or {x 1} :as  m}]
-         '[a b & {:keys [x] y :_y :or {x 1} :as  m}]
+       '{:items [a b], :more {:keys [x], y :_y, :or {x 1}, :as m}}
+       '[a b & {:keys [x] y :_y :or {x 1} :as  m}]
+       '[a b & {:keys [x] y :_y :or {x 1} :as  m}]
 
-         ;;   edge cases
-         {:items []}  []  []
-         {:items []}  nil []
+       ;;   edge cases
+       {:items []}  []  []
+       {:items []}  nil []
 
-         ;; - when binding form is a map
-         '{:items [a b [c1 c2]],
-           :as m,
-           :or {d 1},
-           :mapping {a :a, b :b, [c1 c2] :c}}
-         '{:keys [a] b :b [c1 c2] :c :or {d 1} :as m}
-         '{a :a b :b [c1 c2] :c :or {d 1} :as m}
+       ;; - when binding form is a map
+       '{:items [a b [c1 c2]],
+         :as m,
+         :or {d 1},
+         :mapping {a :a, b :b, [c1 c2] :c}}
+       '{:keys [a] b :b [c1 c2] :c :or {d 1} :as m}
+       '{a :a b :b [c1 c2] :c :or {d 1} :as m}
 
-         ;;   edge case
-         {:items [] :mapping {}}  {}  {})))
+       ;;   edge case
+       {:items [] :mapping {}}  {}  {}))
 
 (deftest test-deconstruct
-  (testing "when params is an array"
+  (testing "when binding form is a vector"
     (is (= '[a x y m]
            (deconstruct '[a & {:keys [x] y :_y :or {x 1} :as m}])))
     (is (= '[args]
@@ -42,7 +41,7 @@
     (testing "edge cases"
       (is (= [] (deconstruct [])))
       (is (= [] (deconstruct nil)))))
-  (testing "when params is a hash"
+  (testing "when binding form is a map"
     (is (= '[a]
            (deconstruct '{a :a})))
     (is (= '[a b m]
@@ -51,7 +50,7 @@
       (is (= [] (deconstruct {}))))))
 
 (deftest test-restructure
-  (testing "when params is an array"
+  (testing "when binding form is a vector"
     (is (= [1 2]        (restructure '[a b]               '[a 1 b 2])))
     (is (= [1 2 {:c 3}] (restructure '[a b {:keys [c]}]   '[a 1 b 2 c 3])))
     (is (= [1 2 :c 3]   (restructure '[a b & {:keys [c]}] '[a 1 b 2 c 3])))
@@ -67,7 +66,7 @@
                                             '[a 1 args {:b 2 :c 3}])))))
       (testing "followed by more destructuring"
         (is   (= [1 2 3]       (restructure '[a & [b & c]] '[a 1 b 2 c [3]]))))))
-  (testing "when params is a hash"
+  (testing "when binding form is a map"
     (is (= {:a 1 :b 2}  (restructure '{:keys [a b]} '[a 1 b 2])))
     (is (= {:a 1 :bb 2} (restructure '{a :a b :bb}  '[a 1 b 2])))
     (testing "with :or parameter"
@@ -79,7 +78,7 @@
                (restructure '{:keys [a] b :bb c :c :or {c 3}} '[a 1 b 2 c 4]))))))
   (testing "when mapping is a function"
     (is (= {:a "a", :b ["x" "y"]} (restructure '{:keys [a] [x y] :b} str))))
-  (testing "when mapping is a hash"
+  (testing "when mapping is a map"
     (is (= [1] (restructure '[a] '{a 1})))))
 
 (deftest destructure-restructure-roundtrip
@@ -90,3 +89,32 @@
                           (mapcat (fn [[k _v]] `[(quote ~k) ~k]))
                           vec)))
            mapping))))
+
+(deftest test-efface
+  (are [x y z] (= (apply efface x y) z)
+       ;; - when binding form is a vector
+       '[a b]           '[b]     '[a]
+       '[a b]           '[[b]]   '[a]
+       '[a b]           '[[[b]]] '[a]
+       '[a b]           '[a b]   '[]
+       '[a b & c]       '[c]     '[a b]
+       '[a b & c]       '[c]     '[a b]
+       '[a b & c :as d] '[d]     '[a b & c]
+       '[a b & c :as d] '[c d]   '[a b]
+       '[[a & b] & c]   '[a]     '[[& b] & c]
+       ;;   edge cases
+       '[a]             '[]      '[a]
+       '[a]             nil      '[a]
+       nil              '[a]     nil
+
+       ;; - when binding form is a map
+       '{:keys [a b]}    '[b]    '{a :a}
+       '{:keys [a] b :b} '[[b]]  '{a :a}
+       '{a :a b :b}      '[b]    '{a :a}
+       '{a :a b :b}      '[a b]  '{}
+       '{a :a :or {a 1}} '[a]    '{}
+       '{a :a :as m}     '[m]    '{a :a}
+       '{[a b & c] :x}   '[a]    '{[b & c] :x}
+       ;;   edge cases
+       '{a :a}           '[]     '{a :a}
+       '{a :a}           nil     '{a :a}))

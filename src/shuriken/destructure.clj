@@ -1,5 +1,7 @@
 (ns shuriken.destructure
-  "### Destructuring destructuring forms")
+  "### Destructuring destructuring forms"
+  (:require [clojure.walk :refer [prewalk]]
+            [clojure.set  :refer [intersection]]))
 
 (declare disentangle)
 
@@ -141,10 +143,45 @@
   ```clojure
   (restructure [x & {:keys [a b] c :cc d :d :or {d 3}}]
                {x 0 a 1 b 2 c 3})
-  => [0 :a 1 :b 2 :cc 3 :d nil]
+  ;; => [0 :a 1 :b 2 :cc 3 :d nil]
   ```"
   [binding-form mapping]
   (restructure* binding-form
                 (if (vector? mapping)
                   (->> mapping (partition 2) (map vec) (into {}))
                   mapping)))
+
+(defn efface
+  "Removes given symbols from a binding form.
+
+  ```clojure
+  (efface '[a & more :as all]                 'more 'all) ;; => '[a]
+  (efface '[[a b] & more :as all]             '[a all])   ;; => '[[b] & more]
+  (efface '{:keys [a] b :b :or {a 1} :as all} 'a)         ;; => '{b :b :as all}
+  ```"
+  [binding-form & syms]
+  (let [efface? (set (flatten syms))]
+    (prewalk (fn [form]
+               (if (or (vector? form) (map? form))
+                 (let [res (-> (disentangle form)
+                               (update :items #(vec (remove efface? %))))
+                       res (if (efface? (:more res))
+                             (dissoc res :more)
+                             res)
+                       res (if (efface? (:as res))
+                             (dissoc res :as)
+                             res)
+                       ks  (intersection efface? (-> res :mapping keys set))
+                       res (if-not (empty? ks)
+                             (apply update res :mapping dissoc ks)
+                             res)
+                       ks  (intersection efface? (-> res :or keys set))
+                       res (if-not (empty? ks)
+                             (apply update res :or      dissoc ks)
+                             res)
+                       res (if (empty? (:or res))
+                             (dissoc res :or)
+                             res)]
+                   (entangle res))
+                 form))
+             binding-form)))
