@@ -42,7 +42,8 @@
    disentangle
    entangle
    deconstruct
-   restructure]
+   restructure
+   efface]
 
   [shuriken.exception
    silence
@@ -68,14 +69,14 @@
    merge-meta
    preserve-meta]
 
-  [shuriken.monkey-patch
-   once
-   refresh-once
-   monkey-patch
-   java-patch
-   ; copy-class
-   ; save-class
-   ]
+  ; [shuriken.monkey-patch
+  ;  once
+  ;  refresh-once
+  ;  monkey-patch
+  ;  java-patch
+  ;  ; copy-class
+  ;  ; save-class
+  ;  ]
 
   [shuriken.namespace
    fully-qualify fully-qualified?
