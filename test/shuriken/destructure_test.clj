@@ -4,27 +4,34 @@
 
 ;; TODO: require shuriken.core instead of shuriken.destructure
 
-(deftest test-disentangle
-  (testing "when params is an array"
-    (is (= '{:items [a b]}
-           (disentangle '[a b])))
-    (is (= '{:items [[a b]]}
-           (disentangle '[[a b]])))
-    (is (= '{:items [], :more args}
-           (disentangle '[& args])))
-    (is (= '{:items [a b], :more {:keys [x], y :_y, :or {x 1}, :as m}}
-           (disentangle '[a b & {:keys [x] y :_y :or {x 1} :as  m}])))
-    (testing "edge cases"
-      (is (= {:items []} (disentangle [])))
-      (is (= {:items []} (disentangle nil)))))
-  (testing "when params is a hash"
-    (is (= '{:items [a b [c1 c2]],
-             :as m,
-             :or {d 1},
-             :mapping {a :a, b :b, [c1 c2] :c}}
-           (disentangle '{:keys [a] b :b [c1 c2] :c :or {d 1} :as m})))
-    (testing "edge cases"
-      (is (= {:items [] :mapping {}} (disentangle {}))))))
+(deftest test-disentangle-entangle
+  (testing "when binding form is a map"
+    (are [x y z] (and (= x (disentangle y))
+                      (= z (entangle x)))
+
+         ;; - when binding form is an array
+         '{:items [a b]}           '[a b]    '[a b]
+         '{:items [[a b]]}         '[[a b]]  '[[a b]]
+         '{:items [], :more args}  '[& args] '[& args]
+
+         '{:items [a b], :more {:keys [x], y :_y, :or {x 1}, :as m}}
+         '[a b & {:keys [x] y :_y :or {x 1} :as  m}]
+         '[a b & {:keys [x] y :_y :or {x 1} :as  m}]
+
+         ;;   edge cases
+         {:items []}  []  []
+         {:items []}  nil []
+
+         ;; - when binding form is a map
+         '{:items [a b [c1 c2]],
+           :as m,
+           :or {d 1},
+           :mapping {a :a, b :b, [c1 c2] :c}}
+         '{:keys [a] b :b [c1 c2] :c :or {d 1} :as m}
+         '{a :a b :b [c1 c2] :c :or {d 1} :as m}
+
+         ;;   edge case
+         {:items [] :mapping {}}  {}  {})))
 
 (deftest test-deconstruct
   (testing "when params is an array"
