@@ -40,6 +40,7 @@
 
   [shuriken.destructure
    disentangle
+   entangle
    deconstruct
    restructure]
 

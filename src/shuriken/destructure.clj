@@ -45,6 +45,30 @@
     (  disentangle-associative binding-form)
     :else (throw (Exception. (str "Cannot disentangle " binding-form)))))
 
+(defn- entangle-sequential [m]
+  (vec (concat (:items m)
+               (when-let [more (:more m)]  ['& more])
+               (when-let [as   (:as m)]    [:as as]))))
+
+(defn- entangle-associative [m]
+  (merge (:mapping m)
+         (when-let [or (:or m)]  {:or or})
+         (when-let [as (:as m)]  {:as as})))
+
+(defn entangle
+  "Undoes what [[disentangle]] does.
+
+  ```clojure
+  (entangle '{:items [a b]})
+  ;; => [a b]
+  (entangle '{:items [a b] :or {b 1}, :mapping {a :a b :b}})
+  ;; => {a :a, b :b, :or {b 1}}
+  ```"
+  [m]
+  (if (contains? m :mapping)
+    (entangle-associative m)
+    (entangle-sequential  m)))
+
 (declare deconstruct)
 
 (defn- deconstruct-sequential [binding-form]
@@ -111,20 +135,8 @@
     (map? binding-form)         (restructure-associative binding-form mapping)
     :else (mapping binding-form)))
 
-(defn dequote [form]
-  (if (and (sequential? form)
-           (-> form first (= 'quote)))
-    (second form)
-    form))
-
-(defn- requote [form]
-  (if (and (sequential? form)
-           (-> form first (= 'quote)))
-    form
-    (list 'quote form)))
-
 (defn restructure
-  "Undoes what destructure does.
+  "Undoes what [[destructure]] does.
 
   ```clojure
   (restructure [x & {:keys [a b] c :cc d :d :or {d 3}}]

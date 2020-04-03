@@ -15,6 +15,10 @@ All notable changes to this project will be documented in this file. This change
 - `tree`: `tree`.
 - `sequential`: `get-some`.
 
+## [0.14.42] - 2020-04-03
+### Added
+- `destructure`: `entangle`.
+
 ## [0.14.41] - 2020-03-13
 ### Fixed
 - `destructure`: `restructure` works properly with hashmap `:or` parameters.
