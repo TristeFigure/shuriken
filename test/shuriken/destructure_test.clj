@@ -1,5 +1,6 @@
 (ns shuriken.destructure-test
   (:require [clojure.test :refer :all]
+            [clojure.set :refer [difference]]
             [shuriken.destructure :refer :all]))
 
 ;; TODO: require shuriken.core instead of shuriken.destructure
@@ -90,8 +91,12 @@
                           vec)))
            mapping))))
 
-(deftest test-efface
-  (are [x y z] (= (apply efface x y) z)
+(deftest test-efface-and-efface-but
+  (are [x y z]  (and (= (apply efface x y)
+                        z)
+                     (= (apply efface-but x (difference (set (deconstruct x))
+                                                        (set (flatten y))))
+                        z))
        ;; - when binding form is a vector
        '[a b]           '[b]     '[a]
        '[a b]           '[[b]]   '[a]

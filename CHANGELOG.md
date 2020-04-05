@@ -15,6 +15,10 @@ All notable changes to this project will be documented in this file. This change
 - `tree`: `tree`.
 - `sequential`: `get-some`.
 
+## [0.14.44] - 2020-04-05
+### Added
+- `destructure`: `efface-but`.
+
 ## [0.14.43] - 2020-04-03
 ### Added
 - `destructure`: `efface`.

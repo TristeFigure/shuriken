@@ -1,7 +1,7 @@
 (ns shuriken.destructure
   "### Destructuring destructuring forms"
   (:require [clojure.walk :refer [prewalk]]
-            [clojure.set  :refer [intersection]]))
+            [clojure.set  :refer [difference intersection]]))
 
 (declare disentangle)
 
@@ -185,3 +185,10 @@
                    (entangle res))
                  form))
              binding-form)))
+
+(defn efface-but
+  "Similarly to [[efface]], removes all but the given syms from the
+  binding form."
+  [binding-form & syms]
+  (apply efface binding-form (difference (set (deconstruct binding-form))
+                                         (set (flatten syms)))))
