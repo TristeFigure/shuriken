@@ -71,32 +71,43 @@
     (entangle-associative m)
     (entangle-sequential  m)))
 
-(declare deconstruct)
+(declare deconstruct*)
 
 (defn- deconstruct-sequential [binding-form]
   (let [{:keys [items as more]} (disentangle binding-form)]
-    (concat (mapcat deconstruct items)
+    (concat (mapcat deconstruct* items)
             (remove nil? [as])
-            (if more (deconstruct more) []))))
+            (if more (deconstruct* more) []))))
 
 (defn- deconstruct-associative [binding-form]
   (let [{:keys [items as]} (disentangle binding-form)]
-    (concat (mapcat deconstruct items)
+    (concat (mapcat deconstruct* items)
             (remove nil? [as]))))
 
-(defn deconstruct
-  "Returns a flat sequence of the symbols bound in the binding-form
-  in depth-first order.
-
-  ```clojure
-  (deconstruct '[a & {:keys [x] y :_y :or {x 1} :as m}])
-  => '[a x y m]
-  ```"
-  [binding-form]
+(defn- deconstruct* [binding-form]
   (vec (cond
          (sequential?  binding-form) (deconstruct-sequential  binding-form)
          (map? binding-form)         (deconstruct-associative binding-form)
          :else                       (when binding-form [binding-form]))))
+
+(defn deconstruct
+  "Returns symbols bound in a binding form, either as a flat sequence
+  and in the same order as in the binding form, or as a map if the
+  `:as-map` option is set.
+
+  ```clojure
+  (deconstruct '[a & {:keys [x] y :_y :or {x 1} :as m}])
+  ;; => '[a x y m]
+  (deconstruct '[a & {:keys [x] y :_y :or {x 1} :as m}] :as-map true)
+  ;; => '{:a a :x x :y y :m m}
+  ```"
+  [binding-form & {:keys [as-map]}]
+  (let [syms (deconstruct* binding-form)]
+    (if as-map
+      (->> syms
+           (map #(vector (keyword %) %))
+           (into {}))
+      syms)))
 
 (declare restructure*)
 

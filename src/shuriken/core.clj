@@ -43,7 +43,8 @@
    entangle
    deconstruct
    restructure
-   efface]
+   efface
+   efface-but]
 
   [shuriken.exception
    silence

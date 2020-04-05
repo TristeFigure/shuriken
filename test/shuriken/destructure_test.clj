@@ -34,21 +34,20 @@
        {:items [] :mapping {}}  {}  {}))
 
 (deftest test-deconstruct
-  (testing "when binding form is a vector"
-    (is (= '[a x y m]
-           (deconstruct '[a & {:keys [x] y :_y :or {x 1} :as m}])))
-    (is (= '[args]
-        (deconstruct '[& args])))
-    (testing "edge cases"
-      (is (= [] (deconstruct [])))
-      (is (= [] (deconstruct nil)))))
-  (testing "when binding form is a map"
-    (is (= '[a]
-           (deconstruct '{a :a})))
-    (is (= '[a b m]
-           (deconstruct '{:keys [a] b :b :or {a 1} :as m})))
-    (testing "edge cases"
-      (is (= [] (deconstruct {}))))))
+  (are [x y z] (and (= y (deconstruct x))
+                    (= z (deconstruct x :as-map true)))
+       ;; - when binding form is a vector
+       '[a & {:keys [x] y :_y :or {x 1} :as m}] '[a x y m]'{:a a :x x :y y :m m}
+       '[& args]                                '[args]   '{:args args}
+       ;;   edge cases
+       []                                       []        {}
+       nil                                      []        {}
+
+       ;; - when binding form is a map
+       '{a :a}                                  '[a]      '{:a a}
+       '{:keys [a] b :b :or {a 1} :as m}        '[a b m]  '{:a a :b b :m m}
+       ;;   edge ases
+       {}                                       []        {}))
 
 (deftest test-restructure
   (testing "when binding form is a vector"
