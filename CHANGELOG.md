@@ -15,6 +15,10 @@ All notable changes to this project will be documented in this file. This change
 - `tree`: `tree`.
 - `sequential`: `get-some`.
 
+## [0.14.46] - 2020-04-08
+### Fixed
+- `destructure`: `restructure` can now accept keyword-keyed maps.
+
 ## [0.14.45] - 2020-04-05
 ### Added
 - `destructure`: `:as-map` option for `deconstruct`.

@@ -79,7 +79,10 @@
   (testing "when mapping is a function"
     (is (= {:a "a", :b ["x" "y"]} (restructure '{:keys [a] [x y] :b} str))))
   (testing "when mapping is a map"
-    (is (= [1] (restructure '[a] '{a 1})))))
+    (testing "(symbols as keys)"
+      (is (= [1] (restructure '[a] {'a 1}))))
+    (testing "(keywords as keys)"
+      (is (= [1] (restructure '[a] {:a 1}))))))
 
 (deftest destructure-restructure-roundtrip
   (let [params   '[a b & {:keys [x] [j k l] :_y :as opts}]

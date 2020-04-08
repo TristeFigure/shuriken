@@ -146,21 +146,34 @@
   (cond
     (sequential? binding-form)  (restructure-sequential  binding-form mapping)
     (map? binding-form)         (restructure-associative binding-form mapping)
-    :else (mapping binding-form)))
+    :else                       (mapping binding-form)))
 
 (defn restructure
   "Undoes what [[destructure]] does.
 
   ```clojure
-  (restructure [x & {:keys [a b] c :cc d :d :or {d 3}}]
-               {x 0 a 1 b 2 c 3})
+  (restructure '[x & {:keys [a b] c :cc d :d :or {d 3}}]
+               '{x 0 a 1 b 2 c 3})
+
+  (restructure '[x & {:keys [a b] c :cc d :d :or {d 3}}]
+               {:x 0 :a 1 :b 2 :c 3})
+
+  (restructure '[x & {:keys [a b] c :cc d :d :or {d 3}}]
+               '[x 0 a 1 b 2 c 3])
+
   ;; => [0 :a 1 :b 2 :cc 3 :d nil]
   ```"
   [binding-form mapping]
-  (restructure* binding-form
-                (if (vector? mapping)
-                  (->> mapping (partition 2) (map vec) (into {}))
-                  mapping)))
+  (let [m? (map?    mapping)
+        v? (vector? mapping)]
+    (restructure* binding-form
+                  (if (or m? v?)
+                    (->> (if v?
+                           (->> mapping (partition 2))
+                           mapping)
+                         (map (fn [[k v]]  [(-> k name symbol) v]))
+                         (into {}))
+                    mapping))))
 
 (defn efface
   "Removes given symbols from a binding form.
