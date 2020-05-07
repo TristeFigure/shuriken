@@ -1,4 +1,4 @@
-(defproject org.clojars.tristefigure/shuriken "0.14.46"
+(defproject org.clojars.tristefigure/shuriken "0.14.47"
   :description "TristeFigure's Clojure toolbox"
   :url "https://github.com/TristeFigure/shuriken"
   :license {:name "Eclipse Public License"
@@ -8,7 +8,7 @@
 
                  [potemkin "0.4.3"]
                  [com.palletops/ns-reload "0.1.0"]
-                 [dance "0.1.2"]
+                 [dance "0.1.3"]
                  [threading "0.3.4"] ;; TODO: remove when dance is updated
                  [lexikon "0.2.1"]
 

@@ -280,8 +280,8 @@
 (defn takes
   "Split `coll` in sub-sequences of length n1 for the first, n2 for the second,
   etc... Appends the remaining items of coll as the final sub-sequence if they
-  have not been consumed by the successive takes. Returns what was consummed
-  even if there are not enough items in `coll` to feed all the takes.
+  have not been consumed by the successive takes. Returns the specified seqs
+  in order, possibly empty if there were not enough elements for all.
 
   ```clojure
   (takes [1 2 3] [:a :b])                ;; => ((:a) (:b))
@@ -299,6 +299,7 @@
           (concat
             [(take n coll)]
             [(drop n coll)]))))
+
 
 ; (defn- containment-constraints [t]
 ;   (->> (tree-seq coll? seq t)

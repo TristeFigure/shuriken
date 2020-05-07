@@ -18,9 +18,9 @@
     (is (= nil (get-nth-in nil [1 1])))))
 
 (deftest test-assoc-nth
-  (is (= '(1 0 3)   (assoc-nth '(1 2 3) 1 0)))
-  (is (= '(1 2 3 0) (assoc-nth '(1 2 3) 3 0)))
-  (is (= {:a 1} (assoc-nth {} :a 1)))
+  (is (= '(1 0 3)         (assoc-nth '(1 2 3) 1 0)))
+  (is (= '(1 2 3 0)       (assoc-nth '(1 2 3) 3 0)))
+  (is (= {:a 1}           (assoc-nth {} :a 1)))
   (testing "edge cases"
     (is (= true (thrown? IndexOutOfBoundsException
                          (assoc-nth '(1 2 3) 4 0))))

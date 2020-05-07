@@ -15,6 +15,10 @@ All notable changes to this project will be documented in this file. This change
 - `tree`: `tree`.
 - `sequential`: `get-some`.
 
+## [0.14.47] - 2020-05-06
+### Fixed
+- bumped `dance` to `0.1.3`.
+
 ## [0.14.46] - 2020-04-08
 ### Fixed
 - `destructure`: `restructure` can now accept keyword-keyed maps.
