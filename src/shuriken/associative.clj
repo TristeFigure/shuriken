@@ -86,14 +86,14 @@
   => {:a {:b {:c :x
               :d :y}}}
   ```"
-  [m]
+  [m & {:keys [with] :or {with #(do %2)}}]
   (reduce (fn [acc [ks v]]
             (update-in acc ks
                        (fn [x]
                          (if x
                            (if (every? map? [x v])
-                             (merge v x)
-                             x)
+                             (merge-with with x v)
+                             (with x v))
                            v))))
           {} m))
 

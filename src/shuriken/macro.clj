@@ -354,7 +354,6 @@
 
   ; -- Macro expansion --
   ; (clojure.core/println \"xyz\")
-  ;
   ; -- Running macro --
   ; xyz
 

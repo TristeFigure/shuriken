@@ -37,16 +37,23 @@
 
 (deftest test-flatten-keys
   (testing "flattening"
-    (is (= (flatten-keys m)
-           flat-m))
+    (is (= flat-m (flatten-keys m)))
     (testing "of empty maps"
       (assert-flatten-roundtrip {}))
     (testing "of maps nesting empty maps"
       (assert-flatten-roundtrip {:a {}}))))
 
+(defn- as-set [x]
+  (if (coll? x)
+    (set x)
+    (set (list x))))
+
 (deftest test-deflatten-keys
-  (is (= (deflatten-keys flat-m)
-         m)))
+  (is (= m (deflatten-keys flat-m)))
+  (is (= {:a {:b #{1 2}}}
+         (deflatten-keys [[[:a :b] 1] [[:a :b] 2]]
+           :with #(clojure.set/union (as-set %1)
+                                     (as-set %2))))))
 
 (deftest test-deep-merge
   (testing "deep-merge"

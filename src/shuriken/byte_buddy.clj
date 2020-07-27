@@ -175,10 +175,10 @@
         prefix-pattern (->> class .getName str/re-quote-replacement (str "^")
                             re-pattern)
         new-name (clj/name new-name)
-        get-copy-name (memoize (fn [class]
-                                 (str/replace (.getName class)
-                                              prefix-pattern
-                                              new-name)))
+        get-copy-name (fn [class]
+                        (str/replace (.getName class)
+                                     prefix-pattern
+                                     new-name))
         class-builder-dict (forcatm [class (flatten ctree)
                                      :let [copy-name (get-copy-name class)
                                            copy-builder (-> (buddy)

@@ -15,6 +15,10 @@ All notable changes to this project will be documented in this file. This change
 - `tree`: `tree`.
 - `sequential`: `get-some`.
 
+## [0.14.48] - 2020-07-28
+- `associative`: `deflatten-keys` now accepts a `:with` option in mimetism with
+  `merge-with`.
+
 ## [0.14.47] - 2020-05-06
 ### Fixed
 - bumped `dance` to `0.1.3`.

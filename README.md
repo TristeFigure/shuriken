@@ -15,7 +15,7 @@ Small yet effective Clojure weapons.
 # Usage
 
 ```clojure
-[org.clojars.tristefigure/shuriken "0.14.47"]
+[org.clojars.tristefigure/shuriken "0.14.48"]
 ```
 
 
@@ -345,7 +345,7 @@ or alternatively:
 
 ```clojure
 (macroexpand-do MODE
-  expr)
+  form)
 ```
 
 Where `MODE` has the following meaning:
