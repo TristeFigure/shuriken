@@ -3,13 +3,16 @@
   (:use clojure.pprint
         shuriken.debug)
   (:require [clojure.spec.alpha :as s]
-            [shuriken.spec :refer [conf either conform!]]
-            [shuriken.macro :refer [is-form?]]
             [shuriken.exception :refer [capturex]]
-            [threading.core :refer :all])
-  (:import [java.lang.reflect Method Modifier]
-           [clojure.lang      Symbol Reflector]
-           [javassist         CtClass]))
+            [shuriken.macro :refer [is-form?]]
+            [shuriken.spec :refer [conf either conform!]]
+            [shuriken.tree :refer [tree]]
+            [threading.core :refer :all]
+            [weaving.core :refer :all])
+  (:import [java.lang.reflect              Method Modifier]
+           [net.bytebuddy.description.type TypeDescription]
+           [clojure.lang                   Symbol Reflector]
+           [javassist                      CtClass]))
 
 ;; TODO: document in the README and/or release as an independent lib
 
@@ -68,17 +71,48 @@
 (defn find-class [class-or-method-signature]
   (if (ct-class? class-or-method-signature)
     class-or-method-signature
-    (let [class-name (cond
-                       (class? class-or-method-signature)
-                       (  .getName class-or-method-signature)
-                       (or (symbol? class-or-method-signature)
-                           (string? class-or-method-signature))
-                       (  str class-or-method-signature)
-                       :else (-> (conform! ::method-signature
-                                           class-or-method-signature)
-                                 first))
-          class-pool (javassist.ClassPool/getDefault)
-          ct-class (.get class-pool class-name)]
+    (let [
+          ; class-name (cond
+          ;              (class? class-or-method-signature)
+          ;              (  .getName class-or-method-signature)
+          ;              (or (symbol? class-or-method-signature)
+          ;                  (string? class-or-method-signature))
+          ;              (  str class-or-method-signature)
+          ;              :else (-> (conform! ::method-signature
+          ;                                  class-or-method-signature)
+          ;                        first))
+          ; _ (println "find-class classloader" @Compiler/LOADER)
+          ; _ (println "-->>" (.loadClass @Compiler/LOADER
+          ;                               "MonkeyPatchedD"))
+          ; _ (println "-->>" (.getResource @Compiler/LOADER
+          ;                                 "MonkeyPatchedD.class"))
+          ; class-pool (doto (new javassist.ClassPool)
+          ;                  (.appendSystemPath)
+          ;                  (.insertClassPath (javassist.LoaderClassPath.
+          ;                                      @Compiler/LOADER)))
+          ; ct-class (.get class-pool class-name)
+
+          the-class  (condp #(%1 %2) class-or-method-signature
+                       class?  class-or-method-signature
+                       ident?  (-> class-or-method-signature name resolve)
+                       (->> class-or-method-signature
+                            (conform! ::method-signature)
+                            first
+                            symbol
+                            resolve))
+          _ (println "ici:"
+                     (->> (Thread/currentThread)
+                          (.getContextClassLoader)
+                          (iterate #(.getParent %))
+                          (take-while identity)
+                          (map #(.find-class % "MonkeyPatchedD.class"))))
+          class-pool (doto (new javassist.ClassPool)
+                           (.appendSystemPath)
+                           (.insertClassPath (javassist.LoaderClassPath.
+                                               @Compiler/LOADER)))
+          _ (println "FFFOUND" (resolve (symbol (.getName the-class))))
+          ct-class   (.get class-pool (.getName the-class))
+          _ (println "ct class:" ct-class)]
         (assert ct-class "Class not found")
         (.stopPruning ct-class true)
         ct-class)))
@@ -184,3 +218,14 @@
 
 (defn interfaces [^Class class]
   (seq (.getInterfaces class)))
+
+;; TODO: test & document
+(defn class-tree [mode-or-fn klass]
+  (let [fetch-children (case mode-or-fn
+                         :nested #(if (instance? TypeDescription %)
+                                    (.getDeclaredTypes %)
+                                    (.getDeclaredClasses %))
+                         mode-or-fn)]
+    (tree (comp seq fetch-children)
+          cons
+          klass)))

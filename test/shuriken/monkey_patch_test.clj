@@ -1,7 +1,9 @@
 (ns shuriken.monkey-patch-test
+  (:use clojure.pprint)
   (:require [clojure.test :refer :all]
-            [shuriken.monkey-patch :refer :all]
-            [shuriken.namespace :refer [with-ns]])
+            [shuriken.monkey-patch :refer :all :reload true]
+            [shuriken.namespace :refer [with-ns]]
+            [shuriken.byte-buddy :refer [copy-class!] :reload true])
   (:import MonkeyPatched))
 
 ;; TODO: require shuriken.core instead of shuriken.monkey-patch
@@ -41,28 +43,46 @@
                (refresh-once 'shuriken.monkey-patch-test/foo)
                (once 'foo (println "foo"))))))))
 
+(copy-class! MonkeyPatched 'MonkeyPatchedA)
+(copy-class! MonkeyPatched 'MonkeyPatchedB)
+(copy-class! MonkeyPatched 'MonkeyPatchedC)
+(copy-class! MonkeyPatched 'MonkeyPatchedD)
+
+(import 'MonkeyPatchedA
+        'MonkeyPatchedB
+        'MonkeyPatchedC
+        'MonkeyPatchedD)
+
+; (defn testouille [class]
+;   (-> (buddy)
+;       (redefine class)
+;       make
+;       ->javassist))
+
 (defn run-java-patch-test []
-  (testing "with clojure code"
-    (testing "replace"
-      (java-patch [MonkeyPatched "a" ["long"]]
+  #_(testing "with clojure code"
+    #_(testing "replace"
+      (java-patch [MonkeyPatchedA "a" ["long"]]
         :replace [x] (+ 100 x))
-      (is (= 101 (MonkeyPatched/a 1))))
+      (is (= 101 (MonkeyPatchedA/a 1))))
     (testing "before"
-      (java-patch [MonkeyPatched "b" ["long"]]
-        :before [this x] (is (= x 1)))
-      (is (= 2 (.b (MonkeyPatched.) 1))))
-    (testing "after"
-      (java-patch [MonkeyPatched "c" [Object]]
+      (println "--------------------------")
+      (pprint (macroexpand
+                '(java-patch [MonkeyPatchedB "b" ["long"]]
+                  :before [this x] (is (= x 1)))))
+      (is (= 2 (.b (MonkeyPatchedB.) 1))))
+    #_(testing "after"
+      (java-patch [MonkeyPatchedC "c" [Object]]
         :after [this result x]
         (is (= x 1))
         (is (= result 3))
         (+ 1000 result))
-      (is (= 1003 (.c (MonkeyPatched.) 1)))))
+      (is (= 1003 (.c (MonkeyPatchedC.) 1)))))
   (testing "with javassist pseudo-java code"
-    (java-patch ["MonkeyPatched" :d []]
+    (java-patch ["MonkeyPatchedD" :d []]
       :after
       " { $_ = 100; } ")
-    (is (= 100 (.d (MonkeyPatched.))))))
+    (is (= 100 (.d (MonkeyPatchedD.))))))
 
 (deftest test-java-patch
   (run-java-patch-test)

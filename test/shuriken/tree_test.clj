@@ -73,11 +73,11 @@
             "[1 2 {3 4, 5 6}]"]))))
 
 (deftest test-tree
-  (let [divisors (tree #(for [m (range 2 %)  :let [div (/ % m)]  :when (integer? div)]
+  (let [divisors (tree #(for [m (range 2 %)
+                              :let [div (/ % m)]
+                              :when (integer? div)]
                           div)
                        cons
                        12)]
     (is (= '(12 (6 (3) (2)) (4 (2)) (3) (2))
            divisors))))
-
-(run-tests)

@@ -2,12 +2,12 @@
   (:refer-clojure :exclude [require name merge not load resolve])
   (:require [clojure.core :as clj]
             [clojure.string :as str]
+            [com.palletops.ns-reload :refer [reload-namespaces]]
             [shuriken.associative :refer [getsoc]]
             [shuriken.exception :refer [silence]]
             [shuriken.namespace :refer [import-namespace-vars]]
-            [shuriken.reflection :refer [read-field write-field]]
+            [shuriken.reflection :refer [read-field write-field class-tree]]
             [shuriken.sequential :refer [forcatm mapm maps]]
-            [shuriken.tree :refer [class-tree tree-seq-breadth]]
             [threading.core :refer :all]
             [weaving.core :refer :all]
             [shuriken.byte-buddy.dsl])
@@ -36,7 +36,8 @@
 ;; TODO: refactor the .defrost to CtClasses
 
 (defn ->javassist [^DynamicType type]
-  (let [pool        (ClassPool/getDefault)
+  (let [pool        (doto (new ClassPool) (.appendSystemPath))
+                    ;(ClassPool/getDefault)
         class-name  (-> type .getTypeDescription .getName)
         _           (doto (silence javassist.NotFoundException
                             (.get pool class-name))
@@ -97,6 +98,35 @@
   (when-not (bound? Compiler/LOADER)
     (.bindRoot Compiler/LOADER (DynamicClassLoader. (clojure.lang.RT/baseLoader)))))
 
+; (defn reimport-classes! [classes]
+;   (let [class-names (maps #(.getName %) classes)]
+;     (-> (all-ns)
+;         (map-> (juxt-> identity
+;                        (->> ns-imports
+;                             (filter #(contains? class-names (.getName (val %))))
+;                             (>>- (map-> vec))
+;                             (into {})))
+;                vec)
+;         (->> (filter #(-> % second seq))
+;              (into {})
+;              (run! (fn [[ns class-map]]
+;                      (run! (fn [[sym klass]]
+;                              (.importClass ns sym klass))
+;                            class-map)))))))
+
+(defn reload-ns-importing-classes! [classes]
+  (let [class-names (maps #(.getName %) classes)]
+    (-> (all-ns)
+        (map-> (juxt-> identity
+                       (->> ns-imports
+                            (filter #(contains? class-names (.getName (val %))))
+                            (>>- (map-> vec))
+                            (into {})))
+               vec)
+        (->> (filter #(-> % second seq)))
+        (map-> first .getName)
+        (reload-namespaces {}))))
+
 ;; TODO: extract and reuse ?
 (defn- frames
   ([]
@@ -108,8 +138,6 @@
    (map #(select-keys % vars)
         (frames))))
 
-(import 'MonkeyPatched)
-
 ;; TODO: mmh this fiddling with the binding frames is exciting: extract it.
 (defn load-in-clojure-classloaders! [type]
   (ensure-compiler-loader!)
@@ -120,7 +148,8 @@
                                       type
                                       class-loader
                                       (allow-existing-types
-                                        (class-loading-strategy :wrapper)))
+                                        (class-loading-strategy
+                                          :wrapper-persistent)))
                                     get-loaded))
           CtClass             (fn [class-loader]
                                 (-> (Loader$Simple. class-loader)
@@ -167,6 +196,8 @@
     (let [loaded-class (-> th .getContextClassLoader load-type)]
       (.setContextClassLoader
         th (-> loaded-class .getClassLoader DynamicClassLoader.))
+      #_(reload-ns-importing-classes!
+        (flatten (class-tree :nested loaded-class)))
       loaded-class)))
 
 ;; TODO: expose a way to define which (sub)classes are rewritten
@@ -213,18 +244,17 @@
                                            (->byte-buddy type-with-nested)
                                            (when-> (<- (seq nested-copies))
                                              (include nested-copies)))]
-                 type-with-renames))]
+                 type-with-renames))
+        maybe-make (when| (|| instance? DynamicType$Builder) make)]
     (clojure.walk/postwalk
       (fn [node]
         (cond
           (class? node)       (-> node class-builder-dict)
           (sequential? node)  (let [[mother & children] node]
-                                (-> (map (when| (|| instance? DynamicType$Builder)
-                                           make)
-                                         children)
+                                (-> (map maybe-make children)
                                     (if->> seq
                                       (nest mother)
-                                      (<<- mother))))
+                                      (<<- (maybe-make mother)))))
           :else               node))
       ctree)))
 

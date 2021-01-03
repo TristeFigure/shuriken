@@ -49,12 +49,3 @@
   [children join-branches root]
   (let [cs (children root)]
     (join-branches root (map #(tree children join-branches %) cs))))
-
-;; TODO: test & document & expose
-(defn class-tree [mode-or-fn klass]
-  (let [fetch-children (case mode-or-fn
-                         :nested #(.getDeclaredClasses %)
-                         mode-or-fn)]
-    (tree (comp seq fetch-children)
-          cons
-          klass)))

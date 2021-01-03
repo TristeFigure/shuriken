@@ -10,11 +10,12 @@
                       meta
                       monkey-patch
                       namespace
-                      tree
                       reflection
                       sequential
+                      source
                       spec
-                      string]))
+                      string
+                      tree]))
 
 (import-vars
   [shuriken.associative
@@ -23,6 +24,7 @@
    remove-keys remove-vals
    flatten-keys deflatten-keys deep-merge
    index-by unindex
+   plan-merge
    merge-with-plan
    continue|
    split-map
@@ -96,7 +98,11 @@
    read-field
    write-field
    method
-   static-method]
+   static-method
+   class-tree]
+
+  [shuriken.source
+   inline]
 
   [shuriken.spec
    conf either conform!]

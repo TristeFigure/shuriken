@@ -165,17 +165,22 @@
                    before-first-delim)
                  result)))))
 
-;; TODO: can be sped up
 (defn separate
-  "Returns a vector of `[(filter pred coll) (remove pred coll)]`.
+  "Returns a vector equal to `[(filter pred coll) (remove pred coll)]`
+  but faster.
 
   ```clojure
   (let [coll [1 1 0 1 0 0 1 1 0]]
-    (separate zero? coll)
-    => [(1 1 1 1 1) (0 0 0 0)])
+    (separate zero? coll))
+    => [(1 1 1 1 1) (0 0 0 0)]
   ```"
   [pred coll]
-  [(filter pred coll) (remove pred coll)])
+  (reduce (fn [[l-acc r-acc] v]
+            (if (pred v)
+              [(conj l-acc v)  r-acc]
+              [l-acc           (conj r-acc v)]))
+          [[] []]
+          coll))
 
 (defn max-by
   "Returns the greatest of the elements by pred."

@@ -166,7 +166,7 @@
   "Alias of `vals`."
   vals)
 
-(defn merge-with-plan
+(defn plan-merge
   "Like `merge-with` except that the combination fn of a specific pair
   of entries is determined by looking up their key in `plan`. If not
   found, falls back to the function found under key `:else` or if not
@@ -192,11 +192,14 @@
                      (reduce merge-entry (or m1 {}) (seq m2)))]
         (reduce merge2 maps))))
 
+;; TODO: rename in dance then remove
+(def merge-with-plan plan-merge)
+
 (defn continue|
   "Takes two functions `fa` & `fb` and returns the partial application of `fb`
   to `fa`.
 
-  See [[merge-with-plan]]."
+  See [[plan-merge]]."
   [fa fb]
   (|| fb fa))
 

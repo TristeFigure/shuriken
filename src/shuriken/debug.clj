@@ -43,3 +43,16 @@
                                 forms))]
       `(let ~bindings
          ~v-sym))))
+
+(def ^:dynamic *tab-depth* -1)
+
+(def original-println println)
+
+(defn println-tabs [& args]
+  (original-println (apply str (concat (repeat *tab-depth* "  ")
+                                       (interpose " " args)))))
+
+(defmacro with-tabs [& body]
+  `(binding [*tab-depth* (inc *tab-depth*)]
+     (with-redefs [println println-tabs]
+       ~@body)))

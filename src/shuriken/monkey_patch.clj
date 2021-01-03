@@ -1,16 +1,31 @@
 (ns shuriken.monkey-patch
   "### Tools to monkey-patch Clojure and Java code"
+  (:use clojure.pprint)
   (:require [clojure.spec.alpha :as s]
+            [clojure.repl :refer [source-fn]]
             [com.palletops.ns-reload :as nsdeps]
+            [shuriken.byte-buddy :refer [->byte-buddy
+                                         ->javassist ;; TODO: remove
+                                         load-in-clojure-classloaders!]]
             [shuriken.spec :refer [conf either conform!]]
             [shuriken.namespace :refer [with-ns]]
             [shuriken.macro :refer [is-form? wrap-form unwrap-form]]
-            [clojure.repl :refer [source-fn]]
+
             [shuriken.reflection
              :refer [return-type delegate-name static-method?
-                     signature-to-str find-class find-method]])
+                     signature-to-str find-class find-method]
+             :reload true]
+            [weaving.core :refer :all])
   (:use robert.hooke)
-  (:import RedefineClassAgent))
+  (:import javassist.util.HotSwapAgent
+           RedefineClassAgent))
+
+(defn dbg-class-loader [title cl]
+  (println "---" title "---")
+  (pprint (take-while (not| nil?)
+                      (iterate #(.getParent %) cl)))
+  (newline)
+  cl)
 
 (defn ^:no-doc prepend-ns
   ([k]
@@ -25,18 +40,18 @@
 
 (when-not (find-ns 'shuriken.monkey-patch.no-reload-store)
   (let [store-ns (create-ns 'shuriken.monkey-patch.no-reload-store)]
-    (intern store-ns 'onlys (atom #{}))))
+    (intern store-ns 'onces (atom #{}))))
 
-(defmacro only
+(defmacro once
   "Ensures `body` is executed only once with respect to `name`.
   If `name` is a symbol or a keyword without a namespace, it will be
   prefixed with the value of `*ns*`.
 
   ```clojure
-  (only 'foo (println \"bar\"))
+  (once 'foo (println \"bar\"))
   ; prints bar
 
-  (only 'foo (println \"bar\"))
+  (once 'foo (println \"bar\"))
   ; prints nothing
   ```"
   [name & body]
@@ -46,29 +61,29 @@
                     (wrap-form 'quote))
                `(prepend-ns ~name))]
     `(let [k# ~name]
-       (when-not (contains? @shuriken.monkey-patch.no-reload-store/onlys
+       (when-not (contains? @shuriken.monkey-patch.no-reload-store/onces
                             k#)
          (let [result# ~@body]
-           (swap! shuriken.monkey-patch.no-reload-store/onlys
+           (swap! shuriken.monkey-patch.no-reload-store/onces
                   conj k#)
            result#)))))
 
-(defn refresh-only
-  "Reset `only` statements by name. Next time one is called, the
+(defn refresh-once
+  "Reset `once` statements by name. Next time one is called, the
   associated code will be evaluated.
   If `name` is a symbol or a keyword without a namespace, it will be
   prefixed with `*ns*`.
 
   ```clojure
-  (only 'foo (println \"bar\"))
+  (once 'foo (println \"bar\"))
   ; prints bar
 
-  (refresh-only 'foo)
-  (only 'foo (println \"bar\"))
+  (refresh-once 'foo)
+  (once 'foo (println \"bar\"))
   ; prints bar
   ```"
   [name]
-  (swap! shuriken.monkey-patch.no-reload-store/onlys disj (prepend-ns name))
+  (swap! shuriken.monkey-patch.no-reload-store/onces disj (prepend-ns name))
   nil)
 
 (defmacro monkey-patch
@@ -115,35 +130,44 @@
 ;         (eval `(. original (-> copy-name symbol) ~@args))))))
 
 (defmacro ^:no-doc change-java-method
-  [method-signature f & {:keys [once] :or {once false}}]
+  [method-signature f & {onc :once :or {onc false}}]
   (let [method-signature-sym (gensym "method-signature-")
         code `(let [ct-class#   (find-class ~method-signature-sym)
                     was-frozen# (if (.isFrozen ct-class#)
                                   (do (.defrost ct-class#) true)
                                   false)
-                    ; copy-name   (str class-name "Original")
-                    ; copy        (copy-class class-name copy-name)
                     method#     (find-method ~method-signature-sym)
                     _#          (~f method#)
-                    bytecode#   (.toBytecode ct-class#)
+                    ; bytecode#   (.toBytecode ct-class#)
                     [class-name# _method-name# _parameter-types#]
                     (conform! :shuriken.reflection/method-signature
                               ~method-signature-sym)
-                    definition# (java.lang.instrument.ClassDefinition.
-                                  (Class/forName class-name#)
-                                  bytecode#)]
-                (RedefineClassAgent/redefineClasses
-                  (into-array java.lang.instrument.ClassDefinition
-                              [definition#]))
+                    ; definition# (java.lang.instrument.ClassDefinition.
+                    ;               (Class/forName class-name#)
+                    ;               bytecode#)
+                    ]
+                (dbg-class-loader
+                  "initial classloader"
+                  (-> (Thread/currentThread) .getContextClassLoader))
+                (-> ct-class# load-in-clojure-classloaders!)
+                (dbg-class-loader
+                  "once loaded"
+                  (-> (Thread/currentThread) .getContextClassLoader))
+                ; (HotSwapAgent/redefine (Class/forName class-name#)
+                ;                        (-> ct-class# ->byte-buddy ->javassist))
+                ; (RedefineClassAgent/redefineClasses
+                ;   (into-array java.lang.instrument.ClassDefinition
+                ;               [definition#]))
                 (when was-frozen# (.freeze ct-class#))
                 (.stopPruning ct-class# false)
                 nil)]
     `(let [~method-signature-sym ~method-signature]
-       (if-let [once# ~once]
-          (only (str (signature-to-str ~method-signature-sym)
-                     "-" once#)
-             ~code)
-          ~code))))
+       (if-let [onc# ~onc]
+         ~code
+         #_(once (str (signature-to-str ~method-signature-sym)
+                    "-" onc#)
+               )
+         ~code))))
 
 (def primitive-types
   {"byte"    "Byte"
@@ -258,11 +282,10 @@
 
   `mode` can be either `:replace`, `:before` or `:after`.
   `body` can be javassist pseudo-java (a string) or clojure code.
-  In the latter case, `args` must be specified before `body` so as to
-  intercept the method's parameters. If `:after` is used `args` will
-  include the method's return value. If the method is an instance
-  method, `args` will also include the instance it is called on
-  (`this`).
+  In the latter case, `args` must be specified before `body`.
+  If `:after` is used `args` will include the method's return value.
+  If the method is an instance method, `args` will also include the
+  instance it is called on (`this`).
 
   `args`: `[this? return-value? & method-args]`
 
@@ -337,3 +360,4 @@
        (let [orig (meta v)]
          (eval source)
          (reset-meta! v orig)))))
+

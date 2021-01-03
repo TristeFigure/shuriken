@@ -3,7 +3,9 @@ All notable changes to this project will be documented in this file. This change
 
 ## Unreleased
 ### Changed:
-- `associative`: `getsoc` is now a macro.
+- `associative`:
+  - `getsoc` is now a macro.
+  - renamed `merge-with-plan` to `plan-merge`.
 - `navigation`: renamed to `shuriken.tree`.
 - `monkey-patch`: renamed `only` & `refresh-only` to `once` and `refresh-once`.
 - `namespace`: renamed `import-namespace` to `import-namespace-vars`.
@@ -11,7 +13,7 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 - `byte-buddy`: `copy-class!`.
 - `exception`: `capturex`.
-- `reflection`: `write-field`.
+- `reflection`: `write-field`, `class-tree`.
 - `tree`: `tree`.
 - `sequential`: `get-some`.
 

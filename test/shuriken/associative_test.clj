@@ -104,18 +104,18 @@
              {2 {:a 1, :b 2}
               4 {:a 5, :b 4}})))))
 
-(deftest test-merge-with-plan
+(deftest test-plan-merge
   (let [m {:a 1 :b 2 :c inc :d 0}
         plan {:a + :b - :c comp}
-        {:keys [a b c d] :as merged} (merge-with-plan plan m m m)]
+        {:keys [a b c d] :as merged} (plan-merge plan m m m)]
     (is (map? merged))
     (is (= 3 a))
     (is (= -2 b))
     (is (= 3 (c 0)))
     (is (= 0 d))
-    (is (= merged (merge-with-plan plan merged))))
+    (is (= merged (plan-merge plan merged))))
   (testing "in cps-like style"
-    (let [f (:f (merge-with-plan {:f continue|}
+    (let [f (:f (plan-merge {:f continue|}
                                  {:f inc}
                                  {:f (fn [next-f x]
                                        (next-f (* 2 x)))}
